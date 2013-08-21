@@ -12,5 +12,6 @@ interpreter is prefered for some platforms (iOS).
 
 Take a look to the DQuick.pptx for more details.
 
-Status :
+Status
+====
 It's currently a simple prototype, don't expect to see something working fine a day.
