@@ -1,0 +1,363 @@
+<DProject>
+ <ProjectGuid>{A02DE709-944A-4DC4-9964-E8A551410AAC}</ProjectGuid>
+ <Config name="Debug" platform="Win32">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>0</lib>
+  <subsystem>1</subsystem>
+  <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
+  <oneobj>0</oneobj>
+  <trace>0</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <symdebug>1</symdebug>
+  <optimize>0</optimize>
+  <cpu>0</cpu>
+  <isX86_64>0</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>0</useDeprecated>
+  <errDeprecated>0</errDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>0</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>1</useUnitTests>
+  <useInline>0</useInline>
+  <release>0</release>
+  <preservePaths>0</preservePaths>
+  <warnings>1</warnings>
+  <infowarnings>1</infowarnings>
+  <checkProperty>0</checkProperty>
+  <genStackFrame>0</genStackFrame>
+  <pic>0</pic>
+  <cov>1</cov>
+  <nofloat>0</nofloat>
+  <Dversion>2</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <compiler>0</compiler>
+  <otherDMD>0</otherDMD>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath />
+  <fileImppath />
+  <outdir>$(ConfigurationName)/../../data</outdir>
+  <objdir>$(OutDir)</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <modules_ddoc />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>1</doXGeneration>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids />
+  <versionlevel>0</versionlevel>
+  <versionids />
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>0</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>1</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <cv2pdbPre2043>0</cv2pdbPre2043>
+  <cv2pdbNoDemangle>0</cv2pdbNoDemangle>
+  <cv2pdbEnumType>0</cv2pdbEnumType>
+  <cv2pdbOptions />
+  <objfiles />
+  <linkswitches />
+  <libfiles>ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib</libfiles>
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(OutDir)\$(ProjectName).exe</exefile>
+  <useStdLibPath>1</useStdLibPath>
+  <additionalOptions />
+  <preBuildCommand />
+  <postBuildCommand />
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
+ </Config>
+ <Config name="Release" platform="Win32">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>0</lib>
+  <subsystem>2</subsystem>
+  <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
+  <oneobj>0</oneobj>
+  <trace>0</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <symdebug>0</symdebug>
+  <optimize>0</optimize>
+  <cpu>0</cpu>
+  <isX86_64>0</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>0</useDeprecated>
+  <errDeprecated>0</errDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>0</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>0</useUnitTests>
+  <useInline>0</useInline>
+  <release>1</release>
+  <preservePaths>0</preservePaths>
+  <warnings>1</warnings>
+  <infowarnings>1</infowarnings>
+  <checkProperty>0</checkProperty>
+  <genStackFrame>0</genStackFrame>
+  <pic>0</pic>
+  <cov>0</cov>
+  <nofloat>0</nofloat>
+  <Dversion>2</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <compiler>0</compiler>
+  <otherDMD>0</otherDMD>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath />
+  <fileImppath />
+  <outdir>$(ConfigurationName)/../../data</outdir>
+  <objdir>$(OutDir)</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <modules_ddoc />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>1</doXGeneration>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids />
+  <versionlevel>0</versionlevel>
+  <versionids />
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>0</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>0</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <cv2pdbPre2043>0</cv2pdbPre2043>
+  <cv2pdbNoDemangle>0</cv2pdbNoDemangle>
+  <cv2pdbEnumType>0</cv2pdbEnumType>
+  <cv2pdbOptions />
+  <objfiles />
+  <linkswitches />
+  <libfiles>ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib</libfiles>
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(OutDir)\$(ProjectName).exe</exefile>
+  <useStdLibPath>1</useStdLibPath>
+  <additionalOptions />
+  <preBuildCommand />
+  <postBuildCommand />
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
+ </Config>
+ <Folder name="Images">
+  <Folder name="data">
+   <Folder name="dml">
+    <File path="..\data\dml\button.lua" />
+    <File path="..\data\dml\image.lua" />
+    <File path="..\data\dml\transformations.lua" />
+   </Folder>
+   <Folder name="dquick">
+    <Folder name="shaders">
+     <File path="..\data\dquick\shaders\borderRectangle.frag" />
+     <File path="..\data\dquick\shaders\borderRectangle.vert" />
+     <File path="..\data\dquick\shaders\rectangle.frag" />
+     <File path="..\data\dquick\shaders\rectangle.vert" />
+    </Folder>
+   </Folder>
+  </Folder>
+  <Folder name="dquick">
+   <Folder name="etc">
+    <Folder name="derelict">
+     <Folder name="freetype">
+      <File path="..\src\dquick\etc\derelict\import\derelict\freetype\ft.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\freetype\functions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\freetype\types.d" />
+     </Folder>
+     <Folder name="lua">
+      <File path="..\src\dquick\etc\derelict\import\derelict\lua\functions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\lua\lua.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\lua\macros.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\lua\types.d" />
+     </Folder>
+     <Folder name="ogg">
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\ogg.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\oggfunctions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\oggtypes.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\vorbis.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisenc.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisencfunctions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisenctypes.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfile.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfilefunctions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfiletypes.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfunctions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\ogg\vorbistypes.d" />
+     </Folder>
+     <Folder name="openal">
+      <File path="..\src\dquick\etc\derelict\import\derelict\openal\al.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\openal\functions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\openal\types.d" />
+     </Folder>
+     <Folder name="opengl3">
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\arb.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\cgl.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\constants.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\deprecatedConstants.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\deprecatedFunctions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\ext.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\functions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\gl.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\gl3.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\glx.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\internal.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\types.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\opengl3\wgl.d" />
+     </Folder>
+     <Folder name="sdl2">
+      <File path="..\src\dquick\etc\derelict\import\derelict\sdl2\functions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\sdl2\image.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\sdl2\mixer.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\sdl2\sdl.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\sdl2\ttf.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\sdl2\types.d" />
+     </Folder>
+     <Folder name="util">
+      <File path="..\src\dquick\etc\derelict\import\derelict\util\exception.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\util\loader.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\util\sharedlib.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\util\system.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\util\wintypes.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\util\xtypes.d" />
+     </Folder>
+    </Folder>
+    <Folder name="gl3n">
+     <Folder name="color">
+      <File path="..\src\dquick\etc\gl3n\gl3n\color\hsv.d" />
+     </Folder>
+     <Folder name="ext">
+      <File path="..\src\dquick\etc\gl3n\gl3n\ext\matrixstack.d" />
+     </Folder>
+     <File path="..\src\dquick\etc\gl3n\gl3n\aabb.d" />
+     <File path="..\src\dquick\etc\gl3n\gl3n\frustum.d" />
+     <File path="..\src\dquick\etc\gl3n\gl3n\interpolate.d" />
+     <File path="..\src\dquick\etc\gl3n\gl3n\linalg.d" />
+     <File path="..\src\dquick\etc\gl3n\gl3n\math.d" />
+     <File path="..\src\dquick\etc\gl3n\gl3n\plane.d" />
+     <File path="..\src\dquick\etc\gl3n\gl3n\util.d" />
+    </Folder>
+   </Folder>
+   <Folder name="events">
+    <File path="..\src\dquick\events\mouseEvent.d" />
+   </Folder>
+   <Folder name="item">
+    <File path="..\src\dquick\item\boderImageItem.d" />
+    <File path="..\src\dquick\item\declarativeItem.d" />
+    <File path="..\src\dquick\item\graphicItem.d" />
+    <File path="..\src\dquick\item\imageItem.d" />
+    <File path="..\src\dquick\item\mouseAreaItem.d" />
+    <File path="..\src\dquick\item\windowItem.d" />
+   </Folder>
+   <Folder name="maths">
+    <File path="..\src\dquick\maths\color.d" />
+    <File path="..\src\dquick\maths\matrix4x4.d" />
+    <File path="..\src\dquick\maths\quaternion.d" />
+    <File path="..\src\dquick\maths\transformation.d" />
+    <File path="..\src\dquick\maths\vector2f32.d" />
+    <File path="..\src\dquick\maths\vector2s32.d" />
+    <File path="..\src\dquick\maths\vector3f32.d" />
+    <File path="..\src\dquick\maths\vector4f32.d" />
+   </Folder>
+   <Folder name="media">
+    <File path="..\src\dquick\media\image.d" />
+   </Folder>
+   <Folder name="renderer2D">
+    <Folder name="openGL">
+     <File path="..\src\dquick\renderer2D\openGL\borderRectangleShader.d" />
+     <File path="..\src\dquick\renderer2D\openGL\borderRectangleVertices.d" />
+     <File path="..\src\dquick\renderer2D\openGL\font.d" />
+     <File path="..\src\dquick\renderer2D\openGL\rectangle.d" />
+     <File path="..\src\dquick\renderer2D\openGL\text.d" />
+    </Folder>
+   </Folder>
+   <Folder name="renderer3D">
+    <Folder name="openGL">
+     <File path="..\src\dquick\renderer3D\openGL\material.d" />
+     <File path="..\src\dquick\renderer3D\openGL\mesh.d" />
+     <File path="..\src\dquick\renderer3D\openGL\renderer.d" />
+     <File path="..\src\dquick\renderer3D\openGL\shader.d" />
+     <File path="..\src\dquick\renderer3D\openGL\shaderProgram.d" />
+     <File path="..\src\dquick\renderer3D\openGL\texture.d" />
+     <File path="..\src\dquick\renderer3D\openGL\textureAtlas.d" />
+     <File path="..\src\dquick\renderer3D\openGL\util.d" />
+     <File path="..\src\dquick\renderer3D\openGL\VBO.d" />
+    </Folder>
+   </Folder>
+   <Folder name="script">
+    <File path="..\src\dquick\script\dmlEngine.d" />
+    <File path="..\src\dquick\script\iItemBinding.d" />
+    <File path="..\src\dquick\script\itemBinding.d" />
+    <File path="..\src\dquick\script\nativePropertyBinding.d" />
+    <File path="..\src\dquick\script\propertyBinding.d" />
+    <File path="..\src\dquick\script\utils.d" />
+    <File path="..\src\dquick\script\virtualPropertyBinding.d" />
+   </Folder>
+   <Folder name="system">
+    <Folder name="sdl">
+     <File path="..\src\dquick\system\sdl\guiApplicationSDL.d" />
+     <File path="..\src\dquick\system\sdl\openglContextSDL.d" />
+    </Folder>
+    <Folder name="win32">
+     <File path="..\src\dquick\system\win32\guiApplicationWin32.d" />
+     <File path="..\src\dquick\system\win32\openglContextWin32.d" />
+    </Folder>
+    <File path="..\src\dquick\system\dMain.def" />
+    <File path="..\src\dquick\system\dynamicLibrary.d" />
+    <File path="..\src\dquick\system\guiApplication.d" />
+    <File path="..\src\dquick\system\window.d" />
+   </Folder>
+   <Folder name="utils">
+    <File path="..\src\dquick\utils\resourceManager.d" />
+   </Folder>
+  </Folder>
+  <File path="..\src\samples\images\main.d" />
+ </Folder>
+</DProject>

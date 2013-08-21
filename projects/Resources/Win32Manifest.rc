@@ -1,0 +1,4 @@
+
+// Links the manifest file to the application resources
+1 24 "Win32Manifest.manifest"
+	

@@ -1,0 +1,30 @@
+Mettre dquick en lib static et revoir les projets d'exemples.
+
+Voir pour supprimer le .def, normalement on peux cacher la console avec des appels win32.
+
+
+Bugs :
+ - Crash quand on quitte l'application (sans doute un double free)
+ - Resize super lent (events par assez reactif)
+
+Features :
+ - Ajouter les textes
+ - BorderImage
+ - Animation
+ - Binding des Enum en Lua (Bouttons de la MouseAreaItem)
+ - Ajouter un systeme de traduction des textes
+ - Item pour le texte input
+ - Voir pour les decorations de la fenetre custom
+ - Video
+ - Son
+ - Ajouter les loader (pour precharger les resources comme les images)
+ - Binding des shaders
+ - Copy on write pour les resources (shader partages entre les ImagesItems,...)
+ 
+Misc :
+ - Developper un module pour recuperer des informations sur la plateforme (repertoire de backup,...)   Biensur si ca n'existe pas deja dans phobos (le faire integrer dans la std?)
+ - Mettre en place un logguer qui genere des rapports de bugs
+ - Mettre en place un mecanisme pour deboguer l'interface avec un bot (memorisation des interactions et replay), qu'en mode debug
+
+Samples :
+ - Faire un installeur (scripts et GUI par defaut)

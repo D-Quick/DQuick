@@ -1,0 +1,509 @@
+module dquick.system.win32.gui_application;
+
+version (Windows)
+{
+	import dquick.system.gui_application;
+	import dquick.item.declarative_item;
+	import dquick.item.graphic_item;
+	import dquick.system.window;
+	import dquick.maths.vector2s32;
+	import dquick.item.image_item;
+	import dquick.item.mouse_area_item;
+	import dquick.script.dml_engine;
+
+	import std.stdio;
+	import std.c.stdlib;
+	import std.c.string;	// for memset
+	import std.string;
+	import std.path;
+	import std.exception;
+
+	import std.c.windows.windows;
+	pragma(lib, "gdi32.lib");
+
+	import dquick.system.win32.opengl_context;
+
+	class GuiApplication : IGuiApplication
+	{
+	public:
+		static GuiApplication	instance()
+		{
+			if (mInstance is null)
+				mInstance = new GuiApplication;
+			return mInstance;
+		}
+
+		void	setApplicationArguments(string[] args)
+		{
+			assert(mInitialized == false);
+
+			mApplicationDirectory = dirName(args[0]) ~ dirSeparator;
+
+			mInitialized = true;
+		}
+
+		void	setApplicationDisplayName(string name) {mApplicationDisplayName = name;}
+		string	applicationDisplayName() {return mApplicationDisplayName;}
+
+		string	directoryPath() {return mApplicationDirectory;}	/// Return the path of this application
+
+		int	execute()
+		{
+			MSG		msg;
+
+			while (!mQuit)
+			{
+				while (PeekMessageA(&msg, null, 0, 0, PM_REMOVE))
+				{
+					TranslateMessage(&msg);
+					DispatchMessageA(&msg);
+				}
+
+				foreach (Window window; mWindows)
+					window.onPaint();
+			}
+			return msg.wParam;
+		}
+
+		void	quit()
+		{
+			mQuit = true;
+		}
+
+		//==========================================================================
+		//==========================================================================
+
+	private:
+		this() {}
+
+		static void	registerWindow(Window window, HWND windowHandle)
+		{
+			mWindows[windowHandle] = window;
+		}
+
+		static GuiApplication	mInstance;
+		static bool				mQuit = false;
+
+		static string		mApplicationDisplayName = "DQuick - Application";
+		static string		mApplicationDirectory = ".";
+		static bool			mInitialized = false;
+		static Window[HWND]	mWindows;
+	}
+
+	//==========================================================================
+	//==========================================================================
+
+	class Window : IWindow
+	{
+		this()
+		{
+			mWindowId = mWindowsCounter++;
+			mScriptContext = new DMLEngine;
+			mScriptContext.create();
+			mScriptContext.addItemType!(ImageItem, "Image")();
+			mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
+		}
+
+		~this()
+		{
+			destroy();
+		}
+
+		bool	create()
+		{
+			if (mhWnd)
+				throw new Exception("[Window] Must be destroy before, being able to create a new one.");
+
+			string		windowName;
+
+			windowName = mWindowName;
+			if (!windowName.length)	// If this Window don't have a particular name, we use the applicationName
+				windowName = GuiApplication.instance().applicationDisplayName;
+
+			WNDCLASS	wndclass;
+			HINSTANCE	hInstance = GetModuleHandleA(null);
+
+			wndclass.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+			wndclass.lpfnWndProc   = &WindowProc;
+			wndclass.cbClsExtra    = 0;
+			wndclass.cbWndExtra    = 0;
+			wndclass.hInstance     = hInstance;
+			wndclass.hIcon         = null; // TODO cast(HICON)LoadImage(hInstance, MAKEINTRESOURCE(mIconId), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
+			wndclass.hCursor       = null;
+			wndclass.hbrBackground = null;
+			wndclass.lpszMenuName  = null;
+			wndclass.lpszClassName = windowName.toStringz;
+
+			if (!RegisterClassA(&wndclass))
+			{
+				MessageBoxA(null, "Couldn't register Window Class!", windowName.toStringz, MB_ICONERROR);
+				return false;
+			}
+
+			if (fullScreen())
+			{
+				RECT	WindowRect;
+				DWORD	dwExStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
+				DWORD	dwStyle = WS_POPUP;
+
+				WindowRect.left = 0;
+				WindowRect.right = size().x;
+				WindowRect.top = 0;
+				WindowRect.bottom = size().y;
+				AdjustWindowRectEx(&WindowRect, dwStyle, false, dwExStyle);	// Adjust Window To True Requested Size
+				mhWnd = CreateWindowExA(dwExStyle,					// Extended Style For The Window
+									windowName.toStringz,					// Class Name
+									windowName.toStringz,					// Window Title
+									WS_CLIPSIBLINGS |						// Required Window Style
+									WS_CLIPCHILDREN |						// Required Window Style
+									dwStyle,								// Selected Window Style
+									0, 0,									// Window Position
+									WindowRect.right-WindowRect.left,		// Calculate Adjusted Window Width
+									WindowRect.bottom-WindowRect.top,		// Calculate Adjusted Window Height
+									null,									// No Parent Window
+									null,									// No Menu
+									hInstance,								// Instance
+									null);									// Don't Pass Anything To WM_CREATE
+
+				DEVMODE	dmScreenSettings;									// Device Mode
+				memset(&dmScreenSettings, 0, dmScreenSettings.sizeof);		// Makes Sure Memory's Cleared
+				dmScreenSettings.dmSize = dmScreenSettings.sizeof;			// Size Of The Devmode Structure
+				dmScreenSettings.dmPelsWidth = size().x;					// Selected Screen Width
+				dmScreenSettings.dmPelsHeight = size().y;					// Selected Screen Height
+				//dmScreenSettings.dmBitsPerPel	= 32;						// Selected Bits Per Pixel
+				dmScreenSettings.dmFields = /*DM_BITSPERPEL |*/DM_PELSWIDTH | DM_PELSHEIGHT;
+				// Try To Set Selected Mode And Get Results.  NOTE: CDS_FULLSCREEN Gets Rid Of Start Bar.
+				if (ChangeDisplaySettingsA(&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+				{
+					// If The Mode Fails, Offer Two Options.  Quit Or Run In A Window.
+					MessageBoxA(null, "The Fullscreen Mode Is Not Supported By\nYour Video Card.", windowName.toStringz, MB_ICONERROR);
+					setFullScreen(false);
+				}
+				ShowWindow(mhWnd, SW_MAXIMIZE);
+				ShowWindow(mhWnd, WS_MAXIMIZE);
+			}
+			else
+			{
+				RECT	WindowRect;
+				DWORD	dwExStyle = WS_EX_APPWINDOW;
+				DWORD	dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+
+				// TODO
+//				if (maximized())
+//					dwStyle |= WS_MAXIMIZE;
+
+				WindowRect.left = 0;
+				WindowRect.right = size().x;
+				WindowRect.top = 0;
+				WindowRect.bottom = size().y;
+				AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);	// Adjust Window To True Requested Size
+				mhWnd = CreateWindowA(windowName.toStringz, windowName.toStringz,
+									 dwStyle,
+									 position().x, position().y, 
+									 WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top,
+									 null, null, hInstance, null);
+			}
+
+			if (mhWnd is null)
+			{
+				MessageBoxA(null, "Couldn't create window.", windowName.toStringz, MB_ICONERROR);
+				return false;
+			}
+
+			GuiApplication.registerWindow(this, mhWnd);	// Call it just after window creation validation
+
+			// TODO
+//			SendMessage(mhWnd,WM_SETICON,ICON_BIG,(LPARAM)LoadIcon(hInstance, "IDR_MAINFRAME"));
+
+			// TODO
+//			if (maximized())
+//				ShowWindow(mhWnd, SW_SHOWMAXIMIZED);		// Show The Window maximized
+//			else
+				ShowWindow(mhWnd, SW_SHOWDEFAULT);			// SW_SHOWDEFAULT to use same value retrieve normaly with the WinMain entry point
+			SetForegroundWindow(mhWnd);						// Slightly Higher Priority
+			SetFocus(mhWnd);								// Sets Keyboard Focus To The Window
+			UpdateWindow(mhWnd);
+
+			mContext = new OpenGLContext();
+			mContext.initialize(mhWnd);
+
+			return true;
+		}
+
+		void	destroy()
+		{
+			.destroy(mScriptContext);
+			.destroy(mContext);
+			mContext = null;
+			DestroyWindow(mhWnd);
+			if (mWindowId == 0)
+				GuiApplication.instance.quit();
+		}
+
+		/// Window will take size of this item
+		void	setMainItem(DeclarativeItem item)
+		{
+			mRootItem = item;
+			/*
+			GraphicItem	graphicItem = cast(GraphicItem)mRootItem;
+			if (graphicItem)
+			setSize(graphicItem.size);*/
+		}
+
+		/// Window will take size of this item
+		void	setMainItem(string filePath)
+		{
+			mScriptContext.executeFile(filePath);
+
+			mRootItem = mScriptContext.rootItem();
+			assert(cast(GraphicItem)mRootItem);
+
+			//setSize(mRootItem.size);
+		}
+
+		DeclarativeItem	mainItem() {return mRootItem;}
+
+		void		setPosition(Vector2s32 newPosition)
+		{
+			// TODO
+			if (fullScreen()/* || maximized()*/)	// Will put corrupted values
+				return;
+
+			mPosition = newPosition;	// Utilise pour la creation de la fenetre
+
+			if (!mhWnd)
+				return;
+
+			RECT	rcWindow;
+			GetWindowRect(mhWnd, &rcWindow);	// Retourne des valeurs valides
+			mPosition = Vector2s32(rcWindow.left, rcWindow.top);
+
+			// Rien d'autre a faire car Windows deplace directement la fenetre
+		}
+		Vector2s32	position() {return mPosition;}
+
+		void	setSize(Vector2s32 newSize)
+		{
+			mSize = newSize;
+
+			GraphicItem	graphicItem = cast(GraphicItem)mRootItem;
+			if (graphicItem && (graphicItem.width != newSize.x || graphicItem.height != newSize.y))	// Don't call size on item if it didn't change (setMainItem call this method)
+				graphicItem.setSize(Vector2f32(newSize));
+
+			// Resizing Window
+			RECT	rcClient, rcWindow;
+			POINT	ptDiff;
+
+			GetClientRect(mhWnd, &rcClient);
+			GetWindowRect(mhWnd, &rcWindow);
+			ptDiff.x = (rcWindow.right - rcWindow.left) - rcClient.right;
+			ptDiff.y = (rcWindow.bottom - rcWindow.top) - rcClient.bottom;
+			MoveWindow(mhWnd, rcWindow.left, rcWindow.top, mSize.x + ptDiff.x, mSize.y + ptDiff.y, true);
+			// --
+
+			if (mContext)
+				mContext.resize(mSize.x, mSize.y);
+		}
+		Vector2s32	size() {return mSize;}
+
+		void	setFullScreen(bool fullScreen) {mFullScreen = fullScreen;}
+		bool	fullScreen() {return mFullScreen;}
+
+		Vector2s32	screenResolution() const
+		{
+			RECT	rc;
+			GetWindowRect(GetDesktopWindow(), &rc);
+			return Vector2s32(rc.right - rc.left, rc.bottom - rc.top);
+		}
+
+		//==========================================================================
+		//==========================================================================
+
+	private:
+		void	onPaint()
+		{
+			Renderer.startFrame();
+
+			if (mRootItem)
+				mRootItem.paint(false);
+
+			if (mContext)
+				mContext.swapBuffers();
+		}
+
+		DMLEngine	mScriptContext;
+
+		static int	mWindowsCounter = 0;
+		int			mWindowId;
+
+		HWND		mhWnd = null;
+		string		mWindowName = "";
+		DeclarativeItem	mRootItem;
+		Vector2s32	mPosition;
+		Vector2s32	mSize = Vector2s32(640, 480);
+		bool		mFullScreen = false;
+
+		OpenGLContext	mContext;
+	}
+
+	//==========================================================================
+	//==========================================================================
+
+	extern(Windows) LRESULT	WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) nothrow
+	{
+		Vector2s32	size;
+		Vector2s32	position;
+		bool		state;
+
+		try
+		{
+			switch (message)
+			{
+				case WM_CREATE:
+					break;
+				case WM_MOVE:		// position de cliet arena
+					break;
+				case WM_MOVING:		// position de la fenetre
+					position.x = LOWORD(lParam);
+					position.y = HIWORD(lParam);
+					if (hWnd in GuiApplication.mWindows)
+					{
+						GuiApplication.mWindows[hWnd].setPosition(position);
+						GuiApplication.mWindows[hWnd].onPaint();
+					}
+					return 0;
+				case WM_SIZE:
+						writeln("WM_SIZE");
+					/*if (wParam == SIZE_MAXIMIZED)
+						if (hWnd in GuiApplication.mWindows)
+							GuiApplication.mWindows[hWnd].setMaximized(true);
+					else if (wParam == SIZE_RESTORED)
+						if (hWnd in GuiApplication.mWindows)
+							GuiApplication.mWindows[hWnd].setMaximized(false);*/
+					size.x = LOWORD(lParam);
+					size.y = HIWORD(lParam);
+					if (hWnd in GuiApplication.mWindows)
+					{
+						GuiApplication.mWindows[hWnd].setSize(size);
+						GuiApplication.mWindows[hWnd].onPaint();		// WM_PAINT seems always called after WM_SIZE (it may give a draw larger or smaller than the window?)
+					}
+					return 0;
+				case WM_COMMAND:
+					break;
+				case WM_PAINT:
+					writeln("WM_PAINT");
+					// Certainly not necessary because paint is always call
+//					if (hWnd in GuiApplication.mWindows)
+//						GuiApplication.mWindows[hWnd].onPaint();
+					break;
+				case WM_DESTROY:
+					if (hWnd in GuiApplication.mWindows)
+						GuiApplication.mWindows[hWnd].destroy();
+					PostQuitMessage(0);
+					break;
+
+					// TODO manage the WM_ACTIVATE event for fullscreen
+				default:
+					break;
+			}
+		}
+		catch (Throwable e)
+		{
+			collectException(MessageBoxA(null, e.toString().toStringz, "Error", MB_OK | MB_ICONEXCLAMATION));	// PS: string.toString() method is not nothrow
+		}
+		return DefWindowProcA(hWnd, message, wParam, lParam);
+	}
+
+	// Declaring missing Win32 definitions
+	extern (Windows)
+	{
+		BOOL	DestroyWindow(HWND);
+		HANDLE	LoadImage(HINSTANCE hinst, LPCTSTR lpszName, UINT uType, int cxDesired, int cyDesired, UINT fuLoad);
+		HWND	GetDesktopWindow();
+		LONG	ChangeDisplaySettingsA(DEVMODE *lpDevMode, DWORD dwflags);
+		BOOL	MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
+
+		struct DEVMODE {
+			CHAR/*TCHAR*/ dmDeviceName[32 /*CCHDEVICENAME*/];
+			WORD  dmSpecVersion;
+			WORD  dmDriverVersion;
+			WORD  dmSize;
+			WORD  dmDriverExtra;
+			DWORD dmFields;
+			union {
+				struct {
+					short dmOrientation;
+					short dmPaperSize;
+					short dmPaperLength;
+					short dmPaperWidth;
+					short dmScale;
+					short dmCopies;
+					short dmDefaultSource;
+					short dmPrintQuality;
+				};
+				struct {
+					POINT/*POINTL*/ dmPosition;
+					DWORD  dmDisplayOrientation;
+					DWORD  dmDisplayFixedOutput;
+				};
+			};
+			short dmColor;
+			short dmDuplex;
+			short dmYResolution;
+			short dmTTOption;
+			short dmCollate;
+			CHAR/*TCHAR*/ dmFormName[32 /*CCHFORMNAME*/];
+			WORD  dmLogPixels;
+			DWORD dmBitsPerPel;
+			DWORD dmPelsWidth;
+			DWORD dmPelsHeight;
+			union {
+				DWORD dmDisplayFlags;
+				DWORD dmNup;
+			};
+			DWORD dmDisplayFrequency;
+	//		#if (WINVER >= 0x0400)
+			DWORD dmICMMethod;
+			DWORD dmICMIntent;
+			DWORD dmMediaType;
+			DWORD dmDitherType;
+			DWORD dmReserved1;
+			DWORD dmReserved2;
+	//		#if (WINVER >= 0x0500) || (_WIN32_WINNT >= 0x0400)
+			DWORD dmPanningWidth;
+			DWORD dmPanningHeight;
+	//		#endif 
+	//		#endif 
+		};
+		alias DEVMODE	*PDEVMODE;
+		alias DEVMODE	*LPDEVMODE;
+
+		enum
+		{
+			DM_PELSWIDTH =	0x00080000L,
+			DM_PELSHEIGHT =	0x00100000L,
+		}
+
+		enum
+		{
+			CDS_FULLSCREEN =	0x00000004,
+		}
+
+		enum
+		{
+			DISP_CHANGE_SUCCESSFUL =	0,
+			DISP_CHANGE_RESTART =		1,
+			DISP_CHANGE_FAILED =		-1,
+			DISP_CHANGE_BADMODE =		-2,
+			DISP_CHANGE_NOTUPDATED =	-3,
+			DISP_CHANGE_BADFLAGS =		-4,
+			DISP_CHANGE_BADPARAM =		-5,
+			DISP_CHANGE_BADDUALVIEW =	-6,
+		}
+
+		enum
+		{
+			WM_MOVING =		0x0216,
+		}
+	}
+}

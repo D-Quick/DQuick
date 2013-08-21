@@ -1,0 +1,6 @@
+[submodule "src/dquick/etc/derelict"]
+	path = src/dquick/etc/derelict
+	url = https://github.com/D-Quick/Derelict3.git
+[submodule "src/dquick/etc/gl3n"]
+	path = src/dquick/etc/gl3n
+	url = https://github.com/D-Quick/gl3n.git
