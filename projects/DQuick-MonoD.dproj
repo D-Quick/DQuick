@@ -282,6 +282,9 @@
     <Compile Include="..\src\dquick\script\propertyBinding.d" />
     <Compile Include="..\src\dquick\script\utils.d" />
     <Compile Include="..\src\dquick\script\virtualPropertyBinding.d" />
+    <Compile Include="..\src\dquick\renderer2D\openGL\font.d">
+      <Link>dquick\renderer2D\renderer2D\openGL\font.d</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dquick\" />
