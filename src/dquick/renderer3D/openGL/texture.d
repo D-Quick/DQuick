@@ -58,6 +58,7 @@ public:
 		unload();
 	}
 
+	/// Replace the texture's image by the new one, format need to be the same (width, height, bytes per pixels,...)
 	void	update(Image image)
 	{
 		throw new Exception("Not implemented");
