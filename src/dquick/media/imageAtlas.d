@@ -130,12 +130,21 @@ public:
 
 	void	freeAllRegions()
 	{
+		throw new Exception("Not implemented!");
 	}
 
 	void	setRegion(Region region, Image subImage)
 	{
 		assert(subImage.width == region.width);
 		assert(subImage.height == region.height);
+
+		SDL_Rect	rect;
+		rect.x = region.x;
+		rect.y = region.y;
+		rect.w = region.width;
+		rect.h = region.height;
+		if (SDL_BlitSurface(subImage.getSurface(), null, mSurface, &rect) != 0)
+			throw new Exception(format("Failed to set region : \"%s\"", to!string(SDL_GetError())));
 	}
 
 private:
@@ -210,23 +219,34 @@ unittest
 {
 	ImageAtlas			atlas = new ImageAtlas;
 	ImageAtlas.Region	region;
+	Image				subImage = new Image;
 
-	atlas.create("toto", 128, 128, 4);
-	region = atlas.allocateRegion(20, 20);
+	atlas.create("toto", 1024, 1024, 4);
+	
+	subImage.load("E:/Dev/Personal/DQuick/data/images/Qt/text-highscore-new.png");
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	atlas.setRegion(region, subImage);
+	atlas.save("E:/Dev/Personal/DQuick/data/ImageAtlasTest.bmp");
 	assert(region.x == 1);
 	assert(region.y == 1);
-	assert(region.width == 20);
-	assert(region.height == 20);
+	assert(region.width == subImage.width);
+	assert(region.height == subImage.height);
 
-	region = atlas.allocateRegion(100, 30);
-	assert(region.x == 21);
-	assert(region.y == 21);
-	assert(region.width == 100);
-	assert(region.height == 30);
-
-	region = atlas.allocateRegion(30, 5);
+	subImage.load("E:/Dev/Personal/DQuick/data/images/Qt/text-no-winner.png");
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	atlas.setRegion(region, subImage);
+	atlas.save("E:/Dev/Personal/DQuick/data/ImageAtlasTest.bmp");
 	assert(region.x == 1);
-	assert(region.y == 21);
-	assert(region.width == 30);
-	assert(region.height == 5);
+	assert(region.y == 1);
+	assert(region.width == subImage.width);
+	assert(region.height == subImage.height);
+
+	subImage.load("E:/Dev/Personal/DQuick/data/images/Qt/monkey_on_64x64.png");
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	atlas.setRegion(region, subImage);
+	atlas.save("E:/Dev/Personal/DQuick/data/ImageAtlasTest.bmp");
+	assert(region.x == 1);
+	assert(region.y == 1);
+	assert(region.width == subImage.width);
+	assert(region.height == subImage.height);
 }
