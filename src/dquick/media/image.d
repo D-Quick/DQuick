@@ -2,6 +2,7 @@ module dquick.media.image;
 
 import std.string;
 import std.stdio;
+import std.conv;
 
 import derelict.sdl2.image;
 import derelict.sdl2.sdl;
@@ -46,6 +47,12 @@ public:
 			throw new Exception(format("Unable to load image \"%s\"", filePath));
 	}
 
+	void	save(string filePath)
+	{
+		if (SDL_SaveBMP(mSurface, filePath.toStringz) != 0)
+			throw new Exception(format("Unable to save image \"%s\", error : \"%s\"", filePath, to!string(SDL_GetError())));
+	}
+
 	void	create(string filePath, uint width, uint height, ubyte nbBytesPerPixel)
 	{
 		version(BigEndian)
@@ -63,13 +70,13 @@ public:
 			uint amask = 0xff000000;
 		}
 
-		if ((mSurface = SDL_CreateRGBSurface(0, width, height, nbBytesPerPixel, rmask, gmask, bmask, amask)) != null)
+		if ((mSurface = SDL_CreateRGBSurface(0, width, height, nbBytesPerPixel * 8, rmask, gmask, bmask, amask)) != null)
 		{
 			mWeight = width * height * nbBytesPerPixel;
 			mFilePath = filePath;
 		}
 		else
-			throw new Exception(format("Unable to load image \"%s\"", filePath));
+			throw new Exception(format("Unable to create image \"%s\", error : \"%s\"", filePath, to!string(SDL_GetError())));
 	}
 
 	void	unload()
@@ -109,6 +116,9 @@ public:
 		return 0;
 	}
 
-private:
+	// TODO find why ImageAtlas that derived Image can't acces mSurface member directly (check method setRegion and parameter subImage)
+	SDL_Surface*	getSurface() {return mSurface;}
+
+protected:
 	SDL_Surface*	mSurface = null;
 }
