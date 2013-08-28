@@ -85,3 +85,7 @@ private:
 	Vector2f32		mSize;
 	Mesh			mMesh;
 }
+
+// TODO create one big mesh internally before splitting it by textures. Cause of ImageAtlas some fonts can be on multiple textures.
+// Restrict meshes size to a rectangle of something like 512x512 to be able to support very large texts. This will allow to draw
+// smaller meshes when parts of texts are out of the view.

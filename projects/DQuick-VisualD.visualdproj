@@ -40,7 +40,7 @@
   <checkProperty>0</checkProperty>
   <genStackFrame>0</genStackFrame>
   <pic>0</pic>
-  <cov>1</cov>
+  <cov>0</cov>
   <nofloat>0</nofloat>
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
@@ -308,6 +308,7 @@
    </Folder>
    <Folder name="media">
     <File path="..\src\dquick\media\image.d" />
+    <File path="..\src\dquick\media\imageAtlas.d" />
    </Folder>
    <Folder name="renderer2D">
     <Folder name="openGL">
@@ -326,7 +327,6 @@
      <File path="..\src\dquick\renderer3D\openGL\shader.d" />
      <File path="..\src\dquick\renderer3D\openGL\shaderProgram.d" />
      <File path="..\src\dquick\renderer3D\openGL\texture.d" />
-     <File path="..\src\dquick\renderer3D\openGL\textureAtlas.d" />
      <File path="..\src\dquick\renderer3D\openGL\util.d" />
      <File path="..\src\dquick\renderer3D\openGL\VBO.d" />
     </Folder>

@@ -298,3 +298,5 @@ private struct Glyph
     float outline_thickness;
 
 }
+
+// TODO create a unittest that load multiple font in an ImageAtlas and record it on HDD
