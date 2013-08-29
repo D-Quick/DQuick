@@ -213,38 +213,43 @@ private:
 import derelict.sdl2.sdl;
 import derelict.sdl2.image;
 
-// TODO Create a unittest pack some images into a single one, it can write the resulting image on HDD
-// Let user specifying margin, for text with clamp it might be not necessary to have a margin.
+import dquick.maths.color;
+
+// TODO Let user specifying margin, for text with clamp it might be not necessary to have a margin.
 unittest
 {
 	ImageAtlas			atlas = new ImageAtlas;
 	ImageAtlas.Region	region;
 	Image				subImage = new Image;
+	Image				expectedResult = new ImageAtlas;
 
-	atlas.create("toto", 1024, 1024, 4);
-	
-	subImage.load("E:/Dev/Personal/DQuick/data/images/Qt/text-highscore-new.png");
+	atlas.create("toto", 128, 128, 3);
+
+	subImage.create("subImage", 20, 30, 3);
+	subImage.fill(Color(1.0, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
 	region = atlas.allocateRegion(subImage.width, subImage.height);
 	atlas.setRegion(region, subImage);
-	atlas.save("E:/Dev/Personal/DQuick/data/ImageAtlasTest.bmp");
+	atlas.save("../data/ImageAtlasTest.bmp");
 	assert(region.x == 1);
 	assert(region.y == 1);
 	assert(region.width == subImage.width);
 	assert(region.height == subImage.height);
 
-	subImage.load("E:/Dev/Personal/DQuick/data/images/Qt/text-no-winner.png");
+	subImage.create("subImage", 100, 10, 3);
+	subImage.fill(Color(0.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
 	region = atlas.allocateRegion(subImage.width, subImage.height);
 	atlas.setRegion(region, subImage);
-	atlas.save("E:/Dev/Personal/DQuick/data/ImageAtlasTest.bmp");
+	atlas.save("../data/ImageAtlasTest.bmp");
 	assert(region.x == 1);
 	assert(region.y == 1);
 	assert(region.width == subImage.width);
 	assert(region.height == subImage.height);
 
-	subImage.load("E:/Dev/Personal/DQuick/data/images/Qt/monkey_on_64x64.png");
+	subImage.create("subImage", 10, 100, 3);
+	subImage.fill(Color(0.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
 	region = atlas.allocateRegion(subImage.width, subImage.height);
 	atlas.setRegion(region, subImage);
-	atlas.save("E:/Dev/Personal/DQuick/data/ImageAtlasTest.bmp");
+	atlas.save("../data/ImageAtlasTest.bmp");
 	assert(region.x == 1);
 	assert(region.y == 1);
 	assert(region.width == subImage.width);
