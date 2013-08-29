@@ -51,8 +51,6 @@ public:
 		int	best_width;
 		int	best_index;
 
-		Skyline	node;
-		Skyline	prev;
 		Region	region;
 		size_t	i;
 
@@ -69,13 +67,12 @@ public:
 			y = fit(i, width, height);
 			if (y >= 0)
 			{
-				node = mNodes[i];
-				if (((y + height) < best_height) || (((y + height) == best_height) && (node.z < best_width)))
+				if (((y + height) < best_height) || (((y + height) == best_height) && (mNodes[i].z < best_width)))
 				{
 					best_height = y + height;
+					best_width = mNodes[i].z;
 					best_index = i;
-					best_width = node.z;
-					region.x = node.x;
+					region.x = mNodes[i].x;
 					region.y = y;
 				}
 			}
@@ -90,27 +87,24 @@ public:
 			return region;
 		}
 
+		Skyline	node;
+
 		node.x = region.x;
 		node.y = region.y + height;
 		node.z = width;
 		mNodes = mNodes[0..best_index] ~ node ~ mNodes[best_index..$];
-//		vector_insert( mNodes, best_index, node );
 
 		for (i = best_index + 1; i < mNodes.length; i++)
 		{
-			node = mNodes[i];
-			prev = mNodes[i - 1];
-
-			if (node.x < (prev.x + prev.z))
+			if (mNodes[i].x < (mNodes[i - 1].x + mNodes[i - 1].z))
 			{
-				int	shrink = prev.x + prev.z - node.x;
+				int	shrink = mNodes[i - 1].x + mNodes[i - 1].z - mNodes[i].x;
 
-				node.x += shrink;
-				node.z -= shrink;
-				if (node.z <= 0)
+				mNodes[i].x += shrink;
+				mNodes[i].z -= shrink;
+				if (mNodes[i].z <= 0)
 				{
 					mNodes = mNodes[0..i] ~ mNodes[i + 1..$];
-//					vector_erase( mNodes, i );
 					i--;
 				}
 				else
@@ -157,10 +151,8 @@ private:
 
 	int	fit(uint index, uint width, uint height)
 	{
-		Skyline	node = mNodes[index];
-
-		int		x = node.x;
-		int		y;
+		int		x = mNodes[index].x;
+		int		y = mNodes[index].y;
 		int		width_left = width;
 		size_t	i = index;
 
@@ -168,19 +160,18 @@ private:
 		{
 			return -1;
 		}
-		y = node.y;
+		y = mNodes[index].y;
 		while (width_left > 0)
 		{
-			node = mNodes[i];
-			if (node.y > y)
+			if (mNodes[i].y > y)
 			{
-				y = node.y;
+				y = mNodes[i].y;
 			}
 			if ((y + height) > (Image.height - 1))
 			{
 				return -1;
 			}
-			width_left -= node.z;
+			width_left -= mNodes[i].z;
 			i++;
 		}
 		return y;
@@ -188,19 +179,14 @@ private:
 
 	void	merge()
 	{
-		Skyline	node;
-		Skyline	next;
 		size_t	i;
 
 		for (i = 0; i < mNodes.length - 1; i++)
 		{
-			node = mNodes[i];
-			next = mNodes[i + 1];
-			if (node.y == next.y)
+			if (mNodes[i].y == mNodes[i + 1].y)
 			{
-				node.z += next.z;
+				mNodes[i].z += mNodes[i + 1].z;
 				mNodes = mNodes[0..i] ~ mNodes[i + 1..$];
-//				vector_erase( self->nodes, i );
 				i--;
 			}
 		}
@@ -215,7 +201,6 @@ import derelict.sdl2.image;
 
 import dquick.maths.color;
 
-// TODO Let user specifying margin, for text with clamp it might be not necessary to have a margin.
 unittest
 {
 	ImageAtlas			atlas = new ImageAtlas;
@@ -229,29 +214,16 @@ unittest
 	subImage.fill(Color(1.0, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
 	region = atlas.allocateRegion(subImage.width, subImage.height);
 	atlas.setRegion(region, subImage);
-	atlas.save("../data/ImageAtlasTest.bmp");
-	assert(region.x == 1);
-	assert(region.y == 1);
-	assert(region.width == subImage.width);
-	assert(region.height == subImage.height);
 
 	subImage.create("subImage", 100, 10, 3);
 	subImage.fill(Color(0.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
 	region = atlas.allocateRegion(subImage.width, subImage.height);
 	atlas.setRegion(region, subImage);
-	atlas.save("../data/ImageAtlasTest.bmp");
-	assert(region.x == 1);
-	assert(region.y == 1);
-	assert(region.width == subImage.width);
-	assert(region.height == subImage.height);
 
 	subImage.create("subImage", 10, 100, 3);
 	subImage.fill(Color(0.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
 	region = atlas.allocateRegion(subImage.width, subImage.height);
 	atlas.setRegion(region, subImage);
+
 	atlas.save("../data/ImageAtlasTest.bmp");
-	assert(region.x == 1);
-	assert(region.y == 1);
-	assert(region.width == subImage.width);
-	assert(region.height == subImage.height);
 }
