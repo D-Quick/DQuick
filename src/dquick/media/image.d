@@ -7,6 +7,9 @@ import std.conv;
 import derelict.sdl2.image;
 import derelict.sdl2.sdl;
 
+import dquick.maths.color;
+import dquick.maths.vector2s32;
+
 //import dquick.system.dynamic_library;
 
 import dquick.utils.resource_manager;
@@ -55,6 +58,8 @@ public:
 
 	void	create(string filePath, uint width, uint height, ubyte nbBytesPerPixel)
 	{
+		unload();
+
 		version(BigEndian)
 		{
 			uint rmask = 0xff000000;
@@ -79,6 +84,26 @@ public:
 			throw new Exception(format("Unable to create image \"%s\", error : \"%s\"", filePath, to!string(SDL_GetError())));
 	}
 
+	void	fill(Color color, Vector2s32 position, Vector2s32 size)
+	{
+		SDL_Rect	rect;
+		Uint32		colorCode;
+
+		rect.x = position.x;
+		rect.y = position.y;
+		rect.w = size.x;
+		rect.h = size.y;
+
+		colorCode = SDL_MapRGBA(mSurface.format, cast(ubyte)(color.z * 255.0), cast(ubyte)(color.y * 255.0), cast(ubyte)(color.x * 255.0), cast(ubyte)(color.w * 255.0));
+		if (SDL_FillRect(mSurface, &rect, colorCode) != 0)
+			throw new Exception(format("Unable to fill image, error : \"%s\"", to!string(SDL_GetError())));
+	}
+
+	void	blit(Image image, Vector2s32 destPosition, Vector2s32 sourcePosition, Vector2s32 sourceSize)
+	{
+		throw new Exception("Not implemented!");
+	}
+
 	void	unload()
 	{
 		if (mSurface != null)
@@ -100,6 +125,11 @@ public:
 		if (mSurface)
 			return mSurface.h;
 		return 0;
+	}
+
+	Vector2s32	size()
+	{
+		return Vector2s32(width, height);
 	}
 
 	ubyte*	pixels()
