@@ -285,6 +285,7 @@
     <Compile Include="..\src\dquick\renderer2D\openGL\font.d">
       <Link>dquick\renderer2D\renderer2D\openGL\font.d</Link>
     </Compile>
+    <Compile Include="..\src\dquick\media\imageAtlas.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dquick\" />
