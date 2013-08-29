@@ -10,6 +10,8 @@ import std.string;
 
 // TODO migrate mNodes on a container http://dlang.org/phobos/std_container.html
 
+// TODO Manage only the atlas part as an algorithm (remove the image management)
+
 /**
  * An image atlas that will optimize memory usage.
  * It's a skyline implementation, which is great for font glyphes.
@@ -38,10 +40,7 @@ public:
 	{
 		Image.create(filePath, width, height, nbBytesPerPixel);
 
-		mNodes.length = 1;
-		mNodes[0].x = 0;
-		mNodes[0].y = 0;
-		mNodes[0].z = width;
+		clear();
 	}
 
 	/// Return -1 in all Region properties when not enough space found
@@ -119,9 +118,14 @@ public:
 		return region;
 	}
 
-	void	freeAllRegions()
+	void	clear()
 	{
-		throw new Exception("Not implemented!");
+		mNodes.length = 1;
+		mNodes[0].x = 0;
+		mNodes[0].y = 0;
+		mNodes[0].z = width;
+
+		mNbPixelsUsed = 0;
 	}
 
 	void	setRegion(Region region, Image subImage)
@@ -200,138 +204,52 @@ import dquick.maths.color;
 
 unittest
 {
+	void	fillAtlas(ImageAtlas atlas, Vector2s32 size, Color color)
+	{
+		ImageAtlas.Region	region;
+		Image				subImage = new Image;
+
+		subImage.create("subImage", size.x, size.y, 3);
+		subImage.fill(color, Vector2s32(0, 0), subImage.size());
+		region = atlas.allocateRegion(subImage.width, subImage.height);
+		if (region.x >= 0)
+			atlas.setRegion(region, subImage);
+	}
+
 	ImageAtlas			atlas = new ImageAtlas;
-	ImageAtlas.Region	region;
-	Image				subImage = new Image;
 	Image				expectedResult = new ImageAtlas;
 
 	atlas.create("toto", 128, 128, 3);
 
-	subImage.create("subImage", 20, 30, 3);
-	subImage.fill(Color(1.0, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 100, 10, 3);
-	subImage.fill(Color(0.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 10, 100, 3);
-	subImage.fill(Color(0.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 10, 60, 3);
-	subImage.fill(Color(1.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 30, 30, 3);
-	subImage.fill(Color(0.0, 1.0, 1.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 45, 70, 3);
-	subImage.fill(Color(1.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 15, 5, 3);
-	subImage.fill(Color(1.0, 1.0, 1.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
+	fillAtlas(atlas, Vector2s32( 20,  30), Color(1.0, 0.0, 0.0));
+	fillAtlas(atlas, Vector2s32(100,  10), Color(0.0, 1.0, 0.0));
+	fillAtlas(atlas, Vector2s32( 10, 100), Color(0.0, 0.0, 1.0));
+	fillAtlas(atlas, Vector2s32( 10,  60), Color(1.0, 1.0, 0.0));
+	fillAtlas(atlas, Vector2s32( 30,  30), Color(0.0, 1.0, 1.0));
+	fillAtlas(atlas, Vector2s32( 45,  70), Color(1.0, 0.0, 1.0));
+	fillAtlas(atlas, Vector2s32( 15,   5), Color(1.0, 1.0, 1.0));
 
 	// ============================================================================
 
-	subImage.create("subImage", 20, 30, 3);
-	subImage.fill(Color(0.5, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 10, 10, 3);
-	subImage.fill(Color(0.0, 0.5, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 25, 12, 3);
-	subImage.fill(Color(0.0, 0.0, 0.5), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 10, 70, 3);
-	subImage.fill(Color(0.5, 0.5, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 30, 30, 3);
-	subImage.fill(Color(0.0, 0.5, 0.5), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 45, 20, 3);
-	subImage.fill(Color(0.5, 0.0, 0.5), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 15, 5, 3);
-	subImage.fill(Color(0.5, 0.5, 0.5), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
+	fillAtlas(atlas, Vector2s32( 20,  30), Color(0.5, 0.0, 0.0));
+	fillAtlas(atlas, Vector2s32( 10,  10), Color(0.0, 0.5, 0.0));
+	fillAtlas(atlas, Vector2s32( 25,  12), Color(0.0, 0.0, 0.5));
+	fillAtlas(atlas, Vector2s32( 10,  70), Color(0.5, 0.5, 0.0));
+	fillAtlas(atlas, Vector2s32( 30,  30), Color(0.0, 0.5, 0.5));
+	fillAtlas(atlas, Vector2s32( 45,  20), Color(0.5, 0.0, 0.5));
+	fillAtlas(atlas, Vector2s32( 15,   5), Color(0.5, 0.5, 0.));
 
 	// ============================================================================
 
-	subImage.create("subImage", 126, 1, 3);
-	subImage.fill(Color(1.0, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 127, 1, 3);
-	subImage.fill(Color(0.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 128, 1, 3);
-	subImage.fill(Color(0.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
+	fillAtlas(atlas, Vector2s32(126,   1), Color(1.0, 0.0, 0.0));
+	fillAtlas(atlas, Vector2s32(127,   1), Color(0.0, 1.0, 0.0));
+	fillAtlas(atlas, Vector2s32(128,   1), Color(0.0, 0.0, 1.0));
 
 	// ============================================================================
 
-	subImage.create("subImage", 1, 126, 3);
-	subImage.fill(Color(1.0, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 1, 127, 3);
-	subImage.fill(Color(0.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
-
-	subImage.create("subImage", 1, 128, 3);
-	subImage.fill(Color(0.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
-	region = atlas.allocateRegion(subImage.width, subImage.height);
-	if (region.x >= 0)
-		atlas.setRegion(region, subImage);
+	fillAtlas(atlas, Vector2s32(  1, 126), Color(1.0, 0.0, 0.0));
+	fillAtlas(atlas, Vector2s32(  1, 127), Color(0.0, 1.0, 0.0));
+	fillAtlas(atlas, Vector2s32(  1, 128), Color(0.0, 0.0, 1.0));
 
 	atlas.save("../data/ImageAtlasTest.bmp");
 }
