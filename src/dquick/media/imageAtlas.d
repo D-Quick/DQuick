@@ -39,11 +39,12 @@ public:
 		Image.create(filePath, width, height, nbBytesPerPixel);
 
 		mNodes.length = 1;
-		mNodes[0].x = 1;
-		mNodes[0].y = 1;
-		mNodes[0].z = width - 2;
+		mNodes[0].x = 0;
+		mNodes[0].y = 0;
+		mNodes[0].z = width;
 	}
 
+	/// Return -1 in all Region properties when not enough space found
 	Region	allocateRegion(uint width, uint height)
 	{
 		int y;
@@ -80,11 +81,7 @@ public:
 
 		if (best_index == -1)
 		{
-			region.x = -1;
-			region.y = -1;
-			region.width = 0;
-			region.height = 0;
-			return region;
+			return Region(-1, -1, -1, -1);
 		}
 
 		Skyline	node;
@@ -156,7 +153,7 @@ private:
 		int		width_left = width;
 		size_t	i = index;
 
-		if ((x + width) > (Image.width - 1))
+		if ((x + width) > Image.width)
 		{
 			return -1;
 		}
@@ -167,7 +164,7 @@ private:
 			{
 				y = mNodes[i].y;
 			}
-			if ((y + height) > (Image.height - 1))
+			if ((y + height) > Image.height)
 			{
 				return -1;
 			}
@@ -213,17 +210,128 @@ unittest
 	subImage.create("subImage", 20, 30, 3);
 	subImage.fill(Color(1.0, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
 	region = atlas.allocateRegion(subImage.width, subImage.height);
-	atlas.setRegion(region, subImage);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
 
 	subImage.create("subImage", 100, 10, 3);
 	subImage.fill(Color(0.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
 	region = atlas.allocateRegion(subImage.width, subImage.height);
-	atlas.setRegion(region, subImage);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
 
 	subImage.create("subImage", 10, 100, 3);
 	subImage.fill(Color(0.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
 	region = atlas.allocateRegion(subImage.width, subImage.height);
-	atlas.setRegion(region, subImage);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 10, 60, 3);
+	subImage.fill(Color(1.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 30, 30, 3);
+	subImage.fill(Color(0.0, 1.0, 1.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 45, 70, 3);
+	subImage.fill(Color(1.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 15, 5, 3);
+	subImage.fill(Color(1.0, 1.0, 1.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	// ============================================================================
+
+	subImage.create("subImage", 20, 30, 3);
+	subImage.fill(Color(0.5, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 10, 10, 3);
+	subImage.fill(Color(0.0, 0.5, 0.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 25, 12, 3);
+	subImage.fill(Color(0.0, 0.0, 0.5), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 10, 70, 3);
+	subImage.fill(Color(0.5, 0.5, 0.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 30, 30, 3);
+	subImage.fill(Color(0.0, 0.5, 0.5), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 45, 20, 3);
+	subImage.fill(Color(0.5, 0.0, 0.5), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 15, 5, 3);
+	subImage.fill(Color(0.5, 0.5, 0.5), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	// ============================================================================
+
+	subImage.create("subImage", 126, 1, 3);
+	subImage.fill(Color(1.0, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 127, 1, 3);
+	subImage.fill(Color(0.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 128, 1, 3);
+	subImage.fill(Color(0.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	// ============================================================================
+
+	subImage.create("subImage", 1, 126, 3);
+	subImage.fill(Color(1.0, 0.0, 0.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 1, 127, 3);
+	subImage.fill(Color(0.0, 1.0, 0.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
+
+	subImage.create("subImage", 1, 128, 3);
+	subImage.fill(Color(0.0, 0.0, 1.0), Vector2s32(0, 0), subImage.size());
+	region = atlas.allocateRegion(subImage.width, subImage.height);
+	if (region.x >= 0)
+		atlas.setRegion(region, subImage);
 
 	atlas.save("../data/ImageAtlasTest.bmp");
 }
