@@ -8,8 +8,12 @@ import gl3n.linalg;
 
 /**
 * An atlas that will optimize memory usage.
-* It's a skyline implementation.
+* It's a skyline implementation (bottom-left) without rotation
 * http://clb.demon.fi/files/RectangleBinPack.pdf
+* 
+* Original sources
+* http://clb.demon.fi/files/RectangleBinPack/SkylineBinPack.h
+* http://clb.demon.fi/files/RectangleBinPack/SkylineBinPack.cpp
 **/
 struct Atlas
 {
@@ -37,9 +41,9 @@ public:
 	Region	allocateRegion(uint width, uint height)
 	{
 		int y;
-		int	best_height;
-		int	best_width;
-		int	best_index;
+		int	bestHeight;
+		int	bestWidth;
+		int	bestIndex;
 
 		Region	region;
 		size_t	i;
@@ -49,61 +53,33 @@ public:
 		region.width = width;
 		region.height = height;
 
-		best_index  = -1;
-		best_height = int.max;
-		best_width = int.max;
+		bestHeight = int.max;
+		bestIndex  = -1;
+		// Used to break ties if there are nodes at the same level. Then pick the narrowest one.
+		bestWidth = int.max;
 		for (i = 0; i < mNodes.length; i++)
 		{
-			y = fit(i, width, height);
+			y = rectangleFits(i, width, height);
 			if (y >= 0)
 			{
-				if (((y + height) < best_height) || (((y + height) == best_height) && (mNodes[i].z < best_width)))
+				if (y + height < bestHeight || (y + height == bestHeight && mNodes[i].width < bestWidth))
 				{
-					best_height = y + height;
-					best_width = mNodes[i].z;
-					best_index = i;
+					bestHeight = y + height;
+					bestIndex = i;
+					bestWidth = mNodes[i].width;
 					region.x = mNodes[i].x;
 					region.y = y;
+					region.width = width;
+					region.height = height;
 				}
 			}
 		}
 
-		if (best_index == -1)
-		{
+		if (bestIndex == -1)
 			return Region(-1, -1, -1, -1);
-		}
 
-		Skyline	node;
+		addSkylineLevel(bestIndex, region);
 
-		node.x = region.x;
-		node.y = region.y + height;
-		node.z = width;
-		mNodes = mNodes[0..best_index] ~ node ~ mNodes[best_index..$];
-
-		for (i = best_index + 1; i < mNodes.length; i++)
-		{
-			if (mNodes[i].x < (mNodes[i - 1].x + mNodes[i - 1].z))
-			{
-				int	shrink = mNodes[i - 1].x + mNodes[i - 1].z - mNodes[i].x;
-
-				mNodes[i].x += shrink;
-				mNodes[i].z -= shrink;
-				if (mNodes[i].z <= 0)
-				{
-					mNodes = mNodes[0..i] ~ mNodes[i + 1..$];
-					i--;
-				}
-				else
-				{
-					break;
-				}
-			}
-			else
-			{
-				break;
-			}
-		}
-		merge();
 		return region;
 	}
 
@@ -112,46 +88,84 @@ public:
 		mNodes.length = 1;
 		mNodes[0].x = 0;
 		mNodes[0].y = 0;
-		mNodes[0].z = mSize.x;
+		mNodes[0].width = mSize.x;
 	}
 
 private:
 	struct Skyline
 	{
+		/// The starting x-coordinate (leftmost).
 		uint x;
+
+		/// The y-coordinate of the skyline level line.
 		uint y;
-		uint z;
+
+		/// The line width. The ending coordinate (inclusive) will be x+width-1.
+		uint width;
 	}
 
-	int	fit(uint index, uint width, uint height)
+	int	rectangleFits(uint index, uint width, uint height)
 	{
-		int		x = mNodes[index].x;
-		int		y = mNodes[index].y;
-		int		width_left = width;
-		size_t	i = index;
+		int	x = mNodes[index].x;
 
-		if ((x + width) > mSize.x)
-		{
+		if (x + width > mSize.x)
 			return -1;
-		}
-		y = mNodes[index].y;
-		while (width_left > 0)
+
+		int		y = mNodes[index].y;
+		size_t	i = index;
+		int		widthLeft = width;
+
+		while (widthLeft > 0)
 		{
-			if (mNodes[i].y > y)
-			{
-				y = mNodes[i].y;
-			}
-			if ((y + height) > mSize.y)
-			{
+			y = max(y, mNodes[i].y);
+			if (y + height > mSize.y)
 				return -1;
-			}
-			width_left -= mNodes[i].z;
-			i++;
+			widthLeft -= mNodes[i].width;
+			++i;
+			assert(i < mNodes.length || widthLeft <= 0);
 		}
+		assert(y >= 0);
 		return y;
 	}
 
-	void	merge()
+	void	addSkylineLevel(int index, Region region)
+	{		
+		Skyline	node;
+
+		node.x = region.x;
+		node.y = region.y + region.height;
+		node.width = region.width;
+
+		mNodes = mNodes[0..index] ~ node ~ mNodes[index..$];
+
+		assert(node.x + node.width <= mSize.x);
+		assert(node.y <= mSize.y);
+
+		for (size_t i = index + 1; i < mNodes.length; i++)
+		{
+			assert(mNodes[i - 1].x <= mNodes[i].x);
+
+			if (mNodes[i].x < mNodes[i - 1].x + mNodes[i - 1].width)
+			{
+				int	shrink = mNodes[i - 1].x + mNodes[i - 1].width - mNodes[i].x;
+
+				mNodes[i].x += shrink;
+				mNodes[i].width -= shrink;
+				if (mNodes[i].width <= 0)
+				{
+					mNodes = mNodes[0..i] ~ mNodes[i + 1..$];
+					i--;
+				}
+				else
+					break;
+			}
+			else
+				break;
+		}
+		mergeSkylines();
+	}
+
+	void	mergeSkylines()
 	{
 		size_t	i;
 
@@ -159,9 +173,9 @@ private:
 		{
 			if (mNodes[i].y == mNodes[i + 1].y)
 			{
-				mNodes[i].z += mNodes[i + 1].z;
-				mNodes = mNodes[0..i] ~ mNodes[i + 1..$];
-				i--;
+				mNodes[i].width += mNodes[i + 1].width;
+				mNodes = mNodes[0..i + 1] ~ mNodes[i + 2..$];	// remove i + 1 node
+				--i;
 			}
 		}
 	}
@@ -213,9 +227,6 @@ unittest
 
 	imageAtlas.create("imageAtlas", atlas.size.x, atlas.size.y, 3);
 	expectedResult.create("result", imageAtlas.width, imageAtlas.height, imageAtlas.nbBytesPerPixel);
-
-	//	memset(atlas.pixels, 0, atlas.width * atlas.height * atlas.nbBytesPerPixel);
-	//	memset(expectedResult.pixels, 0, expectedResult.width * expectedResult.height * expectedResult.nbBytesPerPixel);
 
 	fillAtlas(atlas, imageAtlas, Vector2s32( 20,  30), Color(1.0, 0.0, 0.0));
 	fillAtlas(atlas, imageAtlas, Vector2s32(100,  10), Color(0.0, 1.0, 0.0));
