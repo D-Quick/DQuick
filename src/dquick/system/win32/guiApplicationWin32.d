@@ -58,6 +58,11 @@ version (Windows)
 					TranslateMessage(&msg);
 					DispatchMessageA(&msg);
 				}
+/*				while (GetMessage(&msg, null, 0, 0))
+				{
+					TranslateMessage(&msg);
+					DispatchMessageA(&msg);
+				}*/
 
 				foreach (Window window; mWindows)
 					window.onPaint();
