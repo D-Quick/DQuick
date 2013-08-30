@@ -202,6 +202,9 @@ import derelict.sdl2.image;
 
 import dquick.maths.color;
 
+import std.stdio;
+import std.c.string;
+
 unittest
 {
 	void	fillAtlas(ImageAtlas atlas, Vector2s32 size, Color color)
@@ -213,13 +216,25 @@ unittest
 		subImage.fill(color, Vector2s32(0, 0), subImage.size());
 		region = atlas.allocateRegion(subImage.width, subImage.height);
 		if (region.x >= 0)
+		{
 			atlas.setRegion(region, subImage);
+
+			// Uncomment it to generate the code of the result Image
+/*			writeln(format("\texpectedResult.fill(Color(%0.1f, %0.1f, %0.1f), Vector2s32(%3d, %3d), Vector2s32(%3d, %3d));",
+						   color.x, color.y, color.z,
+						   region.x, region.y,
+						   size.x, size.y));*/
+		}
 	}
 
 	ImageAtlas			atlas = new ImageAtlas;
 	Image				expectedResult = new ImageAtlas;
 
-	atlas.create("toto", 128, 128, 3);
+	atlas.create("atlas", 128, 128, 3);
+	expectedResult.create("result", atlas.width, atlas.height, atlas.nbBytesPerPixel);
+
+//	memset(atlas.pixels, 0, atlas.width * atlas.height * atlas.nbBytesPerPixel);
+//	memset(expectedResult.pixels, 0, expectedResult.width * expectedResult.height * expectedResult.nbBytesPerPixel);
 
 	fillAtlas(atlas, Vector2s32( 20,  30), Color(1.0, 0.0, 0.0));
 	fillAtlas(atlas, Vector2s32(100,  10), Color(0.0, 1.0, 0.0));
@@ -252,4 +267,29 @@ unittest
 	fillAtlas(atlas, Vector2s32(  1, 128), Color(0.0, 0.0, 1.0));
 
 	atlas.save("../data/ImageAtlasTest.bmp");
+
+	expectedResult.fill(Color(1.0, 0.0, 0.0), Vector2s32(  0,   0), Vector2s32( 20,  30));
+	expectedResult.fill(Color(0.0, 1.0, 0.0), Vector2s32( 20,   0), Vector2s32(100,  10));
+	expectedResult.fill(Color(0.0, 0.0, 1.0), Vector2s32( 20,  10), Vector2s32( 10, 100));
+	expectedResult.fill(Color(1.0, 1.0, 0.0), Vector2s32( 30,  10), Vector2s32( 10,  60));
+	expectedResult.fill(Color(0.0, 1.0, 1.0), Vector2s32( 40,  10), Vector2s32( 30,  30));
+	expectedResult.fill(Color(1.0, 0.0, 1.0), Vector2s32( 70,  10), Vector2s32( 45,  70));
+	expectedResult.fill(Color(1.0, 1.0, 1.0), Vector2s32(  0,  30), Vector2s32( 15,   5));
+	expectedResult.fill(Color(0.5, 0.0, 0.0), Vector2s32(  0,  35), Vector2s32( 20,  30));
+	expectedResult.fill(Color(0.0, 0.5, 0.0), Vector2s32(115,  10), Vector2s32( 10,  10));
+	expectedResult.fill(Color(0.0, 0.0, 0.5), Vector2s32( 40,  40), Vector2s32( 25,  12));
+	expectedResult.fill(Color(0.5, 0.5, 0.0), Vector2s32(115,  20), Vector2s32( 10,  70));
+	expectedResult.fill(Color(0.0, 0.5, 0.5), Vector2s32( 40,  52), Vector2s32( 30,  30));
+	expectedResult.fill(Color(0.5, 0.0, 0.5), Vector2s32( 65,  80), Vector2s32( 45,  20));
+	expectedResult.fill(Color(0.5, 0.5, 0.0), Vector2s32(  0,  65), Vector2s32( 15,   5));
+	expectedResult.fill(Color(1.0, 0.0, 0.0), Vector2s32(  0, 110), Vector2s32(126,   1));
+	expectedResult.fill(Color(0.0, 1.0, 0.0), Vector2s32(  0, 111), Vector2s32(127,   1));
+	expectedResult.fill(Color(0.0, 0.0, 1.0), Vector2s32(  0, 112), Vector2s32(128,   1));
+	expectedResult.fill(Color(1.0, 0.0, 0.0), Vector2s32(120,   0), Vector2s32(  1, 126));
+	expectedResult.fill(Color(0.0, 1.0, 0.0), Vector2s32(121,   0), Vector2s32(  1, 127));
+	expectedResult.fill(Color(0.0, 0.0, 1.0), Vector2s32(122,   0), Vector2s32(  1, 128));
+
+	expectedResult.save("../data/result.bmp");
+
+	assert(0 == memcmp(expectedResult.pixels, atlas.pixels, atlas.width * atlas.height * atlas.nbBytesPerPixel));
 }

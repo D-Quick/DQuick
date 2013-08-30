@@ -86,6 +86,8 @@ public:
 
 	void	fill(Color color, Vector2s32 position, Vector2s32 size)
 	{
+		assert(mSurface);
+
 		SDL_Rect	rect;
 		Uint32		colorCode;
 
