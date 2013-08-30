@@ -288,6 +288,9 @@
    <Folder name="events">
     <File path="..\src\dquick\events\mouseEvent.d" />
    </Folder>
+   <Folder name="algorithms">
+    <File path="..\src\dquick\algorithms\atlas.d" />
+   </Folder>
    <Folder name="item">
     <File path="..\src\dquick\item\boderImageItem.d" />
     <File path="..\src\dquick\item\declarativeItem.d" />
@@ -308,7 +311,6 @@
    </Folder>
    <Folder name="media">
     <File path="..\src\dquick\media\image.d" />
-    <File path="..\src\dquick\media\imageAtlas.d" />
    </Folder>
    <Folder name="renderer2D">
     <Folder name="openGL">
