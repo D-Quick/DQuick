@@ -249,6 +249,10 @@ class Window : IWindow
 		return true;
 	}
 
+	void	show()
+	{
+	}
+
 	void	destroy()
 	{
 		if (mWindow)
@@ -280,7 +284,7 @@ class Window : IWindow
 		mRootItem = cast(GraphicItem)mScriptContext.rootItem();
 		assert(mRootItem);
 
-		//setSize(mRootItem.size);
+		mRootItem.setSize(Vector2f32(size()));
 	}
 
 	GraphicItem	mainItem() {return mRootItem;}
@@ -299,9 +303,8 @@ class Window : IWindow
 	{
 		mSize = newSize;
 
-		GraphicItem	graphicItem = cast(GraphicItem)mRootItem;
-		if (graphicItem)
-			graphicItem.setSize(Vector2f32(newSize));
+		if (mRootItem)
+			mRootItem.setSize(Vector2f32(newSize));
 
 		SDL_SetWindowSize(mWindow, mSize.x, mSize.y);
 

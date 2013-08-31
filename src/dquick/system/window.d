@@ -23,5 +23,7 @@ interface IWindow
 
 	Vector2s32	screenResolution() const;
 
+	void		show();
+
 	// TODO rajouter les flag maximized et minimized, comme ce sont des etats eclusifs, les mettre en enum avec le fullscreen
 }

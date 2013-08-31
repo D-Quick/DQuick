@@ -172,7 +172,7 @@ version (Windows)
 									null,									// No Parent Window
 									null,									// No Menu
 									hInstance,								// Instance
-									null);									// Don't Pass Anything To WM_CREATE
+									cast(void*)this);						// Pass Window To WM_CREATE to register it
 
 				DEVMODE	dmScreenSettings;									// Device Mode
 				memset(&dmScreenSettings, 0, dmScreenSettings.sizeof);		// Makes Sure Memory's Cleared
@@ -210,33 +210,37 @@ version (Windows)
 									 dwStyle,
 									 position().x, position().y, 
 									 WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top,
-									 null, null, hInstance, null);
+									 null, null, hInstance, cast(void*)this);
 			}
 
 			if (mhWnd is null)
 			{
 				MessageBoxA(null, "Couldn't create window.", windowName.toStringz, MB_ICONERROR);
-				return false;
+				throw new Exception(format("Couldn't create window \"%s\"", windowName));
 			}
-
-			GuiApplication.registerWindow(this, mhWnd);	// Call it just after window creation validation
 
 			// TODO
 //			SendMessage(mhWnd,WM_SETICON,ICON_BIG,(LPARAM)LoadIcon(hInstance, "IDR_MAINFRAME"));
 
+			mContext = new OpenGLContext();
+			mContext.initialize(mhWnd);
+			mContext.resize(size().x, size().y);
+
+			GuiApplication.registerWindow(this, mhWnd);
+
+			return true;
+		}
+
+		void	show()
+		{
 			// TODO
-//			if (maximized())
-//				ShowWindow(mhWnd, SW_SHOWMAXIMIZED);		// Show The Window maximized
-//			else
-				ShowWindow(mhWnd, SW_SHOWDEFAULT);			// SW_SHOWDEFAULT to use same value retrieve normaly with the WinMain entry point
+			//			if (maximized())
+			//				ShowWindow(mhWnd, SW_SHOWMAXIMIZED);		// Show The Window maximized
+			//			else
+			ShowWindow(mhWnd, SW_SHOWDEFAULT);			// SW_SHOWDEFAULT to use same value retrieve normaly with the WinMain entry point
 			SetForegroundWindow(mhWnd);						// Slightly Higher Priority
 			SetFocus(mhWnd);								// Sets Keyboard Focus To The Window
 			UpdateWindow(mhWnd);
-
-			mContext = new OpenGLContext();
-			mContext.initialize(mhWnd);
-
-			return true;
 		}
 
 		void	destroy()
@@ -267,7 +271,7 @@ version (Windows)
 			mRootItem = cast(GraphicItem)mScriptContext.rootItem();
 			assert(mRootItem);
 
-			//setSize(mRootItem.size);
+			mRootItem.setSize(Vector2f32(size()));
 		}
 
 		GraphicItem	mainItem() {return mRootItem;}
@@ -295,9 +299,8 @@ version (Windows)
 		{
 			mSize = newSize;
 
-			GraphicItem	graphicItem = cast(GraphicItem)mRootItem;
-			if (graphicItem)
-				graphicItem.setSize(Vector2f32(newSize));
+			if (mRootItem)
+				mRootItem.setSize(Vector2f32(newSize));
 
 			// Resizing Window
 			RECT	rcClient, rcWindow;
@@ -382,7 +385,6 @@ version (Windows)
 					}
 					return 0;
 				case WM_SIZE:
-						writeln("WM_SIZE");
 					/*if (wParam == SIZE_MAXIMIZED)
 						if (hWnd in GuiApplication.mWindows)
 							GuiApplication.mWindows[hWnd].setMaximized(true);
@@ -392,18 +394,13 @@ version (Windows)
 					size.x = LOWORD(lParam);
 					size.y = HIWORD(lParam);
 					if (hWnd in GuiApplication.mWindows)
-					{
 						GuiApplication.mWindows[hWnd].setSize(size);
-						GuiApplication.mWindows[hWnd].onPaint();		// WM_PAINT seems always called after WM_SIZE (it may give a draw larger or smaller than the window?)
-					}
 					return 0;
 				case WM_COMMAND:
 					break;
 				case WM_PAINT:
-					writeln("WM_PAINT");
-					// Certainly not necessary because paint is always call
-//					if (hWnd in GuiApplication.mWindows)
-//						GuiApplication.mWindows[hWnd].onPaint();
+					if (hWnd in GuiApplication.mWindows)
+						GuiApplication.mWindows[hWnd].onPaint();
 					break;
 				case WM_DESTROY:
 					if (hWnd in GuiApplication.mWindows)

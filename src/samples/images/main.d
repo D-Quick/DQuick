@@ -23,8 +23,10 @@ int main(string[] args)
 
 		chdir(GuiApplication.instance().directoryPath);
 
-		mainWindow.setMainItem("dml/transformations.lua");	/// Window take size of this item
-//		mainWindow.setMainItem("dml/image.lua");	/// Window take size of this item
+		mainWindow.setMainItem("dml/transformations.lua");
+//		mainWindow.setMainItem("dml/image.lua");
+
+		mainWindow.show();
 
 		return GuiApplication.instance().execute();
 	}

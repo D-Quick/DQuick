@@ -11,11 +11,11 @@ interface IGuiApplication
 	void	quit();
 }
 
-/*version (Windows)
+version (Windows)
 {
 	public import dquick.system.win32.gui_application;
 }
 version (Posix)
-{*/
+{
 	public import dquick.system.sdl.gui_application;
-//}
+}

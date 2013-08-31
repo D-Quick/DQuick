@@ -150,7 +150,8 @@ version (Windows)
 
 			Matrix4x4	camera;
 			camera = Matrix4x4.orthographic(0.0, width, height, 0.0, -100.0, 100.0);
-			Renderer.currentMDVMatrix(switchMatrixRowsColumns(camera));
+			Renderer.currentCamera(camera);
+			//		Renderer.currentMDVMatrix(switchMatrixRowsColumns(camera));
 		}
 
 		void	release()
