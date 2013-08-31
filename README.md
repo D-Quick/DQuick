@@ -17,20 +17,42 @@ Status
 
 It's currently a simple prototype, don't expect to see something working fine a day.
 
+Platforms
+====
+
+All platforms have a chance to be supported one day due to the code design choices.
+DQuick should work everywhere D is supported, it requires only few additionnal librairies :
+ - Lua (will be removed the day it can be replaced by D)
+ - FreeType (strongly portable, hard to display texts without it)
+ - SDL (temporary as isn't really adapted to window applications, there is some resize issues)
+ - SDL_IMAGE (temporary)
+ - libpng (will replace SDL_IMAGE, strongly portable)
+ - libjpeg (will replace SDL_IMAGE, strongly portable)
+
+To do the SDL replacement we'll use native OS API to create windows and handle events.
+
+Stutas of plaforms :
+ - Windows (Main target, native code migration started)
+ - Linux (Second target, under SDL, we think to use xcb)
+ - MacOS X (Not tested, but we have experience)
+ - Android (Not tested, experience, it seems D compilers aren't not ready)
+ - iOS (Not tested, experience, it seems D compilers aren't not ready)
+
+
 How to build
 ===
 
 Linux (MonoD)
-	1. install monoD (http://mono-d.alexanderbothe.com/)
-	2. pull source code
-	3. go to third-party/SDL-2.0.0
-	4. build SDL : run './configure; make; sudo make install'
-	5. go to third-party/SDL_Image-2.0.0
-	6. you need install libpng-dev, libjpeg-dev
-	7. build SDL_Image : run './autogen.sh; ./configure; make; sudo make install'
-	8. launch monoD and open the solution (DQuick-MonoD.sln)
+ - install monoD (http://mono-d.alexanderbothe.com/)
+ - pull source code
+ - go to third-party/SDL-2.0.0
+ - build SDL : run './configure; make; sudo make install'
+ - go to third-party/SDL_Image-2.0.0
+ - you need install libpng-dev, libjpeg-dev
+ - build SDL_Image : run './autogen.sh; ./configure; make; sudo make install'
+ - launch monoD and open the solution (DQuick-MonoD.sln)
 
 Windows
-	1. install VisualD
-	2. pull source code
-	3. luanch Visual Studio and open the solution (DQuick-VisualD.sln)
+ - install VisualD
+ - pull source code
+ - luanch Visual Studio and open the solution (DQuick-VisualD.sln)
