@@ -20,7 +20,7 @@ function createImage(par, name, num)
 	end
 end
 
-Item {
+GraphicItem {
 	Image {
 		id = "image",
 		source = "images/pngtest.png",

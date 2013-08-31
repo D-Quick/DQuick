@@ -1,5 +1,11 @@
-Item
+GraphicItem
 {
+	onWidthChanged = function()
+		print("main.width "..main.width)
+	end,
+	onHeightChanged = function()
+		print("main.height "..main.height)
+	end,	
     id = "main",
 
     Image {

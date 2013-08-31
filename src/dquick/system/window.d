@@ -1,6 +1,6 @@
 module dquick.system.window;
 
-import dquick.item.declarative_item;
+import dquick.item.graphic_item;
 import dquick.maths.vector2s32;
 
 interface IWindow
@@ -8,9 +8,9 @@ interface IWindow
 	bool		create();
 	void		destroy();	/// If call on main Window (first instancied) the application will exit
 
-	void			setMainItem(DeclarativeItem item);
+	void			setMainItem(GraphicItem item);
 	void			setMainItem(string filePath);
-	DeclarativeItem	mainItem();
+	GraphicItem		mainItem();
 
 	void		setPosition(Vector2s32 position);
 	Vector2s32	position();

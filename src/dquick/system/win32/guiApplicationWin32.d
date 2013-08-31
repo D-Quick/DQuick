@@ -8,6 +8,7 @@ version (Windows)
 	import dquick.system.window;
 	import dquick.maths.vector2s32;
 	import dquick.item.image_item;
+	import dquick.item.border_image_item;
 	import dquick.item.mouse_area_item;
 	import dquick.script.dml_engine;
 
@@ -105,7 +106,10 @@ version (Windows)
 			mWindowId = mWindowsCounter++;
 			mScriptContext = new DMLEngine;
 			mScriptContext.create();
+			mScriptContext.addItemType!(DeclarativeItem, "Item")();
+			mScriptContext.addItemType!(GraphicItem, "GraphicItem")();
 			mScriptContext.addItemType!(ImageItem, "Image")();
+			mScriptContext.addItemType!(BorderImageItem, "BorderImage")();
 			mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
 		}
 
@@ -246,7 +250,7 @@ version (Windows)
 		}
 
 		/// Window will take size of this item
-		void	setMainItem(DeclarativeItem item)
+		void	setMainItem(GraphicItem item)
 		{
 			mRootItem = item;
 			/*
@@ -260,13 +264,13 @@ version (Windows)
 		{
 			mScriptContext.executeFile(filePath);
 
-			mRootItem = mScriptContext.rootItem();
-			assert(cast(GraphicItem)mRootItem);
+			mRootItem = cast(GraphicItem)mScriptContext.rootItem();
+			assert(mRootItem);
 
 			//setSize(mRootItem.size);
 		}
 
-		DeclarativeItem	mainItem() {return mRootItem;}
+		GraphicItem	mainItem() {return mRootItem;}
 
 		void		setPosition(Vector2s32 newPosition)
 		{
@@ -292,7 +296,7 @@ version (Windows)
 			mSize = newSize;
 
 			GraphicItem	graphicItem = cast(GraphicItem)mRootItem;
-			if (graphicItem && (graphicItem.width != newSize.x || graphicItem.height != newSize.y))	// Don't call size on item if it didn't change (setMainItem call this method)
+			if (graphicItem)
 				graphicItem.setSize(Vector2f32(newSize));
 
 			// Resizing Window
@@ -343,7 +347,7 @@ version (Windows)
 
 		HWND		mhWnd = null;
 		string		mWindowName = "";
-		DeclarativeItem	mRootItem;
+		GraphicItem	mRootItem;
 		Vector2s32	mPosition;
 		Vector2s32	mSize = Vector2s32(640, 480);
 		bool		mFullScreen = false;
