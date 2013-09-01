@@ -59,11 +59,6 @@ version (Windows)
 					TranslateMessage(&msg);
 					DispatchMessageA(&msg);
 				}
-/*				while (GetMessage(&msg, null, 0, 0))
-				{
-					TranslateMessage(&msg);
-					DispatchMessageA(&msg);
-				}*/
 
 				foreach (Window window; mWindows)
 					window.onPaint();
@@ -224,6 +219,7 @@ version (Windows)
 
 			mContext = new OpenGLContext();
 			mContext.initialize(mhWnd);
+			Renderer.initialize();
 			mContext.resize(size().x, size().y);
 
 			GuiApplication.registerWindow(this, mhWnd);
