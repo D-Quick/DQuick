@@ -136,7 +136,7 @@ private:
 		node.y = region.y + region.height;
 		node.width = region.width;
 
-		mNodes = mNodes[0..index] ~ node ~ mNodes[index..$];
+		mNodes = mNodes[0..index] ~ node ~ mNodes[index..$];	// insert node at index
 
 		assert(node.x + node.width <= mSize.x);
 		assert(node.y <= mSize.y);
@@ -153,7 +153,7 @@ private:
 				mNodes[i].width -= shrink;
 				if (mNodes[i].width <= 0)
 				{
-					mNodes = mNodes[0..i] ~ mNodes[i + 1..$];
+					mNodes = mNodes[0..i] ~ mNodes[i + 1..$];	// remove i node
 					i--;
 				}
 				else
