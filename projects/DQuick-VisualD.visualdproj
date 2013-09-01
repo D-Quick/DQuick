@@ -205,6 +205,10 @@
    </Folder>
   </Folder>
   <Folder name="dquick">
+   <Folder name="algorithms">
+    <File path="..\src\dquick\algorithms\atlas.d" />
+    <File path="..\src\dquick\algorithms\textToGeometry.d" />
+   </Folder>
    <Folder name="etc">
     <Folder name="derelict">
      <Folder name="freetype">
@@ -288,9 +292,6 @@
    <Folder name="events">
     <File path="..\src\dquick\events\mouseEvent.d" />
    </Folder>
-   <Folder name="algorithms">
-    <File path="..\src\dquick\algorithms\atlas.d" />
-   </Folder>
    <Folder name="item">
     <File path="..\src\dquick\item\boderImageItem.d" />
     <File path="..\src\dquick\item\declarativeItem.d" />
@@ -310,15 +311,15 @@
     <File path="..\src\dquick\maths\vector4f32.d" />
    </Folder>
    <Folder name="media">
+    <File path="..\src\dquick\media\font.d" />
+    <File path="..\src\dquick\media\geometry.d" />
     <File path="..\src\dquick\media\image.d" />
    </Folder>
    <Folder name="renderer2D">
     <Folder name="openGL">
      <File path="..\src\dquick\renderer2D\openGL\borderRectangleShader.d" />
      <File path="..\src\dquick\renderer2D\openGL\borderRectangleVertices.d" />
-     <File path="..\src\dquick\renderer2D\openGL\font.d" />
      <File path="..\src\dquick\renderer2D\openGL\rectangle.d" />
-     <File path="..\src\dquick\renderer2D\openGL\text.d" />
     </Folder>
    </Folder>
    <Folder name="renderer3D">

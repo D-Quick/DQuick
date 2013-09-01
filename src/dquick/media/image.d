@@ -19,7 +19,8 @@ ResourceManager	resourceManager;
 static this()
 {
 	resourceManager = new ResourceManager();
-	resourceManager.maximumWeight(50 * 1000 * 1024);
+	resourceManager.maximumWeight(10 * 1024 * 1024 * 4);	// 10 RGBA images of 1024x1024
+	// Images are transformed to textures, only fonts will stay in RAM
 }
 
 static ~this()

@@ -56,6 +56,7 @@ public:
 	{
 		assert(options == null);
 		unload();
+		throw new Exception("Not implemented");
 	}
 
 	/// Replace the texture's image by the new one, format need to be the same (width, height, bytes per pixels,...)
