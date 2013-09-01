@@ -74,6 +74,11 @@ version(unittest)
 		mixin Signal!(Enum) onNativeEnumPropertyChanged;
 		Enum		mNativeEnumProperty;
 	}
+
+	int	testSumFunctionBinding(int a, int b)
+	{
+		return a + b;
+	}
 }
 
 unittest
@@ -242,6 +247,14 @@ unittest
 
 	dmlEngine.item!Item("item15").nativeProperty = 300;
 	assert(dmlEngine.item!Item("item14").nativeTotalProperty == 300); // Test propagation from child to parent
+
+	// Test function binding
+	dmlEngine.addFunction!(testSumFunctionBinding, "testSumFunctionBinding")();
+	string lua10 = q"(
+		test = testSumFunctionBinding(100, 200)
+	)";
+	dmlEngine.execute(lua10, "");
+	assert(dmlEngine.getLuaGlobal!int("test") == 300);
 }
 
 class DMLEngine
@@ -316,6 +329,14 @@ public:
 			lua_setmetatable(mLuaState, -2);
 		}
 		// Add type to a global
+		lua_setglobal(mLuaState, luaName.toStringz());
+	}
+
+	void	addFunction(alias func, string luaName)()
+	{
+		static assert(isSomeFunction!func, "func must be a function");
+
+		lua_pushcfunction(mLuaState, cast(lua_CFunction)&functionLuaBind!func);
 		lua_setglobal(mLuaState, luaName.toStringz());
 	}
 
@@ -452,6 +473,14 @@ public:
 			}
 		}
 		return null;
+	}
+
+	T	getLuaGlobal(T)(string name)
+	{
+		lua_getglobal(mLuaState, name.toStringz());
+		T	value = dquick.script.utils.valueFromLua!T(mLuaState, -1);
+		lua_pop(mLuaState, 1);
+		return value;
 	}
 
 	static immutable bool showDebug = 0;
@@ -794,7 +823,35 @@ extern(C)
 		catch (Throwable e)
 		{
 			writeln(e.toString());
+			return 0;
+		}
+	}
+
+	// Handle simple function binding
+	private int	functionLuaBind(alias func)(lua_State* L)
+	{
+		try
+		{
+			static assert(isSomeFunction!func, "func must be a function");
+
+			// Collect all argument in a tuple
+			alias ParameterTypeTuple!func MyParameterTypeTuple;
+			MyParameterTypeTuple	parameterTuple;
+			foreach (index, paramType; MyParameterTypeTuple)
+				parameterTuple[index] = dquick.script.utils.valueFromLua!paramType(L, index + 1);
+
+			// Call D function
+			ReturnType!func returnVal = func(parameterTuple);
+
+			// Write return value into lua stack
+			valueToLua(L, returnVal);
+
 			return 1;
+		}
+		catch (Throwable e)
+		{
+			writeln(e.toString());
+			return 0;
 		}
 	}
 }
