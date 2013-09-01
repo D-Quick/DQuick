@@ -60,8 +60,9 @@ version (Windows)
 					DispatchMessageA(&msg);
 				}
 
-				foreach (Window window; mWindows)
-					window.onPaint();
+				if (!mQuit)
+					foreach (Window window; mWindows)
+						window.onPaint();
 			}
 			return msg.wParam;
 		}
