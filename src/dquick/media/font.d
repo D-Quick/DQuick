@@ -43,7 +43,7 @@ private:
 	ref ImageAtlas	lastAtlas()
 	{
 		if (mAtlases.length)
-			return mAtlases[$];
+			return mAtlases[$ - 1];
 		return newAtlas;
 	}
 
@@ -101,7 +101,10 @@ private:
 			throw new Exception(format("Failed to select charmap. Error : %d", error));
 
 //		FT_Set_Transform(face, &matrix, null);
+	}
 
+	void	loadGlyph(uint charCode)
+	{
 		// Load glyphs
 		FT_Glyph				ft_glyph;
 		FT_GlyphSlot			slot;
@@ -506,6 +509,13 @@ shared static ~this()
 unittest
 {
 	Font	font;
+	string	text;
 
 	font = fontManager.getFont("../data/samples/fonts/Vera.ttf", 12);
+	text = "Iñtërnâtiônàlizætiøn";
+
+	foreach(dchar charCode; text)
+	{
+		font.loadGlyph(charCode);
+	}
 }
