@@ -175,10 +175,7 @@ private:
 		}
 		error = FT_Load_Glyph(mFace, glyph_index, flags);
 		if (error)
-		{
 			throw new Exception(format("Failed to load glyph. Error : %d", error));
-			return *glyph;
-		}
 
 		if (outline_type == 0)
 		{
@@ -190,16 +187,13 @@ private:
 			ft_glyph_top    = slot.bitmap_top;
 			ft_glyph_left   = slot.bitmap_left;
 		}
-/*		else
+		else
 		{
 			FT_Stroker		stroker;
 			FT_BitmapGlyph	ft_bitmap_glyph;
 			error = FT_Stroker_New(mLibrary, &stroker);
 			if (error)
-			{
 				throw new Exception(format("Failed to create stroker. Error : %d", error));
-				return *glyph;
-			}
 			scope(exit) FT_Stroker_Done(stroker);
 			FT_Stroker_Set(stroker,
 						   cast(int)(outline_thickness *64),
@@ -208,46 +202,28 @@ private:
 						   0);
 			error = FT_Get_Glyph(mFace.glyph, &ft_glyph);
 			if (error)
-			{
 				throw new Exception(format("Failed to get glyph. Error : %d", error));
-				return *glyph;
-			}
 
 			if (outline_type == 1)
-			{
 				error = FT_Glyph_Stroke(&ft_glyph, stroker, 1);
-			}
 			else if (outline_type == 2)
-			{
 				error = FT_Glyph_StrokeBorder(&ft_glyph, stroker, 0, 1);
-			}
 			else if (outline_type == 3)
-			{
 				error = FT_Glyph_StrokeBorder(&ft_glyph, stroker, 1, 1);
-			}
 			if (error)
-			{
 				throw new Exception(format("Failed to use stroker. Error : %d", error));
-				return *glyph;
-			}
 
 			if (depth == 1)
 			{
-				error = FT_Glyph_To_Bitmap(&ft_glyph, FT_Render_Mode.FT_RENDER_MODE_NORMAL, 0, 1);
+				error = FT_Glyph_To_Bitmap(&ft_glyph, FT_Render_Mode.FT_RENDER_MODE_NORMAL, null, 1);
 				if (error)
-				{
 					throw new Exception(format("Failed to convert glyph as bitmap. Error : %d", error));
-					return *glyph;
-				}
 			}
 			else
 			{
-				error = FT_Glyph_To_Bitmap(&ft_glyph, FT_Render_Mode.FT_RENDER_MODE_LCD, 0, 1);
+				error = FT_Glyph_To_Bitmap(&ft_glyph, FT_Render_Mode.FT_RENDER_MODE_LCD, null, 1);
 				if (error)
-				{
 					throw new Exception(format("Failed to convert glyph as bitmap. Error : %d", error));
-					return *glyph;
-				}
 			}
 			ft_bitmap_glyph = cast(FT_BitmapGlyph) ft_glyph;
 			ft_bitmap       = ft_bitmap_glyph.bitmap;
@@ -256,7 +232,7 @@ private:
 			ft_bitmap_pitch = ft_bitmap.pitch;
 			ft_glyph_top    = ft_bitmap_glyph.top;
 			ft_glyph_left   = ft_bitmap_glyph.left;
-		}*/
+		}
 
 
 		// We want each glyph to be separated by at least one black pixel
