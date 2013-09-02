@@ -9,6 +9,7 @@ import dquick.maths.vector2s32;
 
 import std.string;
 import std.typecons;
+import std.c.string;	// for memcpy
 
 /**
 * One Font per size
@@ -119,7 +120,7 @@ public:
 
 		width  = imageAtlas.size().x;
 		height = imageAtlas.size().y;
-		depth  = 4;	// TODO do something better
+		depth  = 3;	// TODO do something better
 
 		glyph_index = FT_Get_Char_Index(mFace, charCode);
 		// WARNING: We use texture-atlas depth to guess if user wants
@@ -220,12 +221,9 @@ public:
 		x = region.x;
 		y = region.y;
 
-		/*		texture_atlas_set_region(atlas, x, y, w, h,
-		ft_bitmap.buffer, ft_bitmap.pitch);
-		*/
-
 		mGlyphs[charCode] = Glyph();
 		glyph = (charCode in mGlyphs);
+
 
 		with (*glyph)
 		{
@@ -244,11 +242,13 @@ public:
 		// Discard hinting to get advance
 		FT_Load_Glyph(mFace, glyph_index, FT_LOAD_RENDER | FT_LOAD_NO_HINTING);
 		slot = mFace.glyph;
-		glyph.advance_x = slot.advance.x/64.0;
-		glyph.advance_y = slot.advance.y/64.0;
+		glyph.advance_x = slot.advance.x / 64.0;
+		glyph.advance_y = slot.advance.y / 64.0;
 
 		if (outline_type > 0)
 			FT_Done_Glyph(ft_glyph);
+		
+		blitGlyph(ft_bitmap, *glyph);
 
 		return tuple(*glyph, false);
 	}
@@ -281,6 +281,27 @@ private:
 			throw new Exception(format("Failed to select charmap. Error : %d", error));
 
 //		FT_Set_Transform(mFace, &matrix, null);
+	}
+
+	void	blitGlyph(const ref FT_Bitmap ft_bitmap, ref Glyph glyph)
+	{
+		/*		texture_atlas_set_region(atlas, x, y, w, h,
+		ft_bitmap.buffer, ft_bitmap.pitch);
+		*/
+		glyph.image = new Image;
+		glyph.image.create("", glyph.width, glyph.height, 3);	// TODO do something cleaner for depth (bytes per pixels)
+
+		size_t i;
+		size_t depth;
+		uint	x = 0;
+		uint	y = 0;
+
+		depth = glyph.image.nbBytesPerPixel;
+		for (i = 0; i < ft_bitmap.rows; i++)
+		{
+			memcpy(glyph.image.pixels + ((y + i) * glyph.width + x) * depth, 
+				   ft_bitmap.buffer + (i * ft_bitmap.pitch), ft_bitmap.width * depth);
+		}
 	}
 
 	Glyph[uint]	mGlyphs;
@@ -364,14 +385,14 @@ unittest
 				images[$ - 1].create(format("ImageAtlas-%d", images.length),
 									 fontManager.getAtlas(images.length - 1).size().x,
 									 fontManager.getAtlas(images.length - 1).size().y,
-									 4);
+									 3);
 			}
 
 			// Write glyph in image
 			images[glyph.atlasIndex].blit(glyph.image,
-										 Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y),
-										 Vector2s32(0, 0),
-										 Vector2s32(glyph.width, glyph.height));
+										  Vector2s32(0, 0),
+										  Vector2s32(glyph.width, glyph.height),
+										  Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
 		}
 	}
 
