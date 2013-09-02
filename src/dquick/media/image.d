@@ -102,9 +102,26 @@ public:
 			throw new Exception(format("Unable to fill image, error : \"%s\"", to!string(SDL_GetError())));
 	}
 
-	void	blit(Image image, Vector2s32 destPosition, Vector2s32 sourcePosition, Vector2s32 sourceSize)
+	void	blit(Image sourceImage, Vector2s32 sourcePosition, Vector2s32 sourceSize, Vector2s32 destPosition)
 	{
-		throw new Exception("Not implemented!");
+		assert(sourceImage.mSurface != null);
+		assert(mSurface != null);
+
+		SDL_Rect	sourceRect;
+		SDL_Rect	destinationRect;
+
+		sourceRect.x = sourcePosition.x;
+		sourceRect.y = sourcePosition.y;
+		sourceRect.w = sourceSize.x;
+		sourceRect.h = sourceSize.y;
+
+		destinationRect.x = destPosition.x;
+		destinationRect.y = destPosition.y;
+		destinationRect.w = 0;
+		destinationRect.h = 0;
+
+		if (SDL_BlitSurface(sourceImage.mSurface, &sourceRect, mSurface, &destinationRect) != 0)
+			throw new Exception(format("Unable to fill image, error : \"%s\"", to!string(SDL_GetError())));
 	}
 
 	void	unload()
