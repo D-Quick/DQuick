@@ -281,7 +281,7 @@ unittest
 	expectedResult.fill(Color(0.0, 1.0, 0.0), Vector2s32(121,   0), Vector2s32(  1, 127));
 	expectedResult.fill(Color(0.0, 0.0, 1.0), Vector2s32(122,   0), Vector2s32(  1, 128));
 
-	expectedResult.save("../data/result.bmp");
+	expectedResult.save("../data/AtlasTestResult.bmp");
 
 	assert(0 == memcmp(expectedResult.pixels, imageAtlas.pixels, imageAtlas.width * imageAtlas.height * imageAtlas.nbBytesPerPixel));
 }
