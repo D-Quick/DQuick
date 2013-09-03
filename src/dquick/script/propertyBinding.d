@@ -71,7 +71,7 @@ class PropertyBinding
 			{
 				string	bindingLoopCallStack;
 				int	loopCount = 0;
-				for (int index = itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1;  index >= 0; index--)
+				for (int index = cast(int)(itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1);  index >= 0; index--)
 				{
 					bindingLoopCallStack ~= itemBinding.dmlEngine.currentlyExecutedBindingStack[index].itemBinding.declarativeItem.id;
 					bindingLoopCallStack ~= ".";

@@ -272,9 +272,6 @@
     <Compile Include="..\src\dquick\renderer2D\openGL\rectangle.d">
       <Link>dquick\renderer2D\renderer2D\openGL\rectangle.d</Link>
     </Compile>
-    <Compile Include="..\src\dquick\renderer2D\openGL\text.d">
-      <Link>dquick\renderer2D\renderer2D\openGL\text.d</Link>
-    </Compile>
     <Compile Include="..\src\dquick\script\dmlEngine.d" />
     <Compile Include="..\src\dquick\script\iItemBinding.d" />
     <Compile Include="..\src\dquick\script\itemBinding.d" />
@@ -282,10 +279,10 @@
     <Compile Include="..\src\dquick\script\propertyBinding.d" />
     <Compile Include="..\src\dquick\script\utils.d" />
     <Compile Include="..\src\dquick\script\virtualPropertyBinding.d" />
-    <Compile Include="..\src\dquick\renderer2D\openGL\font.d">
-      <Link>dquick\renderer2D\renderer2D\openGL\font.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\media\imageAtlas.d" />
+    <Compile Include="..\src\dquick\media\font.d" />
+    <Compile Include="..\src\dquick\media\geometry.d" />
+    <Compile Include="..\src\dquick\algorithms\atlas.d" />
+    <Compile Include="..\src\dquick\algorithms\textToGeometry.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dquick\" />
@@ -304,6 +301,8 @@
     <Folder Include="..\src\dquick\item\" />
     <Folder Include="..\src\samples\dml\" />
     <Folder Include="..\src\dquick\renderer2D\renderer2D\" />
+    <Folder Include="..\src\dquick\media\" />
+    <Folder Include="..\src\dquick\algorithms\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\dquick\system\dMain.def">

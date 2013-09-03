@@ -59,13 +59,13 @@ public:
 		bestWidth = int.max;
 		for (i = 0; i < mNodes.length; i++)
 		{
-			y = rectangleFits(i, width, height);
+			y = rectangleFits(cast(uint)i, width, height);
 			if (y >= 0)
 			{
 				if (y + height < bestHeight || (y + height == bestHeight && mNodes[i].width < bestWidth))
 				{
 					bestHeight = y + height;
-					bestIndex = i;
+					bestIndex = cast(int)i;
 					bestWidth = mNodes[i].width;
 					region.x = mNodes[i].x;
 					region.y = y;
