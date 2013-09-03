@@ -255,6 +255,16 @@ unittest
 	)";
 	dmlEngine.execute(lua10, "");
 	assert(dmlEngine.getLuaGlobal!int("test") == 300);
+
+	// Test already existing class instance binding
+	Item	testObject = new Item;
+	dmlEngine.addObject(testObject, "testObject");
+	testObject.nativeProperty = 1000;
+	string lua11 = q"(
+		testObject.nativeProperty = 2000;
+	)";
+	dmlEngine.execute(lua11, "");
+	assert(testObject.nativeProperty == 2000);
 }
 
 class DMLEngine
@@ -293,7 +303,7 @@ public:
 
 	void	addItemType(type, string luaName)()
 	{
-		// Create a lua table to host enums
+		// Create a lua table to host enums and factory
 		lua_newtable(mLuaState);
 		{
 			// Add enums
@@ -338,6 +348,15 @@ public:
 
 		lua_pushcfunction(mLuaState, cast(lua_CFunction)&functionLuaBind!func);
 		lua_setglobal(mLuaState, luaName.toStringz());
+	}
+
+	void	addObject(T)(T object, string luaName)
+	{
+		addItemType!(T, "__dquick_reserved1");
+		dquick.script.item_binding.ItemBinding!T	itemBinding = new dquick.script.item_binding.ItemBinding!T(this, object);
+		static if (is(T : DeclarativeItem))
+			itemBinding.item.id = luaName;
+		addObjectBinding!T(itemBinding, luaName);
 	}
 
 	bool	isCreated()
@@ -485,6 +504,45 @@ public:
 
 	static immutable bool showDebug = 0;
 private:
+
+	void	addObjectBinding(T)(dquick.script.item_binding.ItemBinding!T itemBinding, string id)
+	{
+		if (id == "")
+		{
+			mAnonymousDeclarativeItems ~= itemBinding;
+		}
+		else
+		{
+			if (id in mDeclarativeItems)
+				throw new Exception(format("an item with id \"%s\" already exist\n", id));
+			mDeclarativeItems[id] = cast(dquick.script.i_item_binding.IItemBinding)itemBinding;
+		}
+
+		itemBinding.creating = false;
+
+		// Create a userdata that contains instance name (hack because we crash when we try to put de pointer as void*) and make it a global for user access
+		// It also contains a metatable for the member read and write access
+		void*	userData = lua_newuserdata(mLuaState, id.length + 1);
+		memcpy(userData, id.toStringz(), id.length + 1);
+
+		lua_newtable(mLuaState);
+
+		lua_pushstring(mLuaState, "__index");
+		lua_pushcfunction(mLuaState, cast(lua_CFunction)&indexLuaBind!T);
+		lua_settable(mLuaState, -3);
+		lua_pushstring(mLuaState, "__newindex");
+		lua_pushcfunction(mLuaState, cast(lua_CFunction)&newindexLuaBind!T);
+		lua_settable(mLuaState, -3);
+
+		lua_setmetatable(mLuaState, -2);
+
+		if (id != "")
+		{
+			lua_pushvalue(mLuaState, -1); // Copy userdata to compensate lua_setglobal pop
+			lua_setglobal(mLuaState, itemBinding.item.id().toStringz());
+		}
+	}
+
 	dquick.script.i_item_binding.IItemBinding[string]	mDeclarativeItems;
 	dquick.script.i_item_binding.IItemBinding[]			mAnonymousDeclarativeItems;
 	lua_State*	mLuaState;
@@ -653,41 +711,7 @@ extern(C)
 			}
 			lua_pop(L, 1); // Remove param 1 (table)
 
-			if (itemBinding.item.id == "")
-			{
-				dmlEngine.mAnonymousDeclarativeItems ~= itemBinding;
-			}
-			else
-			{
-				if (itemBinding.item.id in dmlEngine.mDeclarativeItems)
-				{
-					writefln("createLuaBind:: an item with id \"%s\" already exist\n", itemBinding.item.id);
-					return 0;
-				}
-				dmlEngine.mDeclarativeItems[itemBinding.item.id] = cast(dquick.script.i_item_binding.IItemBinding)itemBinding;
-			}
-
-			itemBinding.creating = false;
-
-			void*	userData = lua_newuserdata(L, itemBinding.item.id().length + 1);
-			memcpy(userData, itemBinding.item.id().toStringz(), itemBinding.item.id().length + 1);
-
-			lua_newtable(L);
-
-			lua_pushstring(L, "__index");
-			lua_pushcfunction(L, cast(lua_CFunction)&indexLuaBind!T);
-			lua_settable(L, -3);
-			lua_pushstring(L, "__newindex");
-			lua_pushcfunction(L, cast(lua_CFunction)&newindexLuaBind!T);
-			lua_settable(L, -3);
-
-			lua_setmetatable(L, -2);
-
-			if (itemBinding.item.id() != "")
-			{
-				lua_pushvalue(L, -1); // Copy userdata to compensate lua_setglobal pop
-				lua_setglobal(L, itemBinding.item.id().toStringz());
-			}
+			dmlEngine.addObjectBinding!T(itemBinding, itemBinding.item.id);
 
 			return 1;
 		}

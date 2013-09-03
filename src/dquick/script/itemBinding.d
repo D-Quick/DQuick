@@ -11,11 +11,11 @@ import dquick.script.utils;
 import std.stdio;
 
 class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
-		
-	this(dquick.script.dml_engine.DMLEngine dmlEngine)
+
+	this(dquick.script.dml_engine.DMLEngine dmlEngine, T item)
 	{
 		this.mDMLEngine = dmlEngine;
-		this.item = new T;
+		this.item = item;
 
 		foreach (member; __traits(allMembers, T))
 		{
@@ -33,6 +33,12 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 				}
 			}
 		}
+	}
+
+	this(dquick.script.dml_engine.DMLEngine dmlEngine)
+	{
+		T item = new T;
+		this(dmlEngine, item);
 	}
 
 	~this()
