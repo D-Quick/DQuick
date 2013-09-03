@@ -124,7 +124,7 @@ public:
 
 		width  = imageAtlas.size().x;
 		height = imageAtlas.size().y;
-		depth  = 1;	// TODO do something better
+		depth  = 1;	// TODO do something better (because it impact the quality of rendering)
 
 		glyph_index = FT_Get_Char_Index(mFace, charCode);
 		// WARNING: We use texture-atlas depth to guess if user wants
@@ -207,7 +207,6 @@ public:
 			ft_glyph_top    = ft_bitmap_glyph.top;
 			ft_glyph_left   = ft_bitmap_glyph.left;
 		}
-
 
 		region = imageAtlas.allocateRegion(ft_bitmap_width, ft_bitmap_rows);
 		if (region.x < 0)
@@ -307,9 +306,6 @@ private:
 					   color.ptr,
 					   color.sizeof);
 			}
-
-/*		static int	counter = 0;
-		glyph.image.save(format("../data/%d.bmp", counter++));*/
 	}
 
 	Glyph[uint]	mGlyphs;
