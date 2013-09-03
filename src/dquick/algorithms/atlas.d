@@ -15,7 +15,7 @@ import gl3n.linalg;
 * http://clb.demon.fi/files/RectangleBinPack/SkylineBinPack.h
 * http://clb.demon.fi/files/RectangleBinPack/SkylineBinPack.cpp
 **/
-struct Atlas
+class Atlas
 {
 public:
 	struct Region
@@ -219,7 +219,7 @@ unittest
 		}
 	}
 
-	Atlas	atlas;
+	Atlas	atlas = new Atlas;
 	Image	imageAtlas = new Image;
 	Image	expectedResult = new Image;
 

@@ -40,7 +40,7 @@ public:
 		if (font !is null)
 			return *font;
 
-		Font	newFont;
+		Font	newFont = new Font;
 
 		newFont.load(name, size);
 		mFonts[fontKey] = newFont;
@@ -64,17 +64,18 @@ public:
 	}
 
 private:
-	ref Atlas	lastAtlas()
+	Atlas	lastAtlas()
 	{
 		if (mAtlases.length)
 			return mAtlases[$ - 1];
 		return newAtlas();
 	}
 
-	ref Atlas	newAtlas()
+	Atlas	newAtlas()
 	{
 		mAtlases.length = mAtlases.length + 1;
 
+		mAtlases[$ - 1] = new Atlas;
 		mAtlases[$ - 1].create(mAtlasSize);
 
 		return mAtlases[$ - 1];
@@ -87,13 +88,13 @@ private:
 
 FontManager	fontManager;
 
-struct Font
+class Font
 {
 public:
 	~this()
 	{
-//		FT_Done_Face(mFace);
-//		FT_Done_FreeType(mLibrary);
+		FT_Done_Face(mFace);
+		FT_Done_FreeType(mLibrary);
 	}
 
 	Tuple!(Glyph, bool)	loadGlyph(uint charCode)
