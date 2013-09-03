@@ -302,7 +302,7 @@ private:
 				color[0] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
 				color[1] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
 				color[2] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
-				color[3] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
+				color[3] = ft_bitmap.buffer[j * ft_bitmap.pitch + i];
 				memcpy(glyph.image.pixels + ((y + j) * ft_bitmap.width + (x + i)) * depth, 
 					   color.ptr,
 					   color.sizeof);
