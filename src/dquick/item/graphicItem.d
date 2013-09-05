@@ -95,19 +95,19 @@ public:
 	@property float	scale() {return mTransformation.scaling.x;}
 	mixin Signal!(float) onScaleChanged;
 
-	/// Change the rotation angle in degrees clockwise, tranformation origin is the center of item
-	@property void	rotation(float value)
+	/// Change the orientation angle in degrees clockwise, tranformation origin is the center of item
+	@property void	orientation(float value)
 	{
 		Quaternion	temp = Quaternion.zrotation(value);
 		temp = Quaternion.zrotation(value);
-		if (temp == mTransformation.rotation)
+		if (temp == mTransformation.orientation)
 			return;
-		mTransformation.rotation = temp;
+		mTransformation.orientation = temp;
 		mTransformationUpdated = true;
-		onRotationChanged.emit(value);
+		onOrientationChanged.emit(value);
 	}
-	@property float	rotation() {return mTransformation.scaling.x;}
-	mixin Signal!(float) onRotationChanged;
+	@property float	orientation() {return mTransformation.scaling.x;}
+	mixin Signal!(float) onOrientationChanged;
 
 	override
 	void	paint(bool transformationUpdated)

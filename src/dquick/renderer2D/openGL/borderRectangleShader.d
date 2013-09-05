@@ -20,7 +20,7 @@ import std.variant;
 /// Implementation based on shader for repeat and round TileMode
 
 // TODO Add the possibility to update colors and texcoords
-// TODO Fix shader : issue with repeat TileMode (rotation of mesh break the repeatition computation)
+// TODO Fix shader : issue with repeat TileMode (orientation of mesh break the repeatition computation)
 // TODO Fix shader : issue with the y axis do to the use of a different origin (us are top-left corner and opengl bottom-left corner)
 // TODO Implement TileMode switch
 // TODO use triangle strip
