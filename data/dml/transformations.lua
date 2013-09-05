@@ -18,7 +18,7 @@ GraphicItem
         borderTop = 30,
         borderBottom = 30,
 		scale = 2,
-		rotation = 45
+		orientation = 45
 --        horizontalTileMode = BorderImage.Stretch,
 --        verticalTileMode = BorderImage.Stretch,
     },
@@ -32,7 +32,7 @@ GraphicItem
             return image.height
         end,
         scale = 2,
-        rotation = 45,
+        orientation = 45,
 
         MouseArea {
             id = "mouse",

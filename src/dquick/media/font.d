@@ -6,6 +6,7 @@ import dquick.algorithms.atlas;
 import dquick.media.image;
 
 import dquick.maths.vector2s32;
+import dquick.maths.color;
 
 import std.string;
 import std.typecons;
@@ -24,6 +25,8 @@ import std.c.string;	// for memcpy
 
 // TODO migrate FT_Library to FontManager (if it share memory)
 
+// TODO clean memory (add SDL_FreeImage, FT_DoneFace, FT_DoneLibrary)
+
 class FontManager
 {
 public:
@@ -37,7 +40,7 @@ public:
 		if (font !is null)
 			return *font;
 
-		Font	newFont;
+		Font	newFont = new Font;
 
 		newFont.load(name, size);
 		mFonts[fontKey] = newFont;
@@ -61,17 +64,18 @@ public:
 	}
 
 private:
-	ref Atlas	lastAtlas()
+	Atlas	lastAtlas()
 	{
 		if (mAtlases.length)
 			return mAtlases[$ - 1];
-		return newAtlas;
+		return newAtlas();
 	}
 
-	ref Atlas	newAtlas()
+	Atlas	newAtlas()
 	{
 		mAtlases.length = mAtlases.length + 1;
 
+		mAtlases[$ - 1] = new Atlas;
 		mAtlases[$ - 1].create(mAtlasSize);
 
 		return mAtlases[$ - 1];
@@ -84,13 +88,13 @@ private:
 
 FontManager	fontManager;
 
-struct Font
+class Font
 {
 public:
 	~this()
 	{
-//		FT_Done_Face(mFace);
-//		FT_Done_FreeType(mLibrary);
+		FT_Done_Face(mFace);
+		FT_Done_FreeType(mLibrary);
 	}
 
 	Tuple!(Glyph, bool)	loadGlyph(uint charCode)
@@ -113,14 +117,14 @@ public:
 		FT_GlyphSlot	slot;
 		FT_Bitmap		ft_bitmap;
 		FT_UInt			glyph_index;
-		size_t			i, x, y, width, height, depth, w, h;	// TODO replace x,y and width,height per Vector2s32
+		size_t			i, width, height, depth;	// TODO replace x,y and width,height per Vector2s32
 		Atlas.Region	region;
 		size_t			missed = 0;
 		Atlas			imageAtlas = fontManager.lastAtlas();
 
 		width  = imageAtlas.size().x;
 		height = imageAtlas.size().y;
-		depth  = 3;	// TODO do something better
+		depth  = 1;	// TODO do something better (because it impact the quality of rendering)
 
 		glyph_index = FT_Get_Char_Index(mFace, charCode);
 		// WARNING: We use texture-atlas depth to guess if user wants
@@ -166,7 +170,7 @@ public:
 				throw new Exception(format("Failed to create stroker. Error : %d", error));
 			scope(exit) FT_Stroker_Done(stroker);
 			FT_Stroker_Set(stroker,
-						   cast(int)(outline_thickness *64),
+						   cast(int)(outline_thickness * 64),
 						   FT_Stroker_LineCap.FT_STROKER_LINECAP_ROUND,
 						   FT_Stroker_LineJoin.FT_STROKER_LINEJOIN_ROUND,
 						   0);
@@ -204,39 +208,30 @@ public:
 			ft_glyph_left   = ft_bitmap_glyph.left;
 		}
 
-
-		// We want each glyph to be separated by at least one black pixel
-		// (for example for shader used in demo-subpixel.c)
-		w = ft_bitmap_width / depth + 1;
-		h = ft_bitmap_rows + 1;
-		region = imageAtlas.allocateRegion(w, h);
+		region = imageAtlas.allocateRegion(ft_bitmap_width, ft_bitmap_rows);
 		if (region.x < 0)
 		{
 			missed++;
 			throw new Exception("Texture atlas is full. Instanciate a new one isn't supported yet");	// TODO
 			//			continue;
 		}
-		w = w - 1;
-		h = h - 1;
-		x = region.x;
-		y = region.y;
 
 		mGlyphs[charCode] = Glyph();
 		glyph = (charCode in mGlyphs);
 
-
 		with (*glyph)
 		{
-			glyph.width			= w;
-			glyph.height		= h;
+			glyph.atlasRegion	= region;
 			outline_type		= outline_type;
 			outline_thickness	= outline_thickness;
 			offset_x			= ft_glyph_left;
 			offset_y			= ft_glyph_top;
-			/*		s0					= x / cast(float)width;
-			t0					= y / cast(float)height;
-			s1					= (x + glyph.width) / cast(float)width;
-			t1					= (y + glyph.height) / cast(float)height;*/
+/*
+			s0					= region.x / cast(float)width;
+			t0					= region.y / cast(float)height;
+			s1					= (region.x + glyph.width) / cast(float)width;
+			t1					= (region.y + glyph.height) / cast(float)height;
+			*/
 		}
 
 		// Discard hinting to get advance
@@ -285,23 +280,32 @@ private:
 
 	void	blitGlyph(const ref FT_Bitmap ft_bitmap, ref Glyph glyph)
 	{
-		/*		texture_atlas_set_region(atlas, x, y, w, h,
-		ft_bitmap.buffer, ft_bitmap.pitch);
-		*/
 		glyph.image = new Image;
-		glyph.image.create("", glyph.width, glyph.height, 3);	// TODO do something cleaner for depth (bytes per pixels)
+		glyph.image.create("", glyph.atlasRegion.width, glyph.atlasRegion.height, 4);
 
-		size_t i;
-		size_t depth;
+		glyph.image.fill(Color(1.0f, 1.0f, 1.0f, 0.0f), Vector2s32(0, 0), Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height));
+
+		assert(glyph.atlasRegion.width == ft_bitmap.width);
+		assert(glyph.atlasRegion.height == ft_bitmap.rows);
+
+		size_t	depth;
 		uint	x = 0;
 		uint	y = 0;
 
 		depth = glyph.image.nbBytesPerPixel;
-		for (i = 0; i < ft_bitmap.rows; i++)
-		{
-			memcpy(glyph.image.pixels + ((y + i) * glyph.width + x) * depth, 
-				   ft_bitmap.buffer + (i * ft_bitmap.pitch), ft_bitmap.width * depth);
-		}
+		for (size_t i = 0; i < ft_bitmap.width; i++)
+			for (size_t j = 0; j < ft_bitmap.rows; j++)
+			{
+				ubyte	color[4];
+
+				color[0] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
+				color[1] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
+				color[2] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
+				color[3] = ft_bitmap.buffer[j * ft_bitmap.pitch + i];
+				memcpy(glyph.image.pixels + ((y + j) * ft_bitmap.width + (x + i)) * depth, 
+					   color.ptr,
+					   color.sizeof);
+			}
 	}
 
 	Glyph[uint]	mGlyphs;
@@ -330,14 +334,12 @@ private:
 struct Glyph
 {
 //    uint	charcode;
-    uint	width;
-    uint	height;
-    int		offset_x;
-    int		offset_y;
-    float	advance_x;
-    float	advance_y;
-    int		outline_type;
-    float	outline_thickness;
+    int				offset_x;
+    int				offset_y;
+    float			advance_x;
+    float			advance_y;
+    int				outline_type;
+    float			outline_thickness;
 
 	size_t			atlasIndex;
 	Atlas.Region	atlasRegion;	// TODO check redundancy with width and height
@@ -358,12 +360,12 @@ shared static ~this()
 
 unittest
 {
-/*	Font	font;
+	Font	font;
 	string	text;
 
 	Image[]	images;
 
-	font = fontManager.getFont("../data/samples/fonts/Vera.ttf", 12);
+	font = fontManager.getFont("../data/samples/fonts/Vera.ttf", 36);
 	text = "Iñtërnâtiônàlizætiøn";
 
 	foreach(dchar charCode; text)
@@ -385,16 +387,17 @@ unittest
 				images[$ - 1].create(format("ImageAtlas-%d", images.length),
 									 fontManager.getAtlas(images.length - 1).size().x,
 									 fontManager.getAtlas(images.length - 1).size().y,
-									 3);
+									 4);
+				images[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 0.0f), Vector2s32(0, 0), images[$ - 1].size());
 			}
 
 			// Write glyph in image
 			images[glyph.atlasIndex].blit(glyph.image,
 										  Vector2s32(0, 0),
-										  Vector2s32(glyph.width, glyph.height),
+										  Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
 										  Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
 		}
 	}
 
-	images[0].save("../data/FontTestResult.bmp");*/
+	images[0].save("../data/FontTestResult.bmp");
 }

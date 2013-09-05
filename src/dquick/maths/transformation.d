@@ -9,10 +9,10 @@ public import dquick.maths.quaternion;
 struct Transformation
 {
 public:
-	Vector3f32	origin = Vector3f32(0.0f, 0.0f, 0.0f);	/// Origin of rotation tranformation
+	Vector3f32	origin = Vector3f32(0.0f, 0.0f, 0.0f);	/// Origin of orientation tranformation
 	Vector3f32	position = Vector3f32(0.0f, 0.0f, 0.0f);
 	Vector3f32	scaling = Vector3f32(1.0f, 1.0f, 1.0f);
-	Quaternion	rotation = Quaternion.identity();
+	Quaternion	orientation = Quaternion.identity();
 
 	Matrix4x4	toMatrix()
 	{
@@ -20,9 +20,13 @@ public:
 
 		matrix.make_identity();
 
+		matrix.translate(origin.x, origin.y, origin.z);
+
 		matrix.scale(scaling.x, scaling.y, scaling.z);
-		matrix.translate(position.x + origin.x, position.y + origin.y, position.z + origin.z);
-		matrix = matrix * rotation.to_matrix!(4, 4);
+		matrix.translate(position.x, position.y, position.z);
+		matrix = matrix * orientation.to_matrix!(4, 4);
+
+		matrix.translate(-origin.x, -origin.y, -origin.z);
 		return matrix;
 	}
 }

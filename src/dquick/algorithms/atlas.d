@@ -15,7 +15,7 @@ import gl3n.linalg;
 * http://clb.demon.fi/files/RectangleBinPack/SkylineBinPack.h
 * http://clb.demon.fi/files/RectangleBinPack/SkylineBinPack.cpp
 **/
-struct Atlas
+class Atlas
 {
 public:
 	struct Region
@@ -59,13 +59,13 @@ public:
 		bestWidth = int.max;
 		for (i = 0; i < mNodes.length; i++)
 		{
-			y = rectangleFits(i, width, height);
+			y = rectangleFits(cast(uint)i, width, height);
 			if (y >= 0)
 			{
 				if (y + height < bestHeight || (y + height == bestHeight && mNodes[i].width < bestWidth))
 				{
 					bestHeight = y + height;
-					bestIndex = i;
+					bestIndex = cast(int)i;
 					bestWidth = mNodes[i].width;
 					region.x = mNodes[i].x;
 					region.y = y;
@@ -219,7 +219,7 @@ unittest
 		}
 	}
 
-	Atlas	atlas;
+	Atlas	atlas = new Atlas;
 	Image	imageAtlas = new Image;
 	Image	expectedResult = new Image;
 
