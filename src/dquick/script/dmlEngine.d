@@ -73,6 +73,11 @@ version(unittest)
 		}
 		mixin Signal!(Enum) onNativeEnumPropertyChanged;
 		Enum		mNativeEnumProperty;
+
+		int	testNormalMethod(int a, int b)
+		{
+			return a + b + nativeProperty;
+		}
 	}
 
 	int	testSumFunctionBinding(int a, int b)
@@ -265,6 +270,16 @@ unittest
 	)";
 	dmlEngine.execute(lua11, "");
 	assert(testObject.nativeProperty == 2000);
+
+	// Test normal method binding
+	Item	testObject2 = new Item;
+	dmlEngine.addObject(testObject2, "testObject2");
+	testObject2.nativeProperty = 100;
+	string lua12 = q"(
+		total = testObject2.testNormalMethod(1, 10)
+	)";
+	dmlEngine.execute(lua12, "");
+	assert(dmlEngine.getLuaGlobal!int("total") == 111);
 }
 
 class DMLEngine
@@ -497,6 +512,8 @@ public:
 	T	getLuaGlobal(T)(string name)
 	{
 		lua_getglobal(mLuaState, name.toStringz());
+		if (lua_isnone(mLuaState, -1) || lua_isnil(mLuaState, -1))
+			throw new Exception(format("global \"%s\" is nil\n", name));
 		T	value = dquick.script.utils.valueFromLua!T(mLuaState, -1);
 		lua_pop(mLuaState, 1);
 		return value;
@@ -748,13 +765,16 @@ extern(C)
 			lua_pop(L, 1);
 
 			string	itemId = to!(string)(cast(char*)lua_touserdata(L, 1));
-			string	propertyId = to!(string)(lua_tostring(L, 2));
+			lua_remove(L, 1);
+			string	propertyId = to!(string)(lua_tostring(L, 1));
+			lua_remove(L, 1);
 
 			auto	iItemBinding = itemId in dmlEngine.mDeclarativeItems;
 			if (iItemBinding == null)
 				return 0;
 			dquick.script.item_binding.ItemBinding!T	itemBinding = cast(dquick.script.item_binding.ItemBinding!T)(*iItemBinding);
 
+			// Search for property binding on the itemBinding
 			foreach (member; __traits(allMembers, typeof(itemBinding)))
 			{
 				static if (is(typeof(__traits(getMember, itemBinding, member)) : dquick.script.property_binding.PropertyBinding))
@@ -763,6 +783,34 @@ extern(C)
 					{
 						__traits(getMember, itemBinding, member).valueToLua(L);
 						return 1;
+					}
+				}
+			}
+			// Search for simple method on the item
+			foreach (member; __traits(allMembers, T))
+			{
+				static if (__traits(compiles, isCallable!(__traits(getMember, T, member))))
+				{
+					static if (isCallable!(__traits(getMember, T, member)) && __traits(compiles, luaCallThisD!(member, T)(itemBinding.item, L, 1)))
+					{
+						if (propertyId == member)
+						{
+							// Create a userdata that contains instance name (hack because we crash when we try to put de pointer as void*) and return it to emulate a method
+							// It also contains a metatable for calling
+							void*	userData = lua_newuserdata(L, itemId.length + 1);
+							memcpy(userData, itemId.toStringz(), itemId.length + 1);
+
+							// Create metatable
+							lua_newtable(L);
+							{
+								// Call metamethod to instanciate type
+								lua_pushstring(L, "__call");
+								lua_pushcfunction(L, cast(lua_CFunction)&methodLuaBind!(member, T));
+								lua_settable(L, -3);
+							}
+							lua_setmetatable(L, -2);
+							return 1;
+						}
 					}
 				}
 			}
@@ -808,7 +856,9 @@ extern(C)
 			lua_pop(L, 1);
 
 			string	itemId = to!(string)(cast(char*)lua_touserdata(L, 1));
-			string	propertyId = to!(string)(lua_tostring(L, 2));
+			lua_remove(L, 1);
+			string	propertyId = to!(string)(lua_tostring(L, 1));
+			lua_remove(L, 1);
 
 			auto	iItemBinding = itemId in dmlEngine.mDeclarativeItems;
 			if (iItemBinding == null)
@@ -823,7 +873,7 @@ extern(C)
 					if (propertyId == member)
 					{
 						found = true;
-						__traits(getMember, itemBinding, member).bindingFromLua(L, 3);
+						__traits(getMember, itemBinding, member).bindingFromLua(L, 1);
 						__traits(getMember, itemBinding, member).dirty = true;
 						if (dmlEngine.initializationPhase == false)					
 							__traits(getMember, itemBinding, member).executeBinding();
@@ -835,7 +885,7 @@ extern(C)
 			auto virtualProperty = (propertyId in itemBinding.virtualProperties);
 			if (virtualProperty)
 			{
-				virtualProperty.bindingFromLua(L, 3);
+				virtualProperty.bindingFromLua(L, 1);
 				virtualProperty.dirty = true;
 				virtualProperty.executeBinding();
 				return 1;
@@ -856,19 +906,49 @@ extern(C)
 	{
 		try
 		{
-			static assert(isSomeFunction!func, "func must be a function");
+			static assert(__traits(isStaticFunction, func), "func must be a function");
 
-			// Collect all argument in a tuple
-			alias ParameterTypeTuple!func MyParameterTypeTuple;
-			MyParameterTypeTuple	parameterTuple;
-			foreach (index, paramType; MyParameterTypeTuple)
-				parameterTuple[index] = dquick.script.utils.valueFromLua!paramType(L, index + 1);
+			luaCallD!(func)(L, 1);
 
-			// Call D function
-			ReturnType!func returnVal = func(parameterTuple);
+			return 1;
+		}
+		catch (Throwable e)
+		{
+			writeln(e.toString());
+			return 0;
+		}
+	}
 
-			// Write return value into lua stack
-			valueToLua(L, returnVal);
+	// Handle method binding
+	private int	methodLuaBind(string methodName, T)(lua_State* L)
+	{
+		try
+		{
+			static assert(isSomeFunction!(__traits(getMember, T, methodName)) &&
+						  !__traits(isStaticFunction, __traits(getMember, T, methodName)) &&
+							  !isDelegate!(__traits(getMember, T, methodName)),
+						  "func must be a method");
+
+			if (lua_gettop(L) < 1)
+				throw new Exception(format("too few param, got %d, expected at least 1\n", lua_gettop(L)));
+			if (!lua_isuserdata(L, 1))
+				throw new Exception("param 1 is not a userdata");
+
+			lua_pushstring(L, "__This");
+			lua_gettable(L, LUA_REGISTRYINDEX);
+			DMLEngine	dmlEngine = cast(DMLEngine)lua_touserdata(L, -1);
+			lua_pop(L, 1);
+
+			string	itemId = to!(string)(cast(char*)lua_touserdata(L, 1));
+			lua_remove(L, 1);
+
+			auto	iItemBinding = itemId in dmlEngine.mDeclarativeItems;
+			if (iItemBinding == null)
+				throw new Exception(format("unknown object \"%s\"", itemId));
+			dquick.script.item_binding.ItemBinding!T	itemBinding = cast(dquick.script.item_binding.ItemBinding!T)(*iItemBinding);
+
+			int test = lua_gettop(L);
+			luaCallThisD!(methodName, T)(itemBinding.item, L, 1);
 
 			return 1;
 		}

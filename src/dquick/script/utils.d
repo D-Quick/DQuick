@@ -5,6 +5,7 @@ import std.string;
 import derelict.lua.lua;
 import std.conv;
 import std.variant;
+import std.traits;
 
 string	repeat(string s, int count)
 {
@@ -148,6 +149,60 @@ void	valueToLua(T)(lua_State* L, T value)
 	else
 	{
 		static assert(false);
+	}
+}
+
+void	luaCallD(alias func)(lua_State* L, int firstParamIndex)
+{			
+	//static assert(isSomeFunction!func, "func must be a function or a method");
+	static assert(__traits(isStaticFunction, func), "func must be a static function");
+
+	// Collect all argument in a tuple
+	alias ParameterTypeTuple!func MyParameterTypeTuple;
+	MyParameterTypeTuple	parameterTuple;
+	foreach (index, paramType; MyParameterTypeTuple)
+		parameterTuple[index] = dquick.script.utils.valueFromLua!paramType(L, firstParamIndex + index);
+	lua_pop(L, parameterTuple.length);
+
+	// Call D function
+	alias ReturnType!func	returnType;
+	static if (is(returnType == void))
+		func(parameterTuple);
+	else
+	{
+		returnType returnVal = func(parameterTuple);
+
+		// Write return value into lua stack
+		valueToLua(L, returnVal);
+	}
+}
+
+void	luaCallThisD(string funcName, T)(T thisRef, lua_State* L, int firstParamIndex)
+{
+	static assert(isSomeFunction!(__traits(getMember, T, funcName)) &&
+				  !__traits(isStaticFunction, __traits(getMember, T, funcName)) &&
+				  !isDelegate!(__traits(getMember, T, funcName)),
+				  "func must be a method");
+
+	// Collect all argument in a tuple
+	alias ParameterTypeTuple!(__traits(getMember, T, funcName)) MyParameterTypeTuple;
+	MyParameterTypeTuple	parameterTuple;
+	foreach (index, paramType; MyParameterTypeTuple)
+		parameterTuple[index] = dquick.script.utils.valueFromLua!paramType(L, firstParamIndex + index);
+	lua_pop(L, parameterTuple.length);
+
+	// Call D function
+	alias ReturnType!(__traits(getMember, T, funcName))	returnType;
+	static if (is(returnType == void))
+	{
+		__traits(getMember, thisRef, funcName)(parameterTuple);
+	}
+	else
+	{
+		returnType returnVal = __traits(getMember, thisRef, funcName)(parameterTuple);
+
+		// Write return value into lua stack
+		valueToLua(L, returnVal);
 	}
 }
 
