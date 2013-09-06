@@ -12,6 +12,10 @@ interpreter is prefered for some platforms (iOS).
 
 Take a look to the DQuick.pptx for more details.
 
+License
+====
+Boost license.
+
 Status
 ====
 
