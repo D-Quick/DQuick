@@ -62,6 +62,11 @@ public:
 		return mAtlases[index];
 	}
 
+	size_t	getAtlasCount()
+	{
+		return mAtlases.length;
+	}
+
 private:
 	Atlas	lastAtlas()
 	{
