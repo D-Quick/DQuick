@@ -22,8 +22,30 @@ import std.c.string;
 
 version(unittest)
 {
+	class SubItem : DeclarativeItem
+	{
+		void	nativeProperty(int value)
+		{
+			if (mNativeProperty != value)
+			{
+				mNativeProperty = value;
+				onNativePropertyChanged.emit(value);
+			}
+		}
+		int		nativeProperty()
+		{
+			return mNativeProperty;
+		}
+		mixin Signal!(int) onNativePropertyChanged;
+		int		mNativeProperty;
+	}
 	class Item : DeclarativeItem
 	{
+		this()
+		{
+			mNativeSubItem = new SubItem;
+		}
+
 		void	nativeProperty(int value)
 		{
 			if (mNativeProperty != value)
@@ -78,6 +100,21 @@ version(unittest)
 		{
 			return a + b + nativeProperty;
 		}
+
+		void	nativeSubItem(SubItem value)
+		{
+			if (mNativeSubItem != value)
+			{
+				mNativeSubItem = value;
+				onNativeSubItemChanged.emit(value);
+			}
+		}
+		SubItem		nativeSubItem()
+		{
+			return mNativeSubItem;
+		}
+		mixin Signal!(SubItem) onNativeSubItemChanged;
+		SubItem		mNativeSubItem;
 	}
 
 	int	testSumFunctionBinding(int a, int b)
@@ -92,7 +129,7 @@ unittest
 	dmlEngine.create();
 	dmlEngine.addItemType!(Item, "Item");
 
-	// Test basic item
+	/+// Test basic item
 	string lua1 = q"(
 		Item {
 			id = "item1"
@@ -279,7 +316,18 @@ unittest
 		total = testObject2.testNormalMethod(1, 10)
 	)";
 	dmlEngine.execute(lua12, "");
-	assert(dmlEngine.getLuaGlobal!int("total") == 111);
+	assert(dmlEngine.getLuaGlobal!int("total") == 111);+/
+
+	// Test subitem property binding
+	Item	testObject3 = new Item;
+	dmlEngine.addObject(testObject3, "testObject3");
+	testObject3.nativeSubItem.nativeProperty = 10;
+	string lua13 = q"(
+		subItem = testObject3.nativeSubItem
+		print(subItem)
+	)";
+	dmlEngine.execute(lua13, "");
+	//assert(dmlEngine.item!Item("item15"));
 }
 
 class DMLEngine
@@ -566,7 +614,7 @@ private:
 	IWindow		mWindow;
 	package dquick.script.property_binding.PropertyBinding[]		currentlyExecutedBindingStack;
 	string		itemTypeIds;
-	package alias TypeTuple!(int, float, string, bool)	propertyTypes;
+	package alias TypeTuple!(int, float, string, bool, Object)	propertyTypes;
 	package bool	initializationPhase;
 	static if (showDebug)
 		package int	lvl;

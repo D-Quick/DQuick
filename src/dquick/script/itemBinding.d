@@ -146,8 +146,11 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 			foreach (type; propertyTypes)
 			{
 				enum	isPropertyOfTypeResult = isPropertyOfType!(T, member, type);
+				static if (member == "nativeSubItem")
+									pragma(msg, member, " ", isPropertyOfTypeResult);
 				static if ((isPropertyOfTypeResult & IsPropertyOfTypeResult.Getter) && (isPropertyOfTypeResult & IsPropertyOfTypeResult.Signal))
 				{
+
 					result ~= "dquick.script.native_property_binding.NativePropertyBinding!" ~ type.stringof ~"\t" ~ member ~ ";\n";
 				}
 			}
