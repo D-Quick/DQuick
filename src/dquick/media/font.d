@@ -68,6 +68,12 @@ public:
 	}
 
 private:
+	void	clear()	// used by unnitest to avoid conflict with applications
+	{
+		mAtlases.length = 0;
+		mFonts.clear();
+	}
+
 	Atlas	lastAtlas()
 	{
 		if (mAtlases.length)
@@ -293,11 +299,11 @@ private:
 			{
 				ubyte	color[4];
 
-				color[0] = 255 - ftBitmap.buffer[j * ftBitmap.pitch + i];
-				color[1] = 255 - ftBitmap.buffer[j * ftBitmap.pitch + i];
-				color[2] = 255 - ftBitmap.buffer[j * ftBitmap.pitch + i];
+				color[0] = 0;
+				color[1] = 0;
+				color[2] = 0;
 				color[3] = ftBitmap.buffer[j * ftBitmap.pitch + i];
-				memcpy(glyph.image.pixels + ((y + j) * ftBitmap.width + (x + i)) * depth, 
+				memcpy(glyph.image.pixels + ((y + j) * ftBitmap.width + (x + i)) * depth,
 					   color.ptr,
 					   color.sizeof);
 			}
@@ -350,6 +356,8 @@ shared static ~this()
 	DerelictFT.unload();
 }
 
+// TODO make unnittest using resource manager to share image atlas between us and applications (throw TextItem)
+// it's certainly better than the call of fontManager.clear()
 unittest
 {
 	Font	font;
@@ -389,7 +397,7 @@ unittest
 									 fontManager.getAtlas(images.length - 1).size().x,
 									 fontManager.getAtlas(images.length - 1).size().y,
 									 4);
-				images[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 0.0f), Vector2s32(0, 0), images[$ - 1].size());
+				images[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), images[$ - 1].size());
 			}
 
 			// Write glyph in image
@@ -411,4 +419,6 @@ unittest
 	}
 
 	textImage.save("../data/FontTestText.bmp");
+
+	fontManager.clear();
 }
