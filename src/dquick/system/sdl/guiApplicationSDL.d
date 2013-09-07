@@ -11,6 +11,7 @@ import dquick.system.sdl.opengl_context_sdl;
 import dquick.renderer_3d.opengl.renderer;
 import dquick.events.mouse_event;
 import dquick.item.image_item;
+import dquick.item.text_item;
 import dquick.item.border_image_item;
 import dquick.item.mouse_area_item;
 import dquick.script.dml_engine;
@@ -217,6 +218,7 @@ class Window : IWindow
 		mScriptContext.addItemType!(DeclarativeItem, "Item")();
 		mScriptContext.addItemType!(GraphicItem, "GraphicItem")();
 		mScriptContext.addItemType!(ImageItem, "Image")();
+		mScriptContext.addItemType!(TextItem, "Text")();
 		mScriptContext.addItemType!(BorderImageItem, "BorderImage")();
 		mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
 	}

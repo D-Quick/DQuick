@@ -8,6 +8,7 @@ version (Windows)
 	import dquick.system.window;
 	import dquick.maths.vector2s32;
 	import dquick.item.image_item;
+	import dquick.item.text_item;
 	import dquick.item.border_image_item;
 	import dquick.item.mouse_area_item;
 	import dquick.script.dml_engine;
@@ -105,6 +106,7 @@ version (Windows)
 			mScriptContext.addItemType!(DeclarativeItem, "Item")();
 			mScriptContext.addItemType!(GraphicItem, "GraphicItem")();
 			mScriptContext.addItemType!(ImageItem, "Image")();
+			mScriptContext.addItemType!(TextItem, "Text")();
 			mScriptContext.addItemType!(BorderImageItem, "BorderImage")();
 			mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
 		}

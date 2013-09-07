@@ -18,9 +18,14 @@ GraphicItem
         borderTop = 30,
         borderBottom = 30,
 		scale = 2,
-		orientation = 45
+		orientation = 45,
 --        horizontalTileMode = BorderImage.Stretch,
 --        verticalTileMode = BorderImage.Stretch,
+
+		Text {
+			id = "text",
+			source = "images/Qt/toolbutton.png",
+		},
     },
     Image {
 	    id = "image2",

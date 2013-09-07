@@ -298,6 +298,7 @@
     <File path="..\src\dquick\item\graphicItem.d" />
     <File path="..\src\dquick\item\imageItem.d" />
     <File path="..\src\dquick\item\mouseAreaItem.d" />
+    <File path="..\src\dquick\item\textItem.d" />
     <File path="..\src\dquick\item\windowItem.d" />
    </Folder>
    <Folder name="maths">

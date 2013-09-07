@@ -22,10 +22,9 @@ import std.c.string;	// for memcpy
 // TODO The font manager have to find fonts files in system folders
 // The function FT_Open_Face may help to discover mFaces types (regular, italic, bold,...) registered in a font file
 // http://www.freetype.org/freetype2/docs/reference/ft2-base_intermFace.html#FT_Open_Face
+// http://forum.dlang.org/thread/kcqstrprmrzluvfoylqb@forum.dlang.org#post-fbojhpvgewysrrapfapw:40forum.dlang.org
 
 // TODO migrate FT_Library to FontManager (if it share memory)
-
-// TODO clean memory (add SDL_FreeImage, FT_DoneFace, FT_DoneLibrary)
 
 class FontManager
 {
@@ -88,6 +87,13 @@ private:
 
 FontManager	fontManager;
 
+enum FontFamily
+{
+	Regular = 0x01,
+	Bold = 0x02,
+	Italic = 0x04
+}
+
 class Font
 {
 public:
@@ -108,34 +114,26 @@ public:
 		// Load glyphs
 		FT_Error		error;
 		FT_Int32		flags = 0;
-        int				ft_bitmap_width = 0;
-        int				ft_bitmap_rows = 0;
-        int				ft_bitmap_pitch = 0;
-        int				ft_glyph_top = 0;
-        int				ft_glyph_left = 0;
-		FT_Glyph		ft_glyph;
-		FT_GlyphSlot	slot;
-		FT_Bitmap		ft_bitmap;
-		FT_UInt			glyph_index;
-		size_t			i, width, height, depth;	// TODO replace x,y and width,height per Vector2s32
+		FT_Glyph		ftGlyph;
+		FT_GlyphSlot	ftGlyphSlot;
+		FT_Bitmap		ftBitmap;
+		FT_UInt			glyphIndex;
+		size_t			depth;	// TODO replace x,y and width,height per Vector2s32
 		Atlas.Region	region;
-		size_t			missed = 0;
 		Atlas			imageAtlas = fontManager.lastAtlas();
 
-		width  = imageAtlas.size().x;
-		height = imageAtlas.size().y;
 		depth  = 1;	// TODO do something better (because it impact the quality of rendering)
 
-		glyph_index = FT_Get_Char_Index(mFace, charCode);
+		glyphIndex = FT_Get_Char_Index(mFace, charCode);
 		// WARNING: We use texture-atlas depth to guess if user wants
 		//          LCD subpixel rendering
 
-		if (outline_type > 0)
+		if (mOutlineType > 0)
 			flags |= FT_LOAD_NO_BITMAP;
 		else
 			flags |= FT_LOAD_RENDER;
 
-		if (!hinting)
+		if (!mHinting)
 			flags |= FT_LOAD_NO_HINTING | FT_LOAD_NO_AUTOHINT;
 		else
 			flags |= FT_LOAD_FORCE_AUTOHINT;
@@ -144,74 +142,64 @@ public:
 		{
 			FT_Library_SetLcdFilter(mLibrary, FT_LcdFilter.FT_LCD_FILTER_LIGHT);
 			flags |= FT_LOAD_TARGET_LCD;
-			if (filtering)
-				FT_Library_SetLcdFilterWeights(mLibrary, lcd_weights.ptr);
+			if (mFiltering)
+				FT_Library_SetLcdFilterWeights(mLibrary, mLcdWeights.ptr);
 		}
-		error = FT_Load_Glyph(mFace, glyph_index, flags);
+		error = FT_Load_Glyph(mFace, glyphIndex, flags);
 		if (error)
 			throw new Exception(format("Failed to load glyph. Error : %d", error));
 
-		if (outline_type == 0)
+		if (mOutlineType == 0)
 		{
-			slot            = mFace.glyph;
-			ft_bitmap       = slot.bitmap;
-			ft_bitmap_width = slot.bitmap.width;
-			ft_bitmap_rows  = slot.bitmap.rows;
-			ft_bitmap_pitch = slot.bitmap.pitch;
-			ft_glyph_top    = slot.bitmap_top;
-			ft_glyph_left   = slot.bitmap_left;
+			ftGlyphSlot = mFace.glyph;
+			ftBitmap = ftGlyphSlot.bitmap;
 		}
 		else
 		{
 			FT_Stroker		stroker;
-			FT_BitmapGlyph	ft_bitmap_glyph;
+			FT_BitmapGlyph	ftBitmapGlyph;
+
 			error = FT_Stroker_New(mLibrary, &stroker);
 			if (error)
 				throw new Exception(format("Failed to create stroker. Error : %d", error));
 			scope(exit) FT_Stroker_Done(stroker);
 			FT_Stroker_Set(stroker,
-						   cast(int)(outline_thickness * 64),
+						   cast(int)(mOutlineThickness * 64),
 						   FT_Stroker_LineCap.FT_STROKER_LINECAP_ROUND,
 						   FT_Stroker_LineJoin.FT_STROKER_LINEJOIN_ROUND,
 						   0);
-			error = FT_Get_Glyph(mFace.glyph, &ft_glyph);
+			error = FT_Get_Glyph(mFace.glyph, &ftGlyph);
 			if (error)
 				throw new Exception(format("Failed to get glyph. Error : %d", error));
 
-			if (outline_type == 1)
-				error = FT_Glyph_Stroke(&ft_glyph, stroker, 1);
-			else if (outline_type == 2)
-				error = FT_Glyph_StrokeBorder(&ft_glyph, stroker, 0, 1);
-			else if (outline_type == 3)
-				error = FT_Glyph_StrokeBorder(&ft_glyph, stroker, 1, 1);
+			if (mOutlineType == 1)
+				error = FT_Glyph_Stroke(&ftGlyph, stroker, 1);
+			else if (mOutlineType == 2)
+				error = FT_Glyph_StrokeBorder(&ftGlyph, stroker, 0, 1);
+			else if (mOutlineType == 3)
+				error = FT_Glyph_StrokeBorder(&ftGlyph, stroker, 1, 1);
 			if (error)
 				throw new Exception(format("Failed to use stroker. Error : %d", error));
 
 			if (depth == 1)
 			{
-				error = FT_Glyph_To_Bitmap(&ft_glyph, FT_Render_Mode.FT_RENDER_MODE_NORMAL, null, 1);
+				error = FT_Glyph_To_Bitmap(&ftGlyph, FT_Render_Mode.FT_RENDER_MODE_NORMAL, null, 1);
 				if (error)
 					throw new Exception(format("Failed to convert glyph as bitmap. Error : %d", error));
 			}
 			else
 			{
-				error = FT_Glyph_To_Bitmap(&ft_glyph, FT_Render_Mode.FT_RENDER_MODE_LCD, null, 1);
+				error = FT_Glyph_To_Bitmap(&ftGlyph, FT_Render_Mode.FT_RENDER_MODE_LCD, null, 1);
 				if (error)
 					throw new Exception(format("Failed to convert glyph as bitmap. Error : %d", error));
 			}
-			ft_bitmap_glyph = cast(FT_BitmapGlyph) ft_glyph;
-			ft_bitmap       = ft_bitmap_glyph.bitmap;
-			ft_bitmap_width = ft_bitmap.width;
-			ft_bitmap_rows  = ft_bitmap.rows;
-			ft_bitmap_pitch = ft_bitmap.pitch;
-			ft_glyph_top    = ft_bitmap_glyph.top;
-			ft_glyph_left   = ft_bitmap_glyph.left;
+			ftBitmapGlyph = cast(FT_BitmapGlyph)ftGlyph;
+			ftBitmap = ftBitmapGlyph.bitmap;
 		}
 
-		region = imageAtlas.allocateRegion(ft_bitmap_width, ft_bitmap_rows);
+		region = imageAtlas.allocateRegion(ftBitmap.width, ftBitmap.rows);
 		if (region.x < 0)
 		{
-			missed++;
 			throw new Exception("Texture atlas is full. Instanciate a new one isn't supported yet");	// TODO
 			//			continue;
 		}
@@ -221,31 +209,33 @@ public:
 
 		with (*glyph)
 		{
-			glyph.atlasRegion	= region;
-			outline_type		= outline_type;
-			outline_thickness	= outline_thickness;
-			offset_x			= ft_glyph_left;
-			offset_y			= ft_glyph_top;
-/*
-			s0					= region.x / cast(float)width;
-			t0					= region.y / cast(float)height;
-			s1					= (region.x + glyph.width) / cast(float)width;
-			t1					= (region.y + glyph.height) / cast(float)height;
-			*/
+			atlasRegion			= region;
+			outlineType			= mOutlineType;
+			outlineThickness	= mOutlineThickness;
+			offset.x			= mFace.glyph.bitmap_left;
+			offset.y			= mFace.glyph.bitmap_top;
 		}
 
 		// Discard hinting to get advance
-		FT_Load_Glyph(mFace, glyph_index, FT_LOAD_RENDER | FT_LOAD_NO_HINTING);
-		slot = mFace.glyph;
-		glyph.advance_x = slot.advance.x / 64.0;
-		glyph.advance_y = slot.advance.y / 64.0;
+		FT_Load_Glyph(mFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_NO_HINTING);
+		ftGlyphSlot = mFace.glyph;
+		glyph.advance = Vector2s32(cast(int)(ftGlyphSlot.advance.x / 64.0), cast(int)(ftGlyphSlot.advance.y / 64.0));
 
-		if (outline_type > 0)
-			FT_Done_Glyph(ft_glyph);
-		
-		blitGlyph(ft_bitmap, *glyph);
+		FT_Done_Glyph(ftGlyph);
+
+		blitGlyph(ftBitmap, *glyph);
 
 		return tuple(*glyph, false);
+	}
+
+	float	height()
+	{
+		return mHeight;
+	}
+
+	float	linegap()
+	{
+		return mLinegap;
 	}
 
 private:
@@ -278,31 +268,31 @@ private:
 //		FT_Set_Transform(mFace, &matrix, null);
 	}
 
-	void	blitGlyph(const ref FT_Bitmap ft_bitmap, ref Glyph glyph)
+	void	blitGlyph(const ref FT_Bitmap ftBitmap, ref Glyph glyph)
 	{
 		glyph.image = new Image;
 		glyph.image.create("", glyph.atlasRegion.width, glyph.atlasRegion.height, 4);
 
 		glyph.image.fill(Color(1.0f, 1.0f, 1.0f, 0.0f), Vector2s32(0, 0), Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height));
 
-		assert(glyph.atlasRegion.width == ft_bitmap.width);
-		assert(glyph.atlasRegion.height == ft_bitmap.rows);
+		assert(glyph.atlasRegion.width == ftBitmap.width);
+		assert(glyph.atlasRegion.height == ftBitmap.rows);
 
 		size_t	depth;
 		uint	x = 0;
 		uint	y = 0;
 
 		depth = glyph.image.nbBytesPerPixel;
-		for (size_t i = 0; i < ft_bitmap.width; i++)
-			for (size_t j = 0; j < ft_bitmap.rows; j++)
+		for (size_t i = 0; i < ftBitmap.width; i++)
+			for (size_t j = 0; j < ftBitmap.rows; j++)
 			{
 				ubyte	color[4];
 
-				color[0] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
-				color[1] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
-				color[2] = 255 - ft_bitmap.buffer[j * ft_bitmap.pitch + i];
-				color[3] = ft_bitmap.buffer[j * ft_bitmap.pitch + i];
-				memcpy(glyph.image.pixels + ((y + j) * ft_bitmap.width + (x + i)) * depth, 
+				color[0] = 255 - ftBitmap.buffer[j * ftBitmap.pitch + i];
+				color[1] = 255 - ftBitmap.buffer[j * ftBitmap.pitch + i];
+				color[2] = 255 - ftBitmap.buffer[j * ftBitmap.pitch + i];
+				color[3] = ftBitmap.buffer[j * ftBitmap.pitch + i];
+				memcpy(glyph.image.pixels + ((y + j) * ftBitmap.width + (x + i)) * depth, 
 					   color.ptr,
 					   color.sizeof);
 			}
@@ -313,33 +303,30 @@ private:
 	FT_Library	mLibrary;
 	FT_Face		mFace;
 
-    string	filename;
+    string	mFilename;	// TODO Set it
 
-    float	size;
-    int		hinting;
-    int		outline_type;	// (0 = None, 1 = line, 2 = inner, 3 = outer)
-    float	outline_thickness;
-    int		filtering;
-    ubyte	lcd_weights[5];
+    float	mSize;		// TODO Set it
+    int		mHinting;
+    int		mOutlineType;	// (0 = None, 1 = line, 2 = inner, 3 = outer)
+    float	mOutlineThickness;
+    int		mFiltering;
+    ubyte	mLcdWeights[5];
 
-    float	height;
-    float	linegap;
-    float	ascender;
-    float	descender;
-    float	underline_position;
-    float	underline_thickness;
+    float	mHeight;	// TODO Set it
+    float	mLinegap;	// TODO Set it
+    float	mAscender;	// TODO Set it
+    float	mDescender;	// TODO Set it
+    float	mUnderlinePosition;	// TODO Set it
+    float	mUnderlineThickness;	// TODO Set it
 }
 
 // http://www.freetype.org/freetype2/docs/tutorial/step2.html
 struct Glyph
 {
-//    uint	charcode;
-    int				offset_x;
-    int				offset_y;
-    float			advance_x;
-    float			advance_y;
-    int				outline_type;
-    float			outline_thickness;
+    Vector2s32		offset;
+    Vector2s32		advance;
+    int				outlineType;
+    float			outlineThickness;
 
 	size_t			atlasIndex;
 	Atlas.Region	atlasRegion;	// TODO check redundancy with width and height
@@ -368,7 +355,16 @@ unittest
 	font = fontManager.getFont("../data/samples/fonts/Vera.ttf", 36);
 	text = "Iñtërnâtiônàlizætiøn";
 
-	foreach(dchar charCode; text)
+	Image		textImage;
+	Vector2s32	cursor;
+
+	cursor.x = 0;
+	cursor.y = /*cast(int)font.linegap*/ 36;
+	textImage = new Image;
+	textImage.create("", 500, 100, 4);
+	textImage.fill(Color(1.0f, 1.0f, 1.0f, 0.0f), Vector2s32(0, 0), textImage.size());
+
+	foreach (dchar charCode; text)
 	{
 		Tuple!(Glyph, bool)	glyphTuple;
 		Glyph				glyph;
@@ -397,7 +393,17 @@ unittest
 										  Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
 										  Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
 		}
+
+		Vector2s32	pos;
+
+		pos.x = glyph.offset.x;
+		pos.y = -glyph.offset.y;
+		textImage.blit(glyph.image,
+					   Vector2s32(0, 0),
+					   Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
+					   Vector2s32(cursor.x + pos.x, cursor.y + pos.y));
+		cursor.x = cursor.x + glyph.advance.x;
 	}
 
-	images[0].save("../data/FontTestResult.bmp");
+	textImage.save("../data/FontTestText.bmp");
 }
