@@ -259,7 +259,7 @@ private:
 
 		error = FT_New_Face(mLibrary, filePath.toStringz(), 0, &mFace);
 		if (error)
-			throw new Exception(format("Failed to load mFace. Error : %d", error));
+			throw new Exception(format("Failed to load face \"%s\". Error : %d", filePath, error));
 
 		error = FT_Select_Charmap(mFace, FT_Encoding.FT_ENCODING_UNICODE);
 		if (error)
