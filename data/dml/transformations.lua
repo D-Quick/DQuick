@@ -24,7 +24,10 @@ GraphicItem
 
 		Text {
 			id = "text",
-			source = "images/Qt/toolbutton.png",
+			text = "Iñtërnâtiônàlizætiøn",
+            font = "fonts/Vera.ttf",
+            fontSize = 36,
+            family = Text.Regular,
 		},
     },
     Image {

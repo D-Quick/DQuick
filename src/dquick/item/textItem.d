@@ -1,67 +1,79 @@
-module dquick.item.image_item;
+module dquick.item.text_item;
 
 import dquick.item.graphic_item;
-
-import dquick.renderer_2d.opengl.rectangle;
+import dquick.media.font;
+import dquick.renderer_3d.opengl.mesh;
 
 import std.stdio;
 
-class ImageItem : GraphicItem
+class TextItem : GraphicItem
 {
 public:
-	enum	FillMode
+	alias Font.Family	FontFamily;
+
+	this()
 	{
-		Stretch,
-		PreserveAspectFit,
-		PreserveAspectCrop,
-		Tile,
-		TileVertically,
-		TileHorizontally,
+		mMesh = new Mesh;
 	}
+
+	@property void	text(string text)
+	{
+		mText = text;
+		onTextChanged.emit(text);
+	}
+	@property string	text() {return mText;}
+	mixin Signal!(string) onTextChanged;
+
+	@property void	font(string font)
+	{
+		mFont = font;
+		onFontChanged.emit(font);
+	}
+	@property string	font() {return mFont;}
+	mixin Signal!(string) onFontChanged;
+	
+	@property void	fontSize(int size)
+	{
+		mFontSize = size;
+		onFontSizeChanged.emit(size);
+	}
+	@property int	fontSize() {return mFontSize;}
+	mixin Signal!(int) onFontSizeChanged;
+	
+	@property void	fontFamily(FontFamily family)
+	{
+		mFontFamily = family;
+		onFontFamilyChanged.emit(family);
+	}
+	@property FontFamily	fontFamily() {return mFontFamily;}
+	mixin Signal!(FontFamily) onFontFamilyChanged;
 
 	override
 	void	paint(bool transformationUpdated)
 	{
 		startPaint(transformationUpdated);
-		mRectangle.draw();
+//		mMesh.draw();
 		paintChildren();
 		endPaint();
-	}
-
-	@property void	source(string filePath)
-	{
-		mSource = filePath;
-		if (!mRectangle.setTexture(filePath))
-			writeln("ImageItem::source:: Warning : can't load image \"" ~ filePath ~"\"");
-		// TODO If this item is root, update the window size (only when item has to repect the image size)
-		setSize(mRectangle.size);
-		onSourceChanged.emit(filePath);
-	}
-
-	@property string	source() {return mSource;}
-	mixin Signal!(string) onSourceChanged;
-
-	void	setFillMode(FillMode newMode)
-	{
-		mFillMode = newMode;
 	}
 
 	override
 	{
 		void	setSize(Vector2f32 size)
 		{
-			mRectangle.setSize(size);
 			GraphicItem.setSize(size);
 		}
 
-		@property void	width(float width) {mRectangle.width = width; GraphicItem.width = width;}
+		@property void	width(float width) {GraphicItem.width = width;}
 		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height) {mRectangle.height = height; GraphicItem.height = height;}
+		@property void	height(float height) {GraphicItem.height = height;}
 		@property float	height() {return GraphicItem.height;}
 	}
 
 private:
-	Rectangle	mRectangle;
-	FillMode	mFillMode;
-	string		mSource;
+	Mesh		mMesh;
+	string		mText;
+	string		mFont;
+	int			mFontSize;
+	FontFamily	mFontFamily;
 }

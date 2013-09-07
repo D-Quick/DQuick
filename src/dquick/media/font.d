@@ -1,4 +1,4 @@
-module dquick.renderer_2d.opengl.font;
+module dquick.media.font;
 
 import derelict.freetype.ft;
 
@@ -87,16 +87,16 @@ private:
 
 FontManager	fontManager;
 
-enum FontFamily
-{
-	Regular = 0x01,
-	Bold = 0x02,
-	Italic = 0x04
-}
-
 class Font
 {
 public:
+	enum Family
+	{
+		Regular = 0x01,
+		Bold = 0x02,
+		Italic = 0x04
+	}
+
 	~this()
 	{
 		FT_Done_Face(mFace);
