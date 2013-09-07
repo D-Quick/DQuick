@@ -10,9 +10,12 @@ import dquick.renderer_3d.opengl.renderer;
 
 import dquick.maths.color;
 
+import dquick.media.image;
+
 import derelict.opengl3.gl;
 
 import std.stdio;
+import std.variant;
 
 class Mesh
 {
@@ -35,6 +38,13 @@ public:
 	bool	setTexture(string filePath)
 	{
 		mTexture = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Texture(filePath);
+		return true;
+	}
+	bool	setTexture(Image image)
+	{
+		Variant[] options;
+		options ~= Variant(image);
+		mTexture = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Texture(image.filePath(), options);
 		return true;
 	}
 	Texture	texture() {return mTexture;}
