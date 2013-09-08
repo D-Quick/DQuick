@@ -128,8 +128,9 @@ unittest
 	DMLEngine	dmlEngine = new DMLEngine;
 	dmlEngine.create();
 	dmlEngine.addItemType!(Item, "Item");
+	dmlEngine.addItemType!(SubItem, "SubItem");
 
-	/+// Test basic item
+	// Test basic item
 	string lua1 = q"(
 		Item {
 			id = "item1"
@@ -316,7 +317,7 @@ unittest
 		total = testObject2.testNormalMethod(1, 10)
 	)";
 	dmlEngine.execute(lua12, "");
-	assert(dmlEngine.getLuaGlobal!int("total") == 111);+/
+	assert(dmlEngine.getLuaGlobal!int("total") == 111);
 
 	// Test subitem property binding
 	Item	testObject3 = new Item;
@@ -324,7 +325,7 @@ unittest
 	testObject3.nativeSubItem.nativeProperty = 10;
 	string lua13 = q"(
 		subItem = testObject3.nativeSubItem
-		print(subItem)
+		print(subItem.nativeProperty)
 	)";
 	dmlEngine.execute(lua13, "");
 	//assert(dmlEngine.item!Item("item15"));
@@ -361,7 +362,6 @@ public:
 			lua_close(mLuaState);
 			mLuaState = null;
 		}
-		mDeclarativeItems = null;
 	}
 
 	void	addItemType(type, string luaName)()
@@ -480,7 +480,7 @@ public:
 
 		static if (showDebug)
 			writeln("INIT ==================================================================================================");
-		foreach (key, binding; mDeclarativeItems)
+		foreach (key, binding; mVoidToDeclarativeItems)
 			binding.executeBindings();
 		initializationPhase = false;
 
@@ -519,19 +519,11 @@ public:
 
 	DeclarativeItem	rootItem()
 	{
-		foreach (key, binding; mDeclarativeItems)
+		foreach (key, binding; mVoidToDeclarativeItems)
 		{
 			if (binding.declarativeItem.parent() is null)
 			{
 				writeln("rootItem " ~ binding.declarativeItem.id);
-				return binding.declarativeItem;
-			}
-		}
-		foreach (binding; mAnonymousDeclarativeItems)
-		{
-			if (binding.declarativeItem.parent() is null)
-			{
-				writeln("rootItem is anonymous");
 				return binding.declarativeItem;
 			}
 		}
@@ -540,20 +532,9 @@ public:
 
 	T	item(T)(string id)
 	{
-		foreach (key, binding; mDeclarativeItems)
-		{
-			if (binding.declarativeItem.id == id)
-			{
-				return cast(T)binding.declarativeItem;
-			}
-		}
-		foreach (binding; mAnonymousDeclarativeItems)
-		{
-			if (binding.declarativeItem.id == id)
-			{
-				return cast(T)binding.declarativeItem;
-			}
-		}
+		auto iItemBinding = mIdToDeclarativeItems[id];
+		if (iItemBinding !is null)
+			return cast(T)(iItemBinding.declarativeItem);
 		return null;
 	}
 
@@ -572,23 +553,22 @@ private:
 
 	void	addObjectBinding(T)(dquick.script.item_binding.ItemBinding!T itemBinding, string id)
 	{
-		if (id == "")
+		mVoidToDeclarativeItems[cast(void*)(itemBinding)] = itemBinding;
+
+		if (id != "")
 		{
-			mAnonymousDeclarativeItems ~= itemBinding;
-		}
-		else
-		{
-			if (id in mDeclarativeItems)
+			if (id in mIdToDeclarativeItems)
 				throw new Exception(format("an item with id \"%s\" already exist\n", id));
-			mDeclarativeItems[id] = cast(dquick.script.i_item_binding.IItemBinding)itemBinding;
+			mIdToDeclarativeItems[id] = cast(dquick.script.i_item_binding.IItemBinding)itemBinding;
 		}
 
 		itemBinding.creating = false;
 
-		// Create a userdata that contains instance name (hack because we crash when we try to put de pointer as void*) and make it a global for user access
+		// Create a userdata that contains instance void ptr and make it a global for user access
 		// It also contains a metatable for the member read and write access
-		void*	userData = lua_newuserdata(mLuaState, id.length + 1);
-		memcpy(userData, id.toStringz(), id.length + 1);
+		void*	itemBindingPtr = cast(void*)(itemBinding);
+		void*	userData = lua_newuserdata(mLuaState, itemBindingPtr.sizeof);
+		memcpy(userData, &itemBindingPtr, itemBindingPtr.sizeof);
 
 		lua_newtable(mLuaState);
 
@@ -608,8 +588,8 @@ private:
 		}
 	}
 
-	dquick.script.i_item_binding.IItemBinding[string]	mDeclarativeItems;
-	dquick.script.i_item_binding.IItemBinding[]			mAnonymousDeclarativeItems;
+	dquick.script.i_item_binding.IItemBinding[void*]	mVoidToDeclarativeItems;
+	dquick.script.i_item_binding.IItemBinding[string]	mIdToDeclarativeItems;
 	lua_State*	mLuaState;
 	IWindow		mWindow;
 	package dquick.script.property_binding.PropertyBinding[]		currentlyExecutedBindingStack;
@@ -759,12 +739,12 @@ extern(C)
 				}
 				else if (lua_type(L, -2) == LUA_TNUMBER)
 				{
-					string	itemId = to!(string)(cast(char*)lua_touserdata(L, -1));
+					void*	itemBindingPtr = *(cast(void**)lua_touserdata(L, -1));
 
-					auto	child = itemId in dmlEngine.mDeclarativeItems;
+					auto	child = itemBindingPtr in dmlEngine.mVoidToDeclarativeItems;
 					if (child == null)
 					{
-						writeln("createLuaBind:: can't find item \"%s\"\n", itemId);
+						writeln("createLuaBind:: can't find item\n");
 						return 0;
 					}
 
@@ -812,14 +792,13 @@ extern(C)
 			DMLEngine	dmlEngine = cast(DMLEngine)lua_touserdata(L, -1);
 			lua_pop(L, 1);
 
-			string	itemId = to!(string)(cast(char*)lua_touserdata(L, 1));
+			void*	itemBindingPtr = *(cast(void**)lua_touserdata(L, 1));
 			lua_remove(L, 1);
 			string	propertyId = to!(string)(lua_tostring(L, 1));
 			lua_remove(L, 1);
 
-			auto	iItemBinding = itemId in dmlEngine.mDeclarativeItems;
-			if (iItemBinding == null)
-				return 0;
+			auto	iItemBinding = itemBindingPtr in dmlEngine.mVoidToDeclarativeItems;
+			assert(iItemBinding !is null);
 			dquick.script.item_binding.ItemBinding!T	itemBinding = cast(dquick.script.item_binding.ItemBinding!T)(*iItemBinding);
 
 			// Search for property binding on the itemBinding
@@ -843,10 +822,10 @@ extern(C)
 					{
 						if (propertyId == member)
 						{
-							// Create a userdata that contains instance name (hack because we crash when we try to put de pointer as void*) and return it to emulate a method
+							// Create a userdata that contains instance void ptr and return it to emulate a method
 							// It also contains a metatable for calling
-							void*	userData = lua_newuserdata(L, itemId.length + 1);
-							memcpy(userData, itemId.toStringz(), itemId.length + 1);
+							void*	userData = lua_newuserdata(L, itemBindingPtr.sizeof);
+							memcpy(userData, &itemBindingPtr, itemBindingPtr.sizeof);
 
 							// Create metatable
 							lua_newtable(L);
@@ -903,14 +882,13 @@ extern(C)
 			DMLEngine	dmlEngine = cast(DMLEngine)lua_touserdata(L, -1);
 			lua_pop(L, 1);
 
-			string	itemId = to!(string)(cast(char*)lua_touserdata(L, 1));
+			void*	itemBindingPtr = *(cast(void**)lua_touserdata(L, 1));
 			lua_remove(L, 1);
 			string	propertyId = to!(string)(lua_tostring(L, 1));
 			lua_remove(L, 1);
 
-			auto	iItemBinding = itemId in dmlEngine.mDeclarativeItems;
-			if (iItemBinding == null)
-				return 0;
+			auto	iItemBinding = itemBindingPtr in dmlEngine.mVoidToDeclarativeItems;
+			assert(iItemBinding !is null);
 			dquick.script.item_binding.ItemBinding!T	itemBinding = cast(dquick.script.item_binding.ItemBinding!T)(*iItemBinding);
 
 			bool	found = false;
@@ -939,7 +917,7 @@ extern(C)
 				return 1;
 			}
 
-			writefln("newindexLuaBind:: Property %s doesn't exist on object %s", propertyId, itemId);
+			writefln("newindexLuaBind:: Property %s doesn't exist on object %s", propertyId, itemBinding.item);
 			return 0;
 		}
 		catch (Throwable e)
@@ -987,12 +965,11 @@ extern(C)
 			DMLEngine	dmlEngine = cast(DMLEngine)lua_touserdata(L, -1);
 			lua_pop(L, 1);
 
-			string	itemId = to!(string)(cast(char*)lua_touserdata(L, 1));
+			void*	itemBindingPtr = *(cast(void**)lua_touserdata(L, 1));
 			lua_remove(L, 1);
 
-			auto	iItemBinding = itemId in dmlEngine.mDeclarativeItems;
-			if (iItemBinding == null)
-				throw new Exception(format("unknown object \"%s\"", itemId));
+			auto	iItemBinding = itemBindingPtr in dmlEngine.mVoidToDeclarativeItems;
+			assert(iItemBinding !is null);
 			dquick.script.item_binding.ItemBinding!T	itemBinding = cast(dquick.script.item_binding.ItemBinding!T)(*iItemBinding);
 
 			int test = lua_gettop(L);

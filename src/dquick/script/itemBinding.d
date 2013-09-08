@@ -17,20 +17,35 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 		this.mDMLEngine = dmlEngine;
 		this.item = item;
 
-		foreach (member; __traits(allMembers, T))
+		foreach (member; __traits(allMembers, typeof(this)))
 		{
-			foreach (type; dquick.script.dml_engine.DMLEngine.propertyTypes)
+			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding))
 			{
-				enum	isPropertyOfTypeResult = isPropertyOfType!(T, member, type);
-				static if ((isPropertyOfTypeResult & IsPropertyOfTypeResult.Getter) && (isPropertyOfTypeResult & IsPropertyOfTypeResult.Signal))
-				{
-					static if (isPropertyOfTypeResult & IsPropertyOfTypeResult.Setter)
-						__traits(getMember, this, member) = new dquick.script.native_property_binding.NativePropertyBinding!type(this, cast(type delegate())(&__traits(getMember, this.item, member)), cast(void delegate(type))(&__traits(getMember, this.item, member)), member);
-					else
-						__traits(getMember, this, member) = new dquick.script.native_property_binding.NativePropertyBinding!type(this, cast(type delegate())(&__traits(getMember, this.item, member)), member);
+				__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this);
 
-					__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect(cast(TypeTuple!(ParameterTypeTuple!(__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect))[0])(&__traits(getMember, this, member).onChanged));
-				}
+				/*foreach (overload; __traits(getOverloads, T, member)) 
+				{
+					static if (isCallable!(overload))
+					{	
+						static if (!is (OriginalType!(ReturnType!(overload)) == void) && TypeTuple!(ParameterTypeTuple!overload).length == 0) // Getter
+						{
+							alias OriginalType!(ReturnType!(overload)) type;
+						pragma(msg, "ok cool", member);
+							static if (is(OriginalType!(__traits(getMember, this.item, member)) == void delegate(OriginalType!(ReturnType!(overload))))) // Has a setter
+								__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(	this,
+																																			cast(OriginalType!(ReturnType!(overload)) delegate())(__traits(getMember, this.item, member)),
+																																			cast(void delegate(OriginalType!(ReturnType!(overload))))(__traits(getMember, this.item, member)),
+																																			member);
+							else
+							{
+								auto getter = cast(type delegate())(__traits(getMember, this.item, member));
+								__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, getter, member);
+							}
+						}
+					}
+				}*/
+
+				__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect(cast(TypeTuple!(ParameterTypeTuple!(__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect))[0])(&__traits(getMember, this, member).onChanged));
 			}
 		}
 	}
@@ -43,13 +58,12 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 
 	~this()
 	{
-		foreach (member; __traits(allMembers, T))
+		foreach (member; __traits(allMembers, typeof(this)))
 		{
-			foreach (type; dquick.script.dml_engine.DMLEngine.propertyTypes)
+			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding))
 			{
-				enum	isPropertyOfTypeResult = isPropertyOfType!(T, member, type);
-				static if ((isPropertyOfTypeResult & IsPropertyOfTypeResult.Getter) && (isPropertyOfTypeResult & IsPropertyOfTypeResult.Signal))
-					.destroy(__traits(getMember, this, member));
+				assert(__traits(getMember, this, member) !is null);
+				.destroy(__traits(getMember, this, member));
 			}
 		}
 
@@ -73,6 +87,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 		{
 			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding))
 			{
+				assert(__traits(getMember, this, member) !is null);
 				__traits(getMember, this, member).executeBinding();
 			}
 		}
@@ -89,6 +104,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 			{
 				static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding))
 				{
+					assert(__traits(getMember, this, member) != null);
 					result ~= format("%s\n", member);
 					result ~= shiftRight(__traits(getMember, this, member).displayDependents(), "\t", 1);
 				}
@@ -137,22 +153,96 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 		}
 		return result;
 	}
+
+	static bool		isProperty(T, string member)()
+	{
+		static if (__traits(compiles, __traits(getOverloads, T, member)))
+		{
+			foreach (overload; __traits(getOverloads, T, member)) 
+			{
+				static if (isCallable!(overload))
+				{
+					static if (!is(ReturnType!(overload) == void) && TypeTuple!(ParameterTypeTuple!overload).length == 0) // Has a getter
+					{
+						static if (__traits(hasMember, T, getSignalNameFromPropertyName(member))) // Has a signal
+							return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	static auto		propertyType(T, string member)()
+	{
+		static if (__traits(compiles, __traits(getOverloads, T, member)))
+		{
+			foreach (overload; __traits(getOverloads, T, member)) 
+			{
+				static if (isCallable!(overload))
+				{
+					static if (!is(ReturnType!(overload) == void) && TypeTuple!(ParameterTypeTuple!overload).length == 0) // Has a getter
+					{
+						static if (__traits(hasMember, T, getSignalNameFromPropertyName(member))) // Has a signal
+						{
+							//pragma(msg, member);
+							return ReturnType!(overload);
+						}
+					}
+				}
+			}
+		}
+		static assert(false, member ~ " has no return type");
+	}
+	static bool		hasSetter(T, string member)()
+	{
+		static if (__traits(compiles, __traits(getOverloads, T, member)))
+		{
+			foreach (overload; __traits(getOverloads, T, member)) 
+			{
+				static if (isCallable!(overload))
+				{
+					static if (is (ReturnType!(overload) == void) && TypeTuple!(ParameterTypeTuple!overload).length == 1)
+						return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	static string	genProperties(T, propertyTypes...)()
 	{
 		string result = "";
 
 		foreach (member; __traits(allMembers, T))
 		{
-			foreach (type; propertyTypes)
+			static if (isProperty!(T, member))
 			{
-				enum	isPropertyOfTypeResult = isPropertyOfType!(T, member, type);
-				static if (member == "nativeSubItem")
-									pragma(msg, member, " ", isPropertyOfTypeResult);
-				static if ((isPropertyOfTypeResult & IsPropertyOfTypeResult.Getter) && (isPropertyOfTypeResult & IsPropertyOfTypeResult.Signal))
+				//pragma(msg, member);
+				static if (__traits(compiles, __traits(getOverloads, T, member)))
 				{
+					foreach (overload; __traits(getOverloads, T, member)) 
+					{
+						static if (isCallable!(overload))
+						{
+							static if (!is(ReturnType!(overload) == void) && TypeTuple!(ParameterTypeTuple!overload).length == 0) // Has a getter
+							{
+								static if (__traits(hasMember, T, getSignalNameFromPropertyName(member))) // Has a signal
+								{
+									pragma(msg, fullyQualifiedName2!(ReturnType!(overload)));
+									//return ReturnType!(overload);
 
-					result ~= "dquick.script.native_property_binding.NativePropertyBinding!" ~ type.stringof ~"\t" ~ member ~ ";\n";
+									//static if (member == "nativeSubItem")
+									//pragma(msg, member, " ", OriginalType!(ReturnType!(overload)));
+									//static if (is(ReturnType!(overload) : dquick.item.declarative_item.DeclarativeItem))
+									//	result ~= "dquick.script.native_property_binding.NativePropertyBinding!(" ~ fullyQualifiedName2!(dquick.script.item_binding.ItemBinding!(ReturnType!(overload))) ~", T, \"" ~ member ~ "\")\t" ~ member ~ ";\n";
+									//else
+										result ~= "dquick.script.native_property_binding.NativePropertyBinding!(" ~ fullyQualifiedName2!(ReturnType!(overload)) ~", T, \"" ~ member ~ "\")\t" ~ member ~ ";\n";
+								}
+							}
+						}
+					}
 				}
+
 			}
 		}
 

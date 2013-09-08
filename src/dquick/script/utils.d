@@ -6,6 +6,8 @@ import derelict.lua.lua;
 import std.conv;
 import std.variant;
 import std.traits;
+import core.memory;
+import std.c.string;
 
 string	repeat(string s, int count)
 {
@@ -98,11 +100,11 @@ T	valueFromLua(T)(lua_State* L, int index)
 			throw new Exception(format("Lua value at index %d is a \"%s\", a boolean was expected\n", index, getLuaTypeName(L, index)));
 		value = cast(bool)lua_toboolean(L, index);
 	}
-	else static if (is(T == int))
+	else static if (is(T == int) || is(T == enum))
 	{
 		if (!lua_isnumber(L, index))
 			throw new Exception(format("Lua value at index %d is a \"%s\", a number was expected\n", index, getLuaTypeName(L, index)));
-		value = cast(int)lua_tointeger(L, index);
+		value = cast(typeof(value))lua_tointeger(L, index);
 	}
 	else static if (is(T == float))
 	{
@@ -138,7 +140,7 @@ void	valueToLua(T)(lua_State* L, T value)
 		else
 			throw new Exception(format("Variant has type \"%s\", an int, double, bool or string was expected\n", value.type));
 	}
-	else static if (is(T == int))
+	else static if (is(T == int) || is(T == enum))
 		lua_pushinteger(L, value);
 	else static if (is(T == float))
 		lua_pushnumber(L, value);
@@ -146,6 +148,26 @@ void	valueToLua(T)(lua_State* L, T value)
 		lua_pushstring(L, value.toStringz());
 	else static if (is(T == bool))
 		lua_pushboolean(L, value);
+	else static if (is(T : dquick.script.i_item_binding.IItemBinding))
+	{
+		// Create a userdata that contains instance ptr and make it a global for user access
+		// It also contains a metatable for the member read and write access
+		/*void	itemBindingPtr = value.de
+
+		void*	userData = lua_newuserdata(L, value.id.length + 1);
+		memcpy(userData, value.id.toStringz(), value.id.length + 1);*/
+
+		lua_newtable(L);
+
+		lua_pushstring(L, "__index");
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dml_engine.indexLuaBind!T);
+		lua_settable(L, -3);
+		lua_pushstring(L, "__newindex");
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dml_engine.newindexLuaBind!T);
+		lua_settable(L, -3);
+
+		lua_setmetatable(L, -2);
+	}
 	else
 	{
 		static assert(false);
@@ -214,4 +236,247 @@ unittest
 
 	assert(getPropertyNameFromSignalName("onMouseXChanged") == "mouseX");
 	assert(getPropertyNameFromSignalName("onXChanged") == "x");
+}
+
+
+import std.algorithm;
+import std.typetuple;
+import std.typecons;
+import core.vararg;
+
+/***
+* Get the fully qualified name of a type or a symbol. Can act as an intelligent type/symbol to string  converter.
+* Example:
+* ---
+* module mymodule;
+* import std.traits;
+* struct MyStruct {}
+* static assert(fullyQualifiedName!(const MyStruct[]) == "const(mymodule.MyStruct[])");
+* static assert(fullyQualifiedName!fullyQualifiedName == "std.traits.fullyQualifiedName");
+* ---
+*/
+template fullyQualifiedName2(T...)
+if (T.length == 1)
+{
+
+    static if (is(T))
+        enum fullyQualifiedName2 = fullyQualifiedNameImplForTypes2!(T[0], false, false, false, false);
+    else
+        enum fullyQualifiedName2 = fullyQualifiedNameImplForSymbols2!(T[0]);
+}
+
+
+private template fullyQualifiedNameImplForSymbols2(alias T)
+{
+    static if (__traits(compiles, __traits(parent, T)))
+        enum parentPrefix = fullyQualifiedNameImplForSymbols2!(__traits(parent, T)) ~ '.';
+    else
+        enum parentPrefix = null;
+
+    enum fullyQualifiedNameImplForSymbols2 = parentPrefix ~ (s)
+    {
+        if(s.skipOver("package ") || s.skipOver("module "))
+            return s;
+        return s.findSplit("(")[0];
+    }(__traits(identifier, T));
+}
+
+private template fullyQualifiedNameImplForTypes2(T,
+												bool alreadyConst, bool alreadyImmutable, bool alreadyShared, bool alreadyInout)
+{
+    import std.string;
+
+    // Convenience tags
+    enum {
+        _const = 0,
+        _immutable = 1,
+        _shared = 2,
+        _inout = 3
+    }
+
+    alias TypeTuple!(is(T == const), is(T == immutable), is(T == shared), is(T == inout)) qualifiers;
+    alias TypeTuple!(false, false, false, false) noQualifiers;
+
+    string storageClassesString(uint psc)() @property
+    {
+        alias ParameterStorageClass PSC;
+
+        return format("%s%s%s%s",
+					  psc & PSC.scope_ ? "scope " : "",
+					  psc & PSC.out_ ? "out " : "",
+					  psc & PSC.ref_ ? "ref " : "",
+					  psc & PSC.lazy_ ? "lazy " : ""
+					  );
+    }
+
+    string parametersTypeString(T)() @property
+    {
+        import std.array, std.algorithm, std.range;
+
+        alias ParameterTypeTuple!(T) parameters;
+        alias ParameterStorageClassTuple!(T) parameterStC;
+
+        enum variadic = variadicFunctionStyle!T;
+        static if (variadic == Variadic.no)
+            enum variadicStr = "";
+        else static if (variadic == Variadic.c)
+            enum variadicStr = ", ...";
+        else static if (variadic == Variadic.d)
+            enum variadicStr = parameters.length ? ", ..." : "...";
+        else static if (variadic == Variadic.typesafe)
+            enum variadicStr = " ...";
+        else
+            static assert(0, "New variadic style has been added, please update fullyQualifiedName implementation");
+
+        static if (parameters.length)
+        {
+            string result = join(
+								 map!(a => format("%s%s", a[0], a[1]))(
+																	   zip([staticMap!(storageClassesString, parameterStC)],
+																		   [staticMap!(fullyQualifiedName, parameters)])
+																	   ),
+								 ", "
+								 );
+
+            return result ~= variadicStr;
+        }
+        else
+            return variadicStr;
+    }
+
+    string linkageString(T)() @property
+    {
+        enum linkage = functionLinkage!T;
+
+        if (linkage != "D")
+            return format("extern(%s) ", linkage);
+        else
+            return "";
+    }
+
+    string functionAttributeString(T)() @property
+    {
+        alias FunctionAttribute FA;
+        enum attrs = functionAttributes!T;
+
+        static if (attrs == FA.none)
+            return "";
+        else
+            return format("%s%s%s%s%s%s",
+						  attrs & FA.pure_ ? " pure" : "",
+						  attrs & FA.nothrow_ ? " nothrow" : "",
+						  attrs & FA.ref_ ? " ref" : "",
+						  attrs & FA.property ? " @property" : "",
+						  attrs & FA.trusted ? " @trusted" : "",
+						  attrs & FA.safe ? " @safe" : ""
+						  );
+    }
+
+    string addQualifiers(string typeString,
+						 bool addConst, bool addImmutable, bool addShared, bool addInout)
+    {
+        auto result = typeString;
+        if (addShared)
+        {
+            result = format("shared(%s)", result);
+        }
+        if (addConst || addImmutable || addInout)
+        {
+            result = format("%s(%s)",
+							addConst ? "const" :
+							addImmutable ? "immutable" : "inout",
+							result
+							);
+        }
+        return result;
+    }
+
+    // Convenience template to avoid copy-paste
+    template chain(string current)
+    {
+        enum chain = addQualifiers(current,
+								   qualifiers[_const]     && !alreadyConst,
+								   qualifiers[_immutable] && !alreadyImmutable,
+								   qualifiers[_shared]    && !alreadyShared,
+								   qualifiers[_inout]     && !alreadyInout);
+    }
+
+    static if (is(T == string))
+    {
+        enum fullyQualifiedNameImplForTypes2 = "string";
+    }
+    else static if (is(T == wstring))
+    {
+        enum fullyQualifiedNameImplForTypes2 = "wstring";
+    }
+    else static if (is(T == dstring))
+    {
+        enum fullyQualifiedNameImplForTypes2 = "dstring";
+    }
+    else static if (isBasicType!T && !is(T == enum))
+    {
+        enum fullyQualifiedNameImplForTypes2 = chain!((Unqual!T).stringof);
+    }
+    else static if (isAggregateType!T || is(T == enum))
+    {
+        enum fullyQualifiedNameImplForTypes2 = chain!(fullyQualifiedNameImplForSymbols2!T);
+    }
+    else static if (isStaticArray!T)
+    {
+        import std.conv;
+
+        enum fullyQualifiedNameImplForTypes2 = chain!(
+													 format("%s[%s]", fullyQualifiedNameImplForTypes2!(typeof(T.init[0]), qualifiers), T.length)
+													 );
+    }
+    else static if (isArray!T)
+    {
+        enum fullyQualifiedNameImplForTypes2 = chain!(
+													 format("%s[]", fullyQualifiedNameImplForTypes2!(typeof(T.init[0]), qualifiers))
+													 );
+    }
+    else static if (isAssociativeArray!T)
+    {
+        enum fullyQualifiedNameImplForTypes2 = chain!(
+													 format("%s[%s]", fullyQualifiedNameImplForTypes2!(ValueType!T, qualifiers), fullyQualifiedNameImplForTypes2!(KeyType!T, noQualifiers))
+													 );
+    }
+    else static if (isSomeFunction!T)
+    {
+        static if (is(T F == delegate))
+        {
+            enum qualifierString = format("%s%s",
+										  is(F == shared) ? " shared" : "",
+										  is(F == inout) ? " inout" :
+										  is(F == immutable) ? " immutable" :
+										  is(F == const) ? " const" : ""
+											  );
+            enum formatStr = "%s%s delegate(%s)%s%s";
+            enum fullyQualifiedNameImplForTypes2 = chain!(
+														 format(formatStr, linkageString!T, fullyQualifiedNameImplForTypes2!(ReturnType!T, noQualifiers),
+																parametersTypeString!(T), functionAttributeString!T, qualifierString)
+														 );
+        }
+        else
+        {
+            static if (isFunctionPointer!T)
+                enum formatStr = "%s%s function(%s)%s";
+            else
+                enum formatStr = "%s%s(%s)%s";
+
+            enum fullyQualifiedNameImplForTypes2 = chain!(
+														 format(formatStr, linkageString!T, fullyQualifiedNameImplForTypes2!(ReturnType!T, noQualifiers),
+																parametersTypeString!(T), functionAttributeString!T)
+														 );
+        }
+    }
+    else static if (isPointer!T)
+    {
+        enum fullyQualifiedNameImplForTypes2 = chain!(
+													 format("%s*", fullyQualifiedNameImplForTypes2!(PointerTarget!T, qualifiers))
+													 );
+    }
+    else
+        // In case something is forgotten
+        static assert(0, "Unrecognized type " ~ T.stringof ~ ", can't convert to fully qualified string");
 }
