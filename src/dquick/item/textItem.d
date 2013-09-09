@@ -13,6 +13,12 @@ import std.stdio;
 import std.typecons;
 import std.string;
 
+// TODO Support pixel perfect render (check the matrix)
+// TODO Support multiline
+// TODO Optimize the generated mesh
+// TODO Add a markup system (merge meshes by texture, but limit their size for a good support of occluders)
+// TODO Find font by name and family
+
 class TextItem : GraphicItem
 {
 public:
@@ -158,10 +164,7 @@ private:
 				pos.y = -glyph.offset.y;
 
 				addGlyphToMesh(indexes, vertices, texCoords, colors, Vector2s32(cursor.x + pos.x, cursor.y + pos.y), glyph, glyphIndex, images[glyph.atlasIndex]);
-				/*			textImage.blit(glyph.image,
-				Vector2s32(0, 0),
-				Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
-				Vector2s32(cursor.x + pos.x, cursor.y + pos.y));*/
+
 				cursor.x = cursor.x + glyph.advance.x;
 				glyphIndex++;
 			}
@@ -171,7 +174,6 @@ private:
 			mMesh.texCoords.setArray(texCoords, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
 			mMesh.colors.setArray(colors, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
 			mMesh.setTexture(images[0]);
-			images[0].save("../data/truc.bmp");
 		}
 		catch (Exception e)
 		{
