@@ -46,6 +46,8 @@ public:
 		{
 			mWeight = width * height * nbBytesPerPixel;
 			mFilePath = filePath;
+			if (SDL_SetSurfaceBlendMode(mSurface, SDL_BLENDMODE_NONE) != 0)
+				throw new Exception(format("Unable to fix rigth blending mode, error : \"%s\"", to!string(SDL_GetError())));
 		}
 		else
 			throw new Exception(format("Unable to load image \"%s\"", filePath));
@@ -80,6 +82,8 @@ public:
 		{
 			mWeight = width * height * nbBytesPerPixel;
 			mFilePath = filePath;
+			if (SDL_SetSurfaceBlendMode(mSurface, SDL_BLENDMODE_NONE) != 0)
+				throw new Exception(format("Unable to fix rigth blending mode, error : \"%s\"", to!string(SDL_GetError())));
 		}
 		else
 			throw new Exception(format("Unable to create image \"%s\", error : \"%s\"", filePath, to!string(SDL_GetError())));
@@ -119,6 +123,16 @@ public:
 		destinationRect.y = destPosition.y;
 		destinationRect.w = 0;
 		destinationRect.h = 0;
+
+/*		for (size_t i = 0; i < sourceImage.width; i++)
+			for (size_t j = 0; j < sourceImage.height; j++)
+			{
+				uint* destPixels = cast(uint*)mSurface.pixels;
+				uint* sourcePixels = cast(uint*)sourceImage.mSurface.pixels;
+
+				destPixels[(j + destPosition.y) * mSurface.w + (i + destPosition.x)] = sourcePixels[j * sourceImage.width + i];
+			}
+*/
 
 		if (SDL_BlitSurface(sourceImage.mSurface, &sourceRect, mSurface, &destinationRect) != 0)
 			throw new Exception(format("Unable to fill image, error : \"%s\"", to!string(SDL_GetError())));
