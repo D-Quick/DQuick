@@ -30,7 +30,7 @@ class Renderer
 			return;
 
 //		checkgl!glShadeModel(GL_SMOOTH);							// Enable Smooth Shading (deprecated)
-		checkgl!glClearColor(0.0f, 0.0f, 0.0f, 0.5f);				// Black Background
+		checkgl!glClearColor(1.0f, 1.0f, 1.0f, 1.0f);				// Black Background
 		checkgl!glClearDepth(1.0f);									// Depth Buffer Setup
 //		checkgl!glEnable(GL_DEPTH_TEST);							// Enables Depth Testing
 //		checkgl!glDepthFunc(GL_LEQUAL);								// The Type Of Depth Testing To Do
