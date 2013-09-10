@@ -6,6 +6,7 @@ import dquick.algorithms.atlas;
 import dquick.media.image;
 
 import dquick.maths.vector2s32;
+import dquick.maths.vector2f32;
 import dquick.maths.color;
 
 import std.stdio;
@@ -233,7 +234,7 @@ public:
 		// Discard hinting to get advance
 		FT_Load_Glyph(mFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_NO_HINTING);
 		ftGlyphSlot = mFace.glyph;
-		glyph.advance = Vector2s32(cast(int)(ftGlyphSlot.advance.x / 64.0), cast(int)(ftGlyphSlot.advance.y / 64.0));
+		glyph.advance = Vector2f32(ftGlyphSlot.advance.x / 64.0, ftGlyphSlot.advance.y / 64.0);
 
 		FT_Done_Glyph(ftGlyph);
 
@@ -250,6 +251,20 @@ public:
 	float	linegap()
 	{
 		return mLinegap;
+	}
+
+	Vector2f32	kerning(uint previousCharacter, uint currentCharacter)
+	{
+		FT_Error	error;
+		FT_Vector	kerning;
+
+		if (mFace == null)
+			Vector2f32(0.0f, 0.0f);
+
+		error = FT_Get_Kerning(mFace, previousCharacter, currentCharacter, FT_Kerning_Mode.FT_KERNING_DEFAULT, &kerning);
+		if (error > 0)
+			throw new Exception("Failed to retrieve kerning.");
+		return	Vector2f32(cast(float)(kerning.x >> 6), cast(float)(kerning.y >> 6));
 	}
 
 private:
@@ -355,8 +370,8 @@ private:
 // http://www.freetype.org/freetype2/docs/tutorial/step2.html
 struct Glyph
 {
-    Vector2s32		offset;
-    Vector2s32		advance;
+    Vector2f32		offset;
+    Vector2f32		advance;
     int				outlineType;
     float			outlineThickness;
 
@@ -390,7 +405,7 @@ unittest
 	text = "Iñtërnâtiônàlizætiøn";
 
 	Image		textImage;
-	Vector2s32	cursor;
+	Vector2f32	cursor;
 
 	cursor.x = 0;
 	cursor.y = /*cast(int)font.linegap*/ 36;
@@ -428,14 +443,14 @@ unittest
 										  Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
 		}
 
-		Vector2s32	pos;
+		Vector2f32	pos;
 
 		pos.x = glyph.offset.x;
 		pos.y = -glyph.offset.y;
 		textImage.blit(glyph.image,
 					   Vector2s32(0, 0),
 					   Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
-					   Vector2s32(cursor.x + pos.x, cursor.y + pos.y));
+					   Vector2s32(cast(int)round(cursor.x + pos.x), cast(int)round(cursor.y + pos.y)));
 		cursor.x = cursor.x + glyph.advance.x;
 	}
 

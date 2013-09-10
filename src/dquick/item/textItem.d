@@ -12,13 +12,13 @@ import dquick.maths.color;
 import std.stdio;
 import std.typecons;
 import std.string;
+import std.math;
 
 // TODO Support pixel perfect render (check the matrix)
 // TODO Support multiline
 // TODO Optimize the generated mesh
 // TODO Add a markup system (merge meshes by texture, but limit their size for a good support of occluders)
 // TODO Find font by name and family
-// TODO Check the advancement that need to be round on x axis not truncated (advance.x)
 
 class TextItem : GraphicItem
 {
@@ -123,9 +123,10 @@ private:
 
 			Image[]	images;
 
-			Vector2s32	cursor;
+			Vector2f32	cursor;
 			bool		newLineStarted = true;
 			size_t		glyphIndex;
+			dchar		prevCharCode;
 
 			cursor.x = 0;
 			cursor.y = /*cast(int)font.linegap*/ mFontSize;
@@ -171,19 +172,22 @@ private:
 														Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
 					}
 
-					Vector2s32	pos;
+					Vector2f32	pos;
 
-					pos.x = glyph.offset.x;
+					if (!newLineStarted)
+						pos.x = glyph.offset.x + font.kerning(prevCharCode, charCode).x;
+					else
+						pos.x = 0.0f;
 					pos.y = -glyph.offset.y;
 
-					if (newLineStarted)
-						pos.x = 0;
-
-					writeln(format("cursor %03d %03d", cursor.x + pos.x, cursor.y));
-					addGlyphToMesh(indexes, vertices, texCoords, colors, Vector2s32(cursor.x + pos.x, cursor.y + pos.y), glyph, glyphIndex, images[glyph.atlasIndex]);
+					writeln(format("cursor %f %f", cursor.x, cursor.y));
+					addGlyphToMesh(indexes, vertices, texCoords, colors,
+								   Vector2s32(cast(int)round(cursor.x + pos.x), cast(int)round(cursor.y + pos.y)),
+								   glyph, glyphIndex, images[glyph.atlasIndex]);
 
 					cursor.x = cursor.x + glyph.advance.x;
 					newLineStarted = false;
+					prevCharCode = charCode;
 					glyphIndex++;
 				}
 			}
