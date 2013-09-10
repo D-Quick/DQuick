@@ -23,7 +23,7 @@ int main(string[] args)
 
 		chdir(GuiApplication.instance().directoryPath);
 
-		mainWindow.setMainItem("dml/transformations.lua");
+		mainWindow.setMainItem("dml/text - constitution.lua");
 //		mainWindow.setMainItem("dml/image.lua");
 
 		mainWindow.show();

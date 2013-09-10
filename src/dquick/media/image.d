@@ -46,6 +46,8 @@ public:
 		{
 			mWeight = width * height * nbBytesPerPixel;
 			mFilePath = filePath;
+			if (SDL_SetSurfaceBlendMode(mSurface, SDL_BLENDMODE_NONE) != 0)
+				throw new Exception(format("Unable to fix rigth blending mode, error : \"%s\"", to!string(SDL_GetError())));
 		}
 		else
 			throw new Exception(format("Unable to load image \"%s\"", filePath));
@@ -80,6 +82,8 @@ public:
 		{
 			mWeight = width * height * nbBytesPerPixel;
 			mFilePath = filePath;
+			if (SDL_SetSurfaceBlendMode(mSurface, SDL_BLENDMODE_NONE) != 0)
+				throw new Exception(format("Unable to fix rigth blending mode, error : \"%s\"", to!string(SDL_GetError())));
 		}
 		else
 			throw new Exception(format("Unable to create image \"%s\", error : \"%s\"", filePath, to!string(SDL_GetError())));
@@ -102,6 +106,7 @@ public:
 			throw new Exception(format("Unable to fill image, error : \"%s\"", to!string(SDL_GetError())));
 	}
 
+	/// Doesn't support blending
 	void	blit(Image sourceImage, Vector2s32 sourcePosition, Vector2s32 sourceSize, Vector2s32 destPosition)
 	{
 		assert(sourceImage.mSurface != null);

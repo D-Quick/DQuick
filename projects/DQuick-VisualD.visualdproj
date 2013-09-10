@@ -193,6 +193,7 @@
    <Folder name="dml">
     <File path="..\data\dml\button.lua" />
     <File path="..\data\dml\image.lua" />
+    <File path="..\data\dml\text - constitution.lua" />
     <File path="..\data\dml\transformations.lua" />
    </Folder>
    <Folder name="dquick">

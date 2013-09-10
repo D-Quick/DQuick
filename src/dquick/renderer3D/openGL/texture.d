@@ -82,6 +82,13 @@ private:
 
 		checkgl!glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		checkgl!glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+/*		checkgl!glTexParameteri( GL_TEXTURE_2D, 
+						GL_TEXTURE_WRAP_S, 
+						GL_CLAMP ); 
+		checkgl!glTexParameteri( GL_TEXTURE_2D, 
+						GL_TEXTURE_WRAP_T, 
+						GL_REPEAT );*/
+
 		//		checkgl!glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		//		checkgl!glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
