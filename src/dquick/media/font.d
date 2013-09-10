@@ -8,9 +8,11 @@ import dquick.media.image;
 import dquick.maths.vector2s32;
 import dquick.maths.color;
 
+import std.stdio;
 import std.string;
 import std.typecons;
 import std.c.string;	// for memcpy
+import std.math;
 
 /**
 * One Font per size
@@ -23,6 +25,7 @@ import std.c.string;	// for memcpy
 // The function FT_Open_Face may help to discover mFaces types (regular, italic, bold,...) registered in a font file
 // http://www.freetype.org/freetype2/docs/reference/ft2-base_intermFace.html#FT_Open_Face
 // http://forum.dlang.org/thread/kcqstrprmrzluvfoylqb@forum.dlang.org#post-fbojhpvgewysrrapfapw:40forum.dlang.org
+// registry DB : HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft \Windows NT\CurrentVersion\Fonts
 
 // TODO migrate FT_Library to FontManager (if it share memory)
 
@@ -277,6 +280,24 @@ private:
 			throw new Exception(format("Failed to select charmap. Error : %d", error));
 
 //		FT_Set_Transform(mFace, &matrix, null);
+
+		mFilename = filePath;
+		mSize = size;
+
+		mUnderlinePosition = mFace.underline_position / cast(float)mSize;
+		mUnderlinePosition = round(mUnderlinePosition);
+		if (mUnderlinePosition > -2)
+			mUnderlinePosition = -2.0;
+
+		mUnderlineThickness = mFace.underline_thickness / cast(float)mSize;
+		mUnderlineThickness = round(mUnderlineThickness);
+		if (mUnderlineThickness < 1)
+			mUnderlineThickness = 1.0;
+
+		mAscender = mFace.size.metrics.ascender >> 6;
+		mDescender = mFace.size.metrics.descender >> 6;
+		mHeight = mFace.size.metrics.height >> 6;
+		mLinegap = mHeight /* - mAscender + mDescender*/;
 	}
 
 	void	blitGlyph(const ref FT_Bitmap ftBitmap, ref Glyph glyph)
@@ -311,24 +332,24 @@ private:
 
 	Glyph[uint]	mGlyphs;
 
-	FT_Library	mLibrary;
-	FT_Face		mFace;
+	FT_Library		mLibrary;
+	FT_Face			mFace;
 
     string	mFilename;	// TODO Set it
 
-    float	mSize;		// TODO Set it
+    float	mSize;
     int		mHinting;
     int		mOutlineType;	// (0 = None, 1 = line, 2 = inner, 3 = outer)
     float	mOutlineThickness;
     int		mFiltering;
     ubyte	mLcdWeights[5];
 
-    float	mHeight;	// TODO Set it
-    float	mLinegap;	// TODO Set it
-    float	mAscender;	// TODO Set it
-    float	mDescender;	// TODO Set it
-    float	mUnderlinePosition;	// TODO Set it
-    float	mUnderlineThickness;	// TODO Set it
+    float	mHeight;
+    float	mLinegap;
+    float	mAscender;
+    float	mDescender;
+    float	mUnderlinePosition;
+    float	mUnderlineThickness;
 }
 
 // http://www.freetype.org/freetype2/docs/tutorial/step2.html

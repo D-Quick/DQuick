@@ -18,6 +18,7 @@ import std.string;
 // TODO Optimize the generated mesh
 // TODO Add a markup system (merge meshes by texture, but limit their size for a good support of occluders)
 // TODO Find font by name and family
+// TODO Check the advancement that need to be round on x axis not truncated (advance.x)
 
 class TextItem : GraphicItem
 {
@@ -123,6 +124,7 @@ private:
 			Image[]	images;
 
 			Vector2s32	cursor;
+			bool		newLineStarted = true;
 			size_t		glyphIndex;
 
 			cursor.x = 0;
@@ -130,43 +132,60 @@ private:
 
 			foreach (dchar charCode; mText)
 			{
-				Tuple!(Glyph, bool)	glyphTuple;
-				Glyph				glyph;
-				bool				alreadyLoaded;
-
-				glyphTuple = font.loadGlyph(charCode);
-				glyph = glyphTuple[0];
-				alreadyLoaded = glyphTuple[1];
-
-				if (!alreadyLoaded)
+				if (charCode == '\r')
 				{
-					// Allocate image if need
-					while (glyph.atlasIndex >= images.length)
+				}
+				else if (charCode == '\n')
+				{
+					cursor.x = 0;
+					cursor.y = cursor.y + cast(int)font.linegap();
+					newLineStarted = true;
+				}
+				else
+				{
+					Tuple!(Glyph, bool)	glyphTuple;
+					Glyph				glyph;
+					bool				alreadyLoaded;
+
+					glyphTuple = font.loadGlyph(charCode);
+					glyph = glyphTuple[0];
+					alreadyLoaded = glyphTuple[1];
+
+					if (!alreadyLoaded)
 					{
-						images ~= new Image;
-						images[$ - 1].create(format("ImageAtlas-%d", images.length),
-											 fontManager.getAtlas(images.length - 1).size().x,
-											 fontManager.getAtlas(images.length - 1).size().y,
-											 4);
-						images[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), images[$ - 1].size());
+						// Allocate image if need
+						while (glyph.atlasIndex >= images.length)
+						{
+							images ~= new Image;
+							images[$ - 1].create(format("ImageAtlas-%d", images.length),
+													fontManager.getAtlas(images.length - 1).size().x,
+													fontManager.getAtlas(images.length - 1).size().y,
+													4);
+							images[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), images[$ - 1].size());
+						}
+
+						// Write glyph in image
+						images[glyph.atlasIndex].blit(glyph.image,
+														Vector2s32(0, 0),
+														Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
+														Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
 					}
 
-					// Write glyph in image
-					images[glyph.atlasIndex].blit(glyph.image,
-												  Vector2s32(0, 0),
-												  Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
-												  Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
+					Vector2s32	pos;
+
+					pos.x = glyph.offset.x;
+					pos.y = -glyph.offset.y;
+
+					if (newLineStarted)
+						pos.x = 0;
+
+					writeln(format("cursor %03d %03d", cursor.x + pos.x, cursor.y));
+					addGlyphToMesh(indexes, vertices, texCoords, colors, Vector2s32(cursor.x + pos.x, cursor.y + pos.y), glyph, glyphIndex, images[glyph.atlasIndex]);
+
+					cursor.x = cursor.x + glyph.advance.x;
+					newLineStarted = false;
+					glyphIndex++;
 				}
-
-				Vector2s32	pos;
-
-				pos.x = glyph.offset.x;
-				pos.y = -glyph.offset.y;
-
-				addGlyphToMesh(indexes, vertices, texCoords, colors, Vector2s32(cursor.x + pos.x, cursor.y + pos.y), glyph, glyphIndex, images[glyph.atlasIndex]);
-
-				cursor.x = cursor.x + glyph.advance.x;
-				glyphIndex++;
 			}
 
 			mMesh.indexes.setArray(indexes, cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
