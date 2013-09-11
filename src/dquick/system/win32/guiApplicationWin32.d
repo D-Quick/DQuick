@@ -342,6 +342,44 @@ version (Windows)
 				mContext.swapBuffers();
 		}
 
+		void	onMouseEvent()
+		{
+			if (mRootItem)
+			{
+				Vector2s32	ePosition;
+				POINT		pos;
+
+				if (GetCursorPos(&pos))
+				{
+					if (ScreenToClient(mhWnd, &pos))
+					{
+						ePosition.x = pos.x;
+						ePosition.y = pos.y;
+					}
+				}
+				else
+					writeln("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+
+				MouseEvent.Buttons	eButtons = MouseEvent.Buttons.Any;
+
+/*				if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT))
+					eButtons |= MouseEvent.Buttons.Left;
+				if (buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE))
+					eButtons |= MouseEvent.Buttons.Middle;
+				if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT))
+					eButtons |= MouseEvent.Buttons.Right;
+				if (buttons & SDL_BUTTON(SDL_BUTTON_X1))
+					eButtons |= MouseEvent.Buttons.X1;
+				if (buttons & SDL_BUTTON(SDL_BUTTON_X2))
+					eButtons |= MouseEvent.Buttons.X2;*/
+
+				MouseEvent	event = MouseEvent(ePosition, eButtons);
+
+				mRootItem.mouseEvent(event);
+			}
+		}
+
 		DMLEngine	mScriptContext;
 
 		static int	mWindowsCounter = 0;
@@ -365,11 +403,13 @@ version (Windows)
 		Vector2s32	size;
 		Vector2s32	position;
 		bool		state;
+//		POINTS		pos;
 
 		try
 		{
 			switch (message)
 			{
+				// Window events
 				case WM_CREATE:
 					break;
 				case WM_MOVE:		// position de cliet arena
@@ -407,7 +447,47 @@ version (Windows)
 					PostQuitMessage(0);
 					break;
 
-					// TODO manage the WM_ACTIVATE event for fullscreen
+
+
+
+
+
+				// Mouse events
+				case WM_MOUSEMOVE:
+					position.x = LOWORD(lParam);
+					position.y = HIWORD(lParam);
+					GuiApplication.mWindows[hWnd].onMouseEvent();
+//					inputMgr->setMouseRawPosition(TeVector2s32(pos.x, pos.y), 0);
+					return 0;
+				case WM_LBUTTONDOWN:
+					position.x = LOWORD(lParam);
+					position.y = HIWORD(lParam);
+					GuiApplication.mWindows[hWnd].onMouseEvent();
+//					inputMgr->setMouseRawPosition(TeVector2s32(pos.x, pos.y), 0);
+//					inputMgr->setMouseLeft(true, 0);
+//					SetCapture(currentWindow->mhWnd);
+					return 0;
+				case WM_LBUTTONUP:
+					position.x = LOWORD(lParam);
+					position.y = HIWORD(lParam);
+					GuiApplication.mWindows[hWnd].onMouseEvent();
+//					inputMgr->setMouseRawPosition(TeVector2s32(pos.x, pos.y), 0);
+//					inputMgr->setMouseLeft(false, 0);
+//					ReleaseCapture();
+					return 0;
+				case WM_RBUTTONDOWN:
+					position.x = LOWORD(lParam);
+					position.y = HIWORD(lParam);
+					GuiApplication.mWindows[hWnd].onMouseEvent();
+					//					SetCapture(currentWindow->mhWnd);
+					return 0;
+				case WM_RBUTTONUP:
+					position.x = LOWORD(lParam);
+					position.y = HIWORD(lParam);
+					GuiApplication.mWindows[hWnd].onMouseEvent();
+//					ReleaseCapture();
+					return 0;
+
 				default:
 					break;
 			}
@@ -428,6 +508,13 @@ version (Windows)
 		LONG	ChangeDisplaySettingsA(DEVMODE *lpDevMode, DWORD dwflags);
 		BOOL	MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
 
+/*		alias MAKEPOINTS(l)       (*((POINTS FAR *)&(l)))
+
+		struct POINTS {
+			short	x;
+			short	y;
+		}
+*/
 		struct DEVMODE {
 			CHAR/*TCHAR*/ dmDeviceName[32 /*CCHDEVICENAME*/];
 			WORD  dmSpecVersion;
