@@ -419,11 +419,6 @@ version (Windows)
 					PostQuitMessage(0);
 					break;
 
-
-
-
-
-
 				// Mouse events
 				case WM_MOUSEMOVE:
 					position.x = LOWORD(lParam);
