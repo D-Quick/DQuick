@@ -21,10 +21,13 @@ public:
 		mButtons = buttons;
 	}
 
+	@property void			buttons(Buttons buttons) {mButtons = buttons;}
 	@property Buttons		buttons() {return mButtons;}
+
+	@property void			position(Vector2s32 position) {mPosition = position;}
 	@property Vector2s32	position() {return mPosition;}	/// Relative to the window
 
 private:
-	Buttons		mButtons;
+	Buttons		mButtons = Buttons.Any;
 	Vector2s32	mPosition;
 }

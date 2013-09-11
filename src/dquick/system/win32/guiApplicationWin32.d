@@ -346,37 +346,7 @@ version (Windows)
 		{
 			if (mRootItem)
 			{
-				Vector2s32	ePosition;
-				POINT		pos;
-
-				if (GetCursorPos(&pos))
-				{
-					if (ScreenToClient(mhWnd, &pos))
-					{
-						ePosition.x = pos.x;
-						ePosition.y = pos.y;
-					}
-				}
-				else
-					writeln("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-
-				MouseEvent.Buttons	eButtons = MouseEvent.Buttons.Any;
-
-/*				if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT))
-					eButtons |= MouseEvent.Buttons.Left;
-				if (buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE))
-					eButtons |= MouseEvent.Buttons.Middle;
-				if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT))
-					eButtons |= MouseEvent.Buttons.Right;
-				if (buttons & SDL_BUTTON(SDL_BUTTON_X1))
-					eButtons |= MouseEvent.Buttons.X1;
-				if (buttons & SDL_BUTTON(SDL_BUTTON_X2))
-					eButtons |= MouseEvent.Buttons.X2;*/
-
-				MouseEvent	event = MouseEvent(ePosition, eButtons);
-
-				mRootItem.mouseEvent(event);
+				mRootItem.mouseEvent(mMouseEvent);
 			}
 		}
 
@@ -393,6 +363,8 @@ version (Windows)
 		bool		mFullScreen = false;
 
 		OpenGLContext	mContext;
+
+		MouseEvent	mMouseEvent;
 	}
 
 	//==========================================================================
@@ -456,12 +428,13 @@ version (Windows)
 				case WM_MOUSEMOVE:
 					position.x = LOWORD(lParam);
 					position.y = HIWORD(lParam);
+					GuiApplication.mWindows[hWnd].mMouseEvent.position(position);
 					GuiApplication.mWindows[hWnd].onMouseEvent();
-//					inputMgr->setMouseRawPosition(TeVector2s32(pos.x, pos.y), 0);
 					return 0;
 				case WM_LBUTTONDOWN:
 					position.x = LOWORD(lParam);
 					position.y = HIWORD(lParam);
+					GuiApplication.mWindows[hWnd].mMouseEvent.buttons(MouseEvent.Buttons.Left);
 					GuiApplication.mWindows[hWnd].onMouseEvent();
 //					inputMgr->setMouseRawPosition(TeVector2s32(pos.x, pos.y), 0);
 //					inputMgr->setMouseLeft(true, 0);
@@ -470,6 +443,7 @@ version (Windows)
 				case WM_LBUTTONUP:
 					position.x = LOWORD(lParam);
 					position.y = HIWORD(lParam);
+					GuiApplication.mWindows[hWnd].mMouseEvent.buttons(MouseEvent.Buttons.Any);
 					GuiApplication.mWindows[hWnd].onMouseEvent();
 //					inputMgr->setMouseRawPosition(TeVector2s32(pos.x, pos.y), 0);
 //					inputMgr->setMouseLeft(false, 0);
