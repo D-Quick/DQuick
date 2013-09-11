@@ -20,13 +20,15 @@ public:
 
 		matrix.make_identity();
 
-		matrix.translate(origin.x, origin.y, origin.z);
-
-		matrix.scale(scaling.x, scaling.y, scaling.z);
 		matrix.translate(position.x, position.y, position.z);
-		matrix = matrix * orientation.to_matrix!(4, 4);
 
 		matrix.translate(-origin.x, -origin.y, -origin.z);
+
+		matrix = orientation.to_matrix!(4, 4) * matrix;
+		matrix.scale(scaling.x, scaling.y, scaling.z);
+
+		matrix.translate(origin.x, origin.y, origin.z);
+
 		return matrix;
 	}
 }

@@ -13,6 +13,7 @@ import std.stdio;
 import std.typecons;
 import std.string;
 import std.math;
+import std.uni;
 
 // TODO Support pixel perfect render (check the matrix)
 // TODO Support multiline
@@ -72,6 +73,15 @@ public:
 	@property FontFamily	fontFamily() {return mFontFamily;}
 	mixin Signal!(FontFamily) onFontFamilyChanged;
 
+	@property void	kerning(bool flag)
+	{
+		mKerning = flag;
+		mNeedRebuild = true;
+		onKerningChanged.emit(flag);
+	}
+	@property bool	kerning() {return mKerning;}
+	mixin Signal!(bool) onKerningChanged;
+
 	override
 	void	paint(bool transformationUpdated)
 	{
@@ -98,6 +108,7 @@ public:
 	}
 
 private:
+
 	// TODO Use resource manager to update texture atlas, textures have to be shared between all TextItems
 	void	rebuildMesh()
 	{
@@ -175,20 +186,26 @@ private:
 					Vector2f32	pos;
 
 					if (!newLineStarted)
-						pos.x = glyph.offset.x + font.kerning(prevCharCode, charCode).x;
+					{
+						pos.x = glyph.offset.x;
+						if (mKerning)
+							pos.x = pos.x + font.kerning(prevCharCode, charCode).x;
+					}
 					else
 						pos.x = 0.0f;
 					pos.y = -glyph.offset.y;
 
-					writeln(format("cursor %f %f", cursor.x, cursor.y));
-					addGlyphToMesh(indexes, vertices, texCoords, colors,
-								   Vector2s32(cast(int)round(cursor.x + pos.x), cast(int)round(cursor.y + pos.y)),
-								   glyph, glyphIndex, images[glyph.atlasIndex]);
+					if (!isSpace(charCode))
+					{
+						addGlyphToMesh(indexes, vertices, texCoords, colors,
+									   Vector2s32(cast(int)round(cursor.x + pos.x), cast(int)round(cursor.y + pos.y)),
+									   glyph, glyphIndex, images[glyph.atlasIndex]);
+						glyphIndex++;
+					}
 
 					cursor.x = cursor.x + glyph.advance.x;
 					newLineStarted = false;
 					prevCharCode = charCode;
-					glyphIndex++;
 				}
 			}
 
@@ -248,4 +265,5 @@ private:
 	string			mFont = defaultFont;
 	int				mFontSize = 24;
 	FontFamily		mFontFamily = FontFamily.Regular;
+	bool			mKerning = true;
 }

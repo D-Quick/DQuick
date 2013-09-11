@@ -96,7 +96,7 @@ public:
 		}
 		GraphicItem.mouseEvent(event);
 	}
-	
+
 private:
 	bool	isIn(Vector3f32 transformedPoint)
 	{

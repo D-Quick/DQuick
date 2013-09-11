@@ -18,8 +18,6 @@ import std.math;
 /**
 * One Font per size
 * kerning requested at runtime
-*
-*
 **/
 
 // TODO The font manager have to find fonts files in system folders
