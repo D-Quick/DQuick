@@ -72,25 +72,25 @@ private:
 							   cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
 
 		mMesh.vertices.setArray(cast(GLfloat[])[
-								-mSize.x / 2.0f,	-mSize.y / 2.0f,	0.0f,
-								 mSize.x / 2.0f,	-mSize.y / 2.0f,	0.0f,
-								-mSize.x / 2.0f,	 mSize.y / 2.0f,	0.0f,
-								 mSize.x / 2.0f,	 mSize.y / 2.0f,	0.0f],
+								0.0f,		0.0f,		0.0f,
+								mSize.x,	0.0f,		0.0f,
+								0.0f,		mSize.y,	0.0f,
+								mSize.x,	mSize.y,	0.0f],
 								cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
 
 
 		mMesh.texCoords.setArray(cast(GLfloat[])[
-								 0.0f, 0.0f,
-								 1.0f, 0.0f,
-								 0.0f, 1.0f,
-								 1.0f, 1.0f],
-								 cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+ 								 0.0f, 0.0f,
+ 								 1.0f, 0.0f,
+ 								 0.0f, 1.0f,
+ 								 1.0f, 1.0f],
+ 								 cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
 
 		mMesh.colors.setArray(cast(GLfloat[])[
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f],
+						 	  1.0f, 1.0f, 1.0f, 1.0f,
+						 	  1.0f, 1.0f, 1.0f, 1.0f,
+						 	  1.0f, 1.0f, 1.0f, 1.0f,
+						 	  1.0f, 1.0f, 1.0f, 1.0f],
 							  cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
 	}
 
@@ -99,10 +99,10 @@ private:
 		create();
 
 		mMesh.vertices.updateArray(cast(GLfloat[])[
-								   -mSize.x / 2.0f,	-mSize.y / 2.0f,	0.0f,
-								    mSize.x / 2.0f,	-mSize.y / 2.0f,	0.0f,
-								   -mSize.x / 2.0f,	 mSize.y / 2.0f,	0.0f,
-								    mSize.x / 2.0f,	 mSize.y / 2.0f,	0.0f]);
+			0.0f,		0.0f,		0.0f,
+			mSize.x,	0.0f,		0.0f,
+			0.0f,		mSize.y,	0.0f,
+			mSize.x,	mSize.y,	0.0f]);
 	}
 
 	bool			mUserSize;

@@ -716,7 +716,7 @@ extern(C)
 					auto	child = itemId in dmlEngine.mDeclarativeItems;
 					if (child == null)
 					{
-						writeln("createLuaBind:: can't find item \"%s\"\n", itemId);
+						writeln(format("createLuaBind:: can't find item \"%s\"\n", itemId));
 						return 0;
 					}
 

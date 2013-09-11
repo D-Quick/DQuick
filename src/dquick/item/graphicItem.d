@@ -98,15 +98,14 @@ public:
 	/// Change the orientation angle in degrees clockwise, tranformation origin is the center of item
 	@property void	orientation(float value)
 	{
-		Quaternion	temp = Quaternion.zrotation(value);
-		temp = Quaternion.zrotation(value);
-		if (temp == mTransformation.orientation)
+		if (mOrientation == value)
 			return;
-		mTransformation.orientation = temp;
+		mOrientation = value;
 		mTransformationUpdated = true;
+		mTransformation.orientation = Quaternion.zrotation((value % 360.0) / 180 * std.math.PI);
 		onOrientationChanged.emit(value);
 	}
-	@property float	orientation() {return mTransformation.scaling.x;}
+	@property float	orientation() {return mOrientation;}
 	mixin Signal!(float) onOrientationChanged;
 
 	override
@@ -148,4 +147,5 @@ protected:
 
 	Transformation	mTransformation;
 	Vector2f32		mSize;
+	float			mOrientation = 0.0f;
 }
