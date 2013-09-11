@@ -132,8 +132,6 @@ private:
 			GLfloat[]	texCoords;
 			GLfloat[]	colors;
 
-			Image[]	images;
-
 			Vector2f32	cursor;
 			bool		newLineStarted = true;
 			size_t		glyphIndex;
@@ -166,18 +164,18 @@ private:
 					if (!alreadyLoaded)
 					{
 						// Allocate image if need
-						while (glyph.atlasIndex >= images.length)
+						while (glyph.atlasIndex >= mImages.length)
 						{
-							images ~= new Image;
-							images[$ - 1].create(format("ImageAtlas-%d", images.length),
-													fontManager.getAtlas(images.length - 1).size().x,
-													fontManager.getAtlas(images.length - 1).size().y,
+							mImages ~= new Image;
+							mImages[$ - 1].create(format("ImageAtlas-%d", mImages.length),
+													fontManager.getAtlas(mImages.length - 1).size().x,
+													fontManager.getAtlas(mImages.length - 1).size().y,
 													4);
-							images[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), images[$ - 1].size());
+							mImages[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), mImages[$ - 1].size());
 						}
 
 						// Write glyph in image
-						images[glyph.atlasIndex].blit(glyph.image,
+						mImages[glyph.atlasIndex].blit(glyph.image,
 														Vector2s32(0, 0),
 														Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
 														Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
@@ -199,7 +197,7 @@ private:
 					{
 						addGlyphToMesh(indexes, vertices, texCoords, colors,
 									   Vector2s32(cast(int)round(cursor.x + pos.x), cast(int)round(cursor.y + pos.y)),
-									   glyph, glyphIndex, images[glyph.atlasIndex]);
+									   glyph, glyphIndex, mImages[glyph.atlasIndex]);
 						glyphIndex++;
 					}
 
@@ -213,7 +211,7 @@ private:
 			mMesh.vertices.setArray(vertices, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
 			mMesh.texCoords.setArray(texCoords, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
 			mMesh.colors.setArray(colors, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.setTexture(images[0]);
+			mMesh.setTexture(mImages[0]);
 		}
 		catch (Exception e)
 		{
@@ -266,4 +264,6 @@ private:
 	int				mFontSize = 24;
 	FontFamily		mFontFamily = FontFamily.Regular;
 	bool			mKerning = true;
+
+	static Image[]	mImages;
 }
