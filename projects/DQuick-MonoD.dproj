@@ -283,6 +283,7 @@
     <Compile Include="..\src\dquick\media\geometry.d" />
     <Compile Include="..\src\dquick\algorithms\atlas.d" />
     <Compile Include="..\src\dquick\algorithms\textToGeometry.d" />
+    <Compile Include="..\src\dquick\item\textItem.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dquick\" />
