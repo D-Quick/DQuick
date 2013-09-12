@@ -344,7 +344,7 @@ private:
 
 	void	onMouseEvent()
 	{
-		if (mRootItem)
+/*		if (mRootItem)
 		{
 			Uint32	buttons;
 			int	x;
@@ -372,7 +372,7 @@ private:
 			MouseEvent	event = MouseEvent(ePosition, eButtons);
 
 			mRootItem.mouseEvent(event);
-		}
+		}*/
 	}
 
 	DMLEngine	mScriptContext;

@@ -342,11 +342,11 @@ version (Windows)
 				mContext.swapBuffers();
 		}
 
-		void	onMouseEvent()
+		void	onMouseEvent(MouseEvent mouseEvent)
 		{
 			if (mRootItem)
 			{
-				mRootItem.mouseEvent(mMouseEvent);
+				mRootItem.mouseEvent(mouseEvent);
 			}
 		}
 
@@ -363,8 +363,6 @@ version (Windows)
 		bool		mFullScreen = false;
 
 		OpenGLContext	mContext;
-
-		MouseEvent	mMouseEvent;
 	}
 
 	//==========================================================================
@@ -376,6 +374,8 @@ version (Windows)
 		Vector2s32	position;
 		bool		state;
 //		POINTS		pos;
+
+		MouseEvent	mouseEvent;
 
 		try
 		{
@@ -421,40 +421,31 @@ version (Windows)
 
 				// Mouse events
 				case WM_MOUSEMOVE:
-					position.x = LOWORD(lParam);
-					position.y = HIWORD(lParam);
-					GuiApplication.mWindows[hWnd].mMouseEvent.position(position);
-					GuiApplication.mWindows[hWnd].onMouseEvent();
+					position.x = GET_X_LPARAM(lParam);
+					position.y = GET_Y_LPARAM(lParam);
+					mouseEvent.moved = true;
+					mouseEvent.position = position;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_LBUTTONDOWN:
-					position.x = LOWORD(lParam);
-					position.y = HIWORD(lParam);
-					GuiApplication.mWindows[hWnd].mMouseEvent.buttons(MouseEvent.Buttons.Left);
-					GuiApplication.mWindows[hWnd].onMouseEvent();
-//					inputMgr->setMouseRawPosition(TeVector2s32(pos.x, pos.y), 0);
-//					inputMgr->setMouseLeft(true, 0);
-//					SetCapture(currentWindow->mhWnd);
+					mouseEvent.pressed = true;
+					mouseEvent.buttons = MouseEvent.Buttons.Left;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_LBUTTONUP:
-					position.x = LOWORD(lParam);
-					position.y = HIWORD(lParam);
-					GuiApplication.mWindows[hWnd].mMouseEvent.buttons(MouseEvent.Buttons.Any);
-					GuiApplication.mWindows[hWnd].onMouseEvent();
-//					inputMgr->setMouseRawPosition(TeVector2s32(pos.x, pos.y), 0);
-//					inputMgr->setMouseLeft(false, 0);
-//					ReleaseCapture();
+					mouseEvent.released = true;
+					mouseEvent.buttons = MouseEvent.Buttons.Left;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONDOWN:
-					position.x = LOWORD(lParam);
-					position.y = HIWORD(lParam);
-					GuiApplication.mWindows[hWnd].onMouseEvent();
-					//					SetCapture(currentWindow->mhWnd);
+					mouseEvent.pressed = true;
+					mouseEvent.buttons = MouseEvent.Buttons.Right;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONUP:
-					position.x = LOWORD(lParam);
-					position.y = HIWORD(lParam);
-					GuiApplication.mWindows[hWnd].onMouseEvent();
-//					ReleaseCapture();
+					mouseEvent.released = true;
+					mouseEvent.buttons = MouseEvent.Buttons.Right;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 
 				default:
@@ -477,13 +468,9 @@ version (Windows)
 		LONG	ChangeDisplaySettingsA(DEVMODE *lpDevMode, DWORD dwflags);
 		BOOL	MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
 
-/*		alias MAKEPOINTS(l)       (*((POINTS FAR *)&(l)))
+		int	GET_X_LPARAM(LPARAM lParam) { return cast(int)(cast(short)LOWORD(lParam)); }
+		int	GET_Y_LPARAM(LPARAM lParam) { return cast(int)(cast(short)HIWORD(lParam)); }
 
-		struct POINTS {
-			short	x;
-			short	y;
-		}
-*/
 		struct DEVMODE {
 			CHAR/*TCHAR*/ dmDeviceName[32 /*CCHDEVICENAME*/];
 			WORD  dmSpecVersion;
