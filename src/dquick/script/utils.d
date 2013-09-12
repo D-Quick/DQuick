@@ -22,7 +22,7 @@ string	repeat(string s, int count)
 
 string	shiftRight(string s, string shiftString, int count)
 {
-	static auto com = regex(r"(^)(.)", "gm");
+	auto com = ctRegex!(r"(^)(.)", "gm");
 	return replace(s, com, "$1" ~ repeat(shiftString, count) ~ "$2");
 }
 
@@ -43,7 +43,7 @@ string	getSignalNameFromPropertyName(string propertyName)
 
 string	getPropertyNameFromSignalName(string signalName)
 {
-	static auto reg = regex("^on(.+)Changed$", "");
+	auto reg = ctRegex!("^on(.+)Changed$");
 	auto	m = match(signalName, reg);
 	if (m)
 		return toLowerCamelCase(m.captures[1]);
@@ -151,11 +151,10 @@ void	valueToLua(T)(lua_State* L, T value)
 	else static if (is(T : dquick.script.i_item_binding.IItemBinding))
 	{
 		// Create a userdata that contains instance ptr and make it a global for user access
-		// It also contains a metatable for the member read and write access
-		/*void	itemBindingPtr = value.de
-
-		void*	userData = lua_newuserdata(L, value.id.length + 1);
-		memcpy(userData, value.id.toStringz(), value.id.length + 1);*/
+		// It also contains a metatable for the member read and write acces
+		void*	itemBindingPtr = cast(void*)(value);
+		void*	userData = lua_newuserdata(L, itemBindingPtr.sizeof);
+		memcpy(userData, &itemBindingPtr, itemBindingPtr.sizeof);
 
 		lua_newtable(L);
 
@@ -269,11 +268,11 @@ if (T.length == 1)
 private template fullyQualifiedNameImplForSymbols2(alias T)
 {
     static if (__traits(compiles, __traits(parent, T)))
-        enum parentPrefix = fullyQualifiedNameImplForSymbols2!(__traits(parent, T)) ~ '.';
+        enum parentPrefix2 = fullyQualifiedNameImplForSymbols2!(__traits(parent, T)) ~ '.';
     else
-        enum parentPrefix = null;
+        enum parentPrefix2 = null;
 
-    enum fullyQualifiedNameImplForSymbols2 = parentPrefix ~ (s)
+    enum fullyQualifiedNameImplForSymbols2 = parentPrefix2 ~ (s)
     {
         if(s.skipOver("package ") || s.skipOver("module "))
             return s;

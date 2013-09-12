@@ -128,7 +128,7 @@ unittest
 	DMLEngine	dmlEngine = new DMLEngine;
 	dmlEngine.create();
 	dmlEngine.addItemType!(Item, "Item");
-	dmlEngine.addItemType!(SubItem, "SubItem");
+	//dmlEngine.addItemType!(SubItem, "SubItem");
 
 	// Test basic item
 	string lua1 = q"(
@@ -396,7 +396,7 @@ public:
 			{
 				// Call metamethod to instanciate type
 				lua_pushstring(mLuaState, "__call");
-				lua_pushcfunction(mLuaState, cast(lua_CFunction)&createLuaBind!type);
+				lua_pushcfunction(mLuaState, cast(lua_CFunction)&createLuaBind!(dquick.script.item_binding.ItemBinding!(type)));
 				lua_settable(mLuaState, -3);
 			}
 			lua_setmetatable(mLuaState, -2);
@@ -419,7 +419,7 @@ public:
 		dquick.script.item_binding.ItemBinding!T	itemBinding = new dquick.script.item_binding.ItemBinding!T(this, object);
 		static if (is(T : DeclarativeItem))
 			itemBinding.item.id = luaName;
-		addObjectBinding!T(itemBinding, luaName);
+		addObjectBinding!(dquick.script.item_binding.ItemBinding!T)(itemBinding, luaName);
 	}
 
 	bool	isCreated()
@@ -551,7 +551,7 @@ public:
 	static immutable bool showDebug = 0;
 private:
 
-	void	addObjectBinding(T)(dquick.script.item_binding.ItemBinding!T itemBinding, string id)
+	void	addObjectBinding(T)(T itemBinding, string id)
 	{
 		mVoidToDeclarativeItems[cast(void*)(itemBinding)] = itemBinding;
 
@@ -564,26 +564,9 @@ private:
 
 		itemBinding.creating = false;
 
-		// Create a userdata that contains instance void ptr and make it a global for user access
-		// It also contains a metatable for the member read and write access
-		void*	itemBindingPtr = cast(void*)(itemBinding);
-		void*	userData = lua_newuserdata(mLuaState, itemBindingPtr.sizeof);
-		memcpy(userData, &itemBindingPtr, itemBindingPtr.sizeof);
-
-		lua_newtable(mLuaState);
-
-		lua_pushstring(mLuaState, "__index");
-		lua_pushcfunction(mLuaState, cast(lua_CFunction)&indexLuaBind!T);
-		lua_settable(mLuaState, -3);
-		lua_pushstring(mLuaState, "__newindex");
-		lua_pushcfunction(mLuaState, cast(lua_CFunction)&newindexLuaBind!T);
-		lua_settable(mLuaState, -3);
-
-		lua_setmetatable(mLuaState, -2);
-
 		if (id != "")
 		{
-			lua_pushvalue(mLuaState, -1); // Copy userdata to compensate lua_setglobal pop
+			valueToLua!T(mLuaState, itemBinding);
 			lua_setglobal(mLuaState, itemBinding.item.id().toStringz());
 		}
 	}
@@ -648,7 +631,7 @@ extern(C)
 			DMLEngine	dmlEngine = cast(DMLEngine)lua_touserdata(L, -1);
 			lua_pop(L, 1);
 
-			dquick.script.item_binding.ItemBinding!T	itemBinding = new dquick.script.item_binding.ItemBinding!T(dmlEngine);
+			T	itemBinding = new T(dmlEngine);
 
 			/* table is in the stack at index 't' */
 			lua_pushnil(L);  /* first key */
@@ -757,6 +740,7 @@ extern(C)
 			lua_pop(L, 1); // Remove param 1 (table)
 
 			dmlEngine.addObjectBinding!T(itemBinding, itemBinding.item.id);
+			lua_getglobal(L, itemBinding.item.id.toStringz());
 
 			return 1;
 		}
@@ -799,7 +783,7 @@ extern(C)
 
 			auto	iItemBinding = itemBindingPtr in dmlEngine.mVoidToDeclarativeItems;
 			assert(iItemBinding !is null);
-			dquick.script.item_binding.ItemBinding!T	itemBinding = cast(dquick.script.item_binding.ItemBinding!T)(*iItemBinding);
+			T	itemBinding = cast(T)(*iItemBinding);
 
 			// Search for property binding on the itemBinding
 			foreach (member; __traits(allMembers, typeof(itemBinding)))
@@ -814,11 +798,11 @@ extern(C)
 				}
 			}
 			// Search for simple method on the item
-			foreach (member; __traits(allMembers, T))
+			foreach (member; __traits(allMembers, typeof(itemBinding.item)))
 			{
-				static if (__traits(compiles, isCallable!(__traits(getMember, T, member))))
+				static if (__traits(compiles, isCallable!(__traits(getMember, typeof(itemBinding.item), member))))
 				{
-					static if (isCallable!(__traits(getMember, T, member)) && __traits(compiles, luaCallThisD!(member, T)(itemBinding.item, L, 1)))
+					static if (isCallable!(__traits(getMember, typeof(itemBinding.item), member)) && __traits(compiles, luaCallThisD!(member, typeof(itemBinding.item))(itemBinding.item, L, 1)))
 					{
 						if (propertyId == member)
 						{
@@ -832,7 +816,7 @@ extern(C)
 							{
 								// Call metamethod to instanciate type
 								lua_pushstring(L, "__call");
-								lua_pushcfunction(L, cast(lua_CFunction)&methodLuaBind!(member, T));
+								lua_pushcfunction(L, cast(lua_CFunction)&methodLuaBind!(member, typeof(itemBinding.item)));
 								lua_settable(L, -3);
 							}
 							lua_setmetatable(L, -2);
@@ -889,7 +873,7 @@ extern(C)
 
 			auto	iItemBinding = itemBindingPtr in dmlEngine.mVoidToDeclarativeItems;
 			assert(iItemBinding !is null);
-			dquick.script.item_binding.ItemBinding!T	itemBinding = cast(dquick.script.item_binding.ItemBinding!T)(*iItemBinding);
+			T	itemBinding = cast(T)(*iItemBinding);
 
 			bool	found = false;
 			foreach (member; __traits(allMembers, typeof(itemBinding)))
