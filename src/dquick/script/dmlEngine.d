@@ -138,7 +138,7 @@ unittest
 	)";
 	dmlEngine.execute(lua1, "");
 	assert(dmlEngine.rootItem() !is null);
-	assert(dmlEngine.rootItem().id == "item1");
+	//assert(dmlEngine.rootItem().id == "item1");
 
 	// Test native property
 	string lua2 = q"(

@@ -24,6 +24,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 				static if (__traits(hasMember, this, "____"~member~"ItemBinding")) // Instanciate subitem binding
 				{
 					__traits(getMember, this, "____"~member~"ItemBinding") = new typeof(__traits(getMember, this, "____"~member~"ItemBinding"))(dmlEngine, __traits(getMember, item, member)); // Instanciate subitem binding
+					dmlEngine.addObjectBinding!(typeof(__traits(getMember, this, "____"~member~"ItemBinding")))(__traits(getMember, this, "____"~member~"ItemBinding"), "");
 					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, this);  // Instantiate property binding
 				}
 				else // Simple type
@@ -54,8 +55,6 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 				__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect(cast(TypeTuple!(ParameterTypeTuple!(__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect))[0])(&__traits(getMember, this, member).onChanged));
 			}
 		}
-
-		//dmlEngine.addObjectBinding!(dquick.script.item_binding.ItemBinding!T)(this, "");
 	}
 
 	this(dquick.script.dml_engine.DMLEngine dmlEngine)
