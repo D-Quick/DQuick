@@ -47,6 +47,11 @@ public:
 		mTexture = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Texture(image.filePath(), options);
 		return true;
 	}
+	bool	setTexture(Texture texture)
+	{
+		mTexture = texture;
+		return true;
+	}
 	Texture	texture() {return mTexture;}
 
 	void	setShader(Shader shader)
