@@ -65,8 +65,13 @@ public:
 
 			Vector3f32	transformedPoint;
 			
-			mWindowMousePosition = event.position;
-			mPressedButtons = event.buttons;
+			if (event.moved)
+				mWindowMousePosition = event.position;
+
+			if (event.pressed)
+				mPressedButtons |= event.buttons;
+			if (event.released)
+				mPressedButtons = mPressedButtons & (event.buttons ^ cast(Buttons)(-1));
 
 			transformedPoint = Vector3f32(mMatrix.inverse() * Vector4f32(Vector3f32(mWindowMousePosition.x, mWindowMousePosition.y, 0)));
 			mMousePosition = Vector2f32(transformedPoint.x, transformedPoint.y);

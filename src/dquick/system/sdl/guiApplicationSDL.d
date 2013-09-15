@@ -86,10 +86,11 @@ public:
 		while (!mQuit)
 		{
 			SDL_Event	event;
-			Uint32[Uint32]	mouseEventsForWindows;	// map of Windows Id of which have an mouse event
 
 			while (SDL_PollEvent(&event) && !mQuit)
 			{
+				MouseEvent	mouseEvent;
+
 				//writeln("SDL_PollEvent");
 				switch (event.type)
 				{
@@ -97,16 +98,39 @@ public:
 						mQuit = true;
 						break;
 					case SDL_MOUSEMOTION:
-						mouseEventsForWindows[event.window.windowID] = event.window.windowID;
+						mouseEvent.moved = true;
+						mouseEvent.position = Vector2s32(event.motion.x, event.motion.y);
+						GuiApplication.mWindows[event.window.windowID].onMouseEvent(mouseEvent);
 						break;
 					case SDL_MOUSEBUTTONDOWN:
-						mouseEventsForWindows[event.window.windowID] = event.window.windowID;
+						mouseEvent.pressed = true;
+						if (event.button.button == SDL_BUTTON_LEFT)
+							mouseEvent.buttons = MouseEvent.Buttons.Left;
+						else if (event.button.button == SDL_BUTTON_RIGHT)
+							mouseEvent.buttons = MouseEvent.Buttons.Right;
+						else if (event.button.button == SDL_BUTTON_MIDDLE)
+							mouseEvent.buttons = MouseEvent.Buttons.Middle;
+						else if (event.button.button == SDL_BUTTON_X1)
+							mouseEvent.buttons = MouseEvent.Buttons.X1;
+						else if (event.button.button == SDL_BUTTON_X2)
+							mouseEvent.buttons = MouseEvent.Buttons.X2;
+						GuiApplication.mWindows[event.window.windowID].onMouseEvent(mouseEvent);
 						break;
 					case SDL_MOUSEBUTTONUP:
-						mouseEventsForWindows[event.window.windowID] = event.window.windowID;
+						mouseEvent.released = true;
+						if (event.button.button == SDL_BUTTON_LEFT)
+							mouseEvent.buttons = MouseEvent.Buttons.Left;
+						else if (event.button.button == SDL_BUTTON_RIGHT)
+							mouseEvent.buttons = MouseEvent.Buttons.Right;
+						else if (event.button.button == SDL_BUTTON_MIDDLE)
+							mouseEvent.buttons = MouseEvent.Buttons.Middle;
+						else if (event.button.button == SDL_BUTTON_X1)
+							mouseEvent.buttons = MouseEvent.Buttons.X1;
+						else if (event.button.button == SDL_BUTTON_X2)
+							mouseEvent.buttons = MouseEvent.Buttons.X2;
+						GuiApplication.mWindows[event.window.windowID].onMouseEvent(mouseEvent);
 						break;
 					case SDL_MOUSEWHEEL:
-						mouseEventsForWindows[event.window.windowID] = event.window.windowID;
 						break;
 					case SDL_WINDOWEVENT:
 						switch (event.window.event)
@@ -168,11 +192,6 @@ public:
 					default:
 						break;
 				}
-			}
-			foreach (key, value; mouseEventsForWindows)
-			{
-				if (key in GuiApplication.mWindows)
-					GuiApplication.mWindows[key].onMouseEvent();
 			}
 
 			if (!mQuit)
@@ -342,36 +361,11 @@ private:
 			mContext.swapBuffers();
 	}
 
-	void	onMouseEvent()
+	void	onMouseEvent(MouseEvent mouseEvent)
 	{
 		if (mRootItem)
 		{
-			Uint32	buttons;
-			int	x;
-			int y;
-
-			buttons = SDL_GetMouseState(&x, &y);
-
-			MouseEvent.Buttons	eButtons = MouseEvent.Buttons.Any;
-			Vector2s32			ePosition;
-
-			ePosition.x = x;
-			ePosition.y = y;
-
-			if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT))
-				eButtons |= MouseEvent.Buttons.Left;
-			if (buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE))
-				eButtons |= MouseEvent.Buttons.Middle;
-			if (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT))
-				eButtons |= MouseEvent.Buttons.Right;
-			if (buttons & SDL_BUTTON(SDL_BUTTON_X1))
-				eButtons |= MouseEvent.Buttons.X1;
-			if (buttons & SDL_BUTTON(SDL_BUTTON_X2))
-				eButtons |= MouseEvent.Buttons.X2;
-
-			MouseEvent	event = MouseEvent(ePosition, eButtons);
-
-			mRootItem.mouseEvent(event);
+			mRootItem.mouseEvent(mouseEvent);
 		}
 	}
 

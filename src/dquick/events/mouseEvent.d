@@ -15,16 +15,9 @@ public:
 		X2			= 0x10,
 	}
 
-	this(Vector2s32 position, Buttons buttons)
-	{
-		mPosition = position;
-		mButtons = buttons;
-	}
-
-	@property Buttons		buttons() {return mButtons;}
-	@property Vector2s32	position() {return mPosition;}	/// Relative to the window
-
-private:
-	Buttons		mButtons;
-	Vector2s32	mPosition;
+	bool		moved = false;			// If true position is valid
+	Vector2s32	position;
+	bool		pressed = false;		// If true buttons is valid
+	bool		released = false;		// If true buttons is valid
+	Buttons		buttons = Buttons.Any;
 }

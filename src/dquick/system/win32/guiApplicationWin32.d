@@ -342,6 +342,14 @@ version (Windows)
 				mContext.swapBuffers();
 		}
 
+		void	onMouseEvent(MouseEvent mouseEvent)
+		{
+			if (mRootItem)
+			{
+				mRootItem.mouseEvent(mouseEvent);
+			}
+		}
+
 		DMLEngine	mScriptContext;
 
 		static int	mWindowsCounter = 0;
@@ -365,11 +373,15 @@ version (Windows)
 		Vector2s32	size;
 		Vector2s32	position;
 		bool		state;
+//		POINTS		pos;
+
+		MouseEvent	mouseEvent;
 
 		try
 		{
 			switch (message)
 			{
+				// Window events
 				case WM_CREATE:
 					break;
 				case WM_MOVE:		// position de cliet arena
@@ -407,7 +419,35 @@ version (Windows)
 					PostQuitMessage(0);
 					break;
 
-					// TODO manage the WM_ACTIVATE event for fullscreen
+				// Mouse events
+				case WM_MOUSEMOVE:
+					position.x = GET_X_LPARAM(lParam);
+					position.y = GET_Y_LPARAM(lParam);
+					mouseEvent.moved = true;
+					mouseEvent.position = position;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					return 0;
+				case WM_LBUTTONDOWN:
+					mouseEvent.pressed = true;
+					mouseEvent.buttons = MouseEvent.Buttons.Left;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					return 0;
+				case WM_LBUTTONUP:
+					mouseEvent.released = true;
+					mouseEvent.buttons = MouseEvent.Buttons.Left;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					return 0;
+				case WM_RBUTTONDOWN:
+					mouseEvent.pressed = true;
+					mouseEvent.buttons = MouseEvent.Buttons.Right;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					return 0;
+				case WM_RBUTTONUP:
+					mouseEvent.released = true;
+					mouseEvent.buttons = MouseEvent.Buttons.Right;
+					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					return 0;
+
 				default:
 					break;
 			}
@@ -427,6 +467,9 @@ version (Windows)
 		HWND	GetDesktopWindow();
 		LONG	ChangeDisplaySettingsA(DEVMODE *lpDevMode, DWORD dwflags);
 		BOOL	MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
+
+		int	GET_X_LPARAM(LPARAM lParam) { return cast(int)(cast(short)LOWORD(lParam)); }
+		int	GET_Y_LPARAM(LPARAM lParam) { return cast(int)(cast(short)HIWORD(lParam)); }
 
 		struct DEVMODE {
 			CHAR/*TCHAR*/ dmDeviceName[32 /*CCHDEVICENAME*/];
