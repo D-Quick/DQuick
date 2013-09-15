@@ -252,6 +252,16 @@ public:
 		return mLinegap;
 	}
 
+	string	filePath()
+	{
+		return mFilePath;
+	}
+
+	string	name()
+	{
+		return mName;
+	}
+
 	Vector2f32	kerning(uint previousCharacter, uint currentCharacter)
 	{
 		FT_Error	error;
@@ -269,6 +279,9 @@ public:
 private:
 	void	load(string filePath, int size)
 	{
+		mFilePath = filePath;
+		mSize = size;
+
 		FT_Error		error;
 		size_t			hres = 64;
 /*		FT_Matrix		matrix = {cast(int)((1.0 / hres) * 0x10000L),
@@ -294,9 +307,6 @@ private:
 			throw new Exception(format("Failed to select charmap. Error : %d", error));
 
 //		FT_Set_Transform(mFace, &matrix, null);
-
-		mFilename = filePath;
-		mSize = size;
 
 		mUnderlinePosition = mFace.underline_position / cast(float)mSize;
 		mUnderlinePosition = round(mUnderlinePosition);
@@ -349,7 +359,8 @@ private:
 	FT_Library		mLibrary;
 	FT_Face			mFace;
 
-    string	mFilename;	// TODO Set it
+    string	mFilePath;
+	string	mName;	// TODO Set it
 
     float	mSize;
     int		mHinting;
