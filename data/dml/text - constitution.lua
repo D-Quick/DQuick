@@ -193,11 +193,16 @@ GraphicItem
 		y = 50,
 		text = textFr,
 		font = "samples/fonts/Vera.ttf",
-		fontSize = 16,
-		family = Text.Regular,
-		kerning = function()
-			return kerningButton.pressed
+		fontSize = function()
+			if (kerningButton.pressed) then
+				return 16
+			end
+			return 24
 		end,
+		family = Text.Regular,
+		-- kerning = function()
+			-- return kerningButton.pressed
+		-- end,
 		
 		width = function()
 			return main.width

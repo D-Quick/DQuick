@@ -27,6 +27,7 @@ import std.math;
 // registry DB : HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft \Windows NT\CurrentVersion\Fonts
 
 // TODO migrate FT_Library to FontManager (if it share memory)
+// TODO check kerning computation it doesn't seems working fine
 
 class FontManager
 {
@@ -36,7 +37,7 @@ public:
 		string	fontKey;
 		Font*	font;
 
-		fontKey = format("%s-%d", name.toStringz(), size);
+		fontKey = format("%s-%d", name, size);
 		font = (fontKey in mFonts);
 		if (font !is null)
 			return *font;
@@ -232,7 +233,7 @@ public:
 		// Discard hinting to get advance
 		FT_Load_Glyph(mFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_NO_HINTING);
 		ftGlyphSlot = mFace.glyph;
-		glyph.advance = Vector2f32(ftGlyphSlot.advance.x / 64.0, ftGlyphSlot.advance.y / 64.0);
+		glyph.advance = Vector2f32(ftGlyphSlot.advance.x >> 6, ftGlyphSlot.advance.y >> 6);
 
 		FT_Done_Glyph(ftGlyph);
 
@@ -262,7 +263,7 @@ public:
 		error = FT_Get_Kerning(mFace, previousCharacter, currentCharacter, FT_Kerning_Mode.FT_KERNING_DEFAULT, &kerning);
 		if (error > 0)
 			throw new Exception("Failed to retrieve kerning.");
-		return	Vector2f32(cast(float)(kerning.x >> 6), cast(float)(kerning.y >> 6));
+		return	Vector2f32(kerning.x >> 6, kerning.y >> 6);
 	}
 
 private:

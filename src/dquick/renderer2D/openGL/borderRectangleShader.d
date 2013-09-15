@@ -25,6 +25,10 @@ import std.variant;
 // TODO Implement TileMode switch
 // TODO use triangle strip
 
+// TODO PS : We use 9 quads (on per Mesh) to avoid fragment shader in the center and be able to use fragment shader specifics to borders (reducing conditions in shaders)
+
+// TODO activate back face culling
+
 struct BorderRectangleShader
 {
 public:

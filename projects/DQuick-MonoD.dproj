@@ -283,6 +283,9 @@
     <Compile Include="..\src\dquick\media\geometry.d" />
     <Compile Include="..\src\dquick\algorithms\atlas.d" />
     <Compile Include="..\src\dquick\algorithms\textToGeometry.d" />
+    <Compile Include="..\src\dquick\item\textItem.d" />
+    <Compile Include="..\src\dquick\system\win32\guiApplicationWin32.d" />
+    <Compile Include="..\src\dquick\system\win32\openglContextWin32.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dquick\" />
@@ -303,6 +306,7 @@
     <Folder Include="..\src\dquick\renderer2D\renderer2D\" />
     <Folder Include="..\src\dquick\media\" />
     <Folder Include="..\src\dquick\algorithms\" />
+    <Folder Include="..\src\dquick\system\win32\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\dquick\system\dMain.def">
