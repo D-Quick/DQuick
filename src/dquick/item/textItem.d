@@ -4,12 +4,14 @@ import dquick.item.graphic_item;
 import dquick.media.font;
 import dquick.media.image;
 import dquick.renderer_3d.opengl.mesh;
+import dquick.renderer_3d.opengl.texture;
 import dquick.renderer_3d.opengl.shader;
 import dquick.renderer_3d.opengl.shader_program;
 import dquick.maths.vector2s32;
 import dquick.maths.color;
 
 import std.stdio;
+import std.variant;
 import std.typecons;
 import std.string;
 import std.math;
@@ -134,7 +136,7 @@ private:
 
 			Vector2f32	cursor;
 			bool		newLineStarted = true;
-			size_t		glyphIndex;
+			size_t		glyphIndex = 0;
 			dchar		prevCharCode;
 
 			cursor.x = 0;
@@ -179,6 +181,16 @@ private:
 														Vector2s32(0, 0),
 														Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
 														Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
+
+/*						writeln(format("font : \"%s\"\n"
+									   "atlas index %d\n"
+									   "glyph size %02d,%02d\n"
+									   "glyph position %03d,%03d"
+									   , font.filePath()
+									   , glyph.atlasIndex
+									   , glyph.atlasRegion.width, glyph.atlasRegion.height
+									   , glyph.atlasRegion.x, glyph.atlasRegion.y
+									   ));*/
 					}
 
 					Vector2f32	pos;
@@ -197,7 +209,7 @@ private:
 					{
 						addGlyphToMesh(indexes, vertices, texCoords, colors,
 									   Vector2s32(cast(int)round(cursor.x + pos.x), cast(int)round(cursor.y + pos.y)),
-									   glyph, glyphIndex, mImages[glyph.atlasIndex]);
+									   glyph, glyphIndex, mImages[glyph.atlasIndex].size());
 						glyphIndex++;
 					}
 
@@ -211,7 +223,23 @@ private:
 			mMesh.vertices.setArray(vertices, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
 			mMesh.texCoords.setArray(texCoords, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
 			mMesh.colors.setArray(colors, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.setTexture(mImages[0]);
+
+			// Update texture at the last moment
+			if (mTextures.length < 0 + 1)	// Check if the textures array already contains the current atlas
+			{
+				Variant[]	options;
+				options ~= Variant(mImages[0]);
+
+				mTextures ~= new Texture();	// TODO do a loop to insert as many texture as needed
+				mTextures[0].load(mImages[0].filePath(), options);
+			}
+			else	// We can only do an update
+			{
+				mTextures[0].update(mImages[0]);
+			}
+			// --
+
+			mMesh.setTexture(mTextures[0]);
 		}
 		catch (Exception e)
 		{
@@ -220,7 +248,7 @@ private:
 		}
 	}
 
-	void	addGlyphToMesh(ref GLuint[] indexes, ref GLfloat[] vertices, ref GLfloat[] texCoords, ref GLfloat[] colors, Vector2s32 origin, Glyph glyph, size_t glyphIndex, ref Image atlas)
+	void	addGlyphToMesh(ref GLuint[] indexes, ref GLfloat[] vertices, ref GLfloat[] texCoords, ref GLfloat[] colors, Vector2s32 origin, Glyph glyph, size_t glyphIndex, Vector2s32 atlasSize)
 	{
 		float	x, y, width, height;
 		float	tX, tY, tWidth, tHeight;
@@ -230,10 +258,10 @@ private:
 		width = glyph.atlasRegion.width;
 		height = glyph.atlasRegion.height;
 
-		tX = cast(float)glyph.atlasRegion.x / cast(float)atlas.size().x;
-		tY = cast(float)(atlas.size().y - glyph.atlasRegion.y) / cast(float)atlas.size().y;
-		tWidth = cast(float)width / cast(float)atlas.size().x;
-		tHeight = cast(float)height / cast(float)atlas.size().y;
+		tX = cast(float)glyph.atlasRegion.x / cast(float)atlasSize.x;
+		tY = cast(float)(atlasSize.y - glyph.atlasRegion.y) / cast(float)atlasSize.y;
+		tWidth = cast(float)width / cast(float)atlasSize.x;
+		tHeight = cast(float)height / cast(float)atlasSize.y;
 
 		indexes ~= cast(GLuint[])[glyphIndex * 4 + 0, glyphIndex * 4 + 1, glyphIndex * 4 + 2, glyphIndex * 4 + 1, glyphIndex * 4 + 3, glyphIndex * 4 + 2];
 		vertices ~= cast(GLfloat[])[
@@ -265,5 +293,6 @@ private:
 	FontFamily		mFontFamily = FontFamily.Regular;
 	bool			mKerning = true;
 
-	static Image[]	mImages;
+	static Image[]		mImages;
+	static Texture[]	mTextures;
 }
