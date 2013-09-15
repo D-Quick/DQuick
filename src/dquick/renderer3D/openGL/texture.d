@@ -41,10 +41,21 @@ public:
 		mFilePath = filePath;
 	}
 
-	/// Replace the texture's image by the new one, format need to be the same (width, height, bytes per pixels,...)
+	/// Replace the texture's image by the new one, format need to be the same (size, bytes per pixels, color encoding)
 	void	update(Image image)
 	{
-		throw new Exception("Not implemented");
+		assert(image.size() == mSize);
+		assert(image.nbBytesPerPixel() == mNbBytesPerPixels);
+		// TODO check format (nbBytePerPixels) and color encoding
+
+		checkgl!glEnable(GL_TEXTURE_2D);
+		checkgl!glBindTexture(GL_TEXTURE_2D, mId);
+		if (image.nbBytesPerPixel() == 3)
+			checkgl!glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mSize.x, mSize.y, GL_RGB, GL_UNSIGNED_BYTE, image.pixels());
+		else if (image.nbBytesPerPixel() == 4)
+			checkgl!glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mSize.x, mSize.y, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels());
+		else
+			throw new Exception("[Texture] Pixel format unsupported");
 	}
 
 	void	unload()
@@ -66,6 +77,7 @@ private:
 	{
 		mSize.x = image.width;
 		mSize.y = image.height;
+		mNbBytesPerPixels = image.nbBytesPerPixel;
 
 		checkgl!glEnable(GL_TEXTURE_2D);
 		checkgl!glGenTextures(1, &mId);
@@ -99,4 +111,5 @@ private:
 
 	GLuint		mId = mBadId;
 	Vector2s32	mSize;
+	ubyte		mNbBytesPerPixels = 0;
 }

@@ -171,11 +171,15 @@ GraphicItem
 		width = 300,
 		height = 50,
 
-		orientation = function()
-			return main.width / 2
-		end,
-		
-		scale = 2,
+		-- Text {
+			-- font = "samples/fonts/Vera.ttf",
+			-- text = function()
+				-- if (kerningButton.pressed) then
+					-- return "Ayuma2yk"
+				-- end
+				-- return "Vera"
+			-- end,
+		-- },
 		
 		MouseArea {
 			id = "kerningButton",
@@ -192,13 +196,20 @@ GraphicItem
 		id = "text",
 		y = 50,
 		text = textFr,
-		font = "samples/fonts/Vera.ttf",
-		fontSize = function()
+		-- font = "samples/fonts/Vera.ttf",
+		font = function()
 			if (kerningButton.pressed) then
-				return 16
+				return "samples/fonts/Vera.ttf"
 			end
-			return 24
+			return "samples/fonts/Ayuma2yk.ttf"
 		end,
+		fontSize = 24,
+		-- fontSize = function()
+			-- if (kerningButton.pressed) then
+				-- return 16
+			-- end
+			-- return 24
+		-- end,
 		family = Text.Regular,
 		-- kerning = function()
 			-- return kerningButton.pressed
