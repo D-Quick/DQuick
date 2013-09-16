@@ -551,6 +551,37 @@ public:
 	static immutable bool showDebug = 0;
 private:
 
+	dquick.script.item_binding.ItemBinding!T	registerItem(T)(T item)
+	{
+		auto	refCountPtr = item in mItemsToItemBindings;
+		if (refCountPtr !is null)
+		{
+			refCountPtr.count++;
+			return cast(dquick.script.item_binding.ItemBinding!T)refCountPtr.iItemBinding;
+		}
+
+		dquick.script.item_binding.ItemBinding!T	itemBinding = new dquick.script.item_binding.ItemBinding!T(this, item);
+		//static if (is(T : DeclarativeItem))
+		//	itemBinding.item.id = luaName;
+		addObjectBinding!(dquick.script.item_binding.ItemBinding!T)(itemBinding, "");
+
+		ItemRefCounting	newRefCount;
+		newRefCount.count = 1;
+		newRefCount.iItemBinding = itemBinding;
+		mItemsToItemBindings[item] = newRefCount;
+		return itemBinding;
+	}
+
+	void	unregisterItem(T)(T item)
+	{
+		auto	refCountPtr = item in mItemsToItemBindings;
+		assert(refCountPtr !is null);
+
+		refCountPtr.count--;
+		if (refCountPtr.count == 0)
+			mItemsToItemBindings.remove(item);
+	}
+
 	void	addObjectBinding(T)(T itemBinding, string id)
 	{
 		mVoidToDeclarativeItems[cast(void*)(itemBinding)] = itemBinding;
@@ -571,6 +602,12 @@ private:
 		}
 	}
 
+	struct ItemRefCounting
+	{
+		dquick.script.i_item_binding.IItemBinding	iItemBinding;
+		uint										count;
+	}
+	ItemRefCounting[DeclarativeItem]	mItemsToItemBindings;
 	dquick.script.i_item_binding.IItemBinding[void*]	mVoidToDeclarativeItems;
 	dquick.script.i_item_binding.IItemBinding[string]	mIdToDeclarativeItems;
 	lua_State*	mLuaState;

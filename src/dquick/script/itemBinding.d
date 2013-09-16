@@ -3,12 +3,13 @@ module dquick.script.item_binding;
 import std.traits;
 import std.typetuple;
 import std.string;
+import std.stdio;
+import std.signals;
 
 import dquick.item.declarative_item;
 import dquick.script.native_property_binding;
 import dquick.script.virtual_property_binding;
 import dquick.script.utils;
-import std.stdio;
 
 class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 
@@ -23,12 +24,17 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 			{
 				static if (__traits(hasMember, this, "____"~member~"ItemBinding")) // Instanciate subitem binding
 				{
-					__traits(getMember, this, "____"~member~"ItemBinding") = new typeof(__traits(getMember, this, "____"~member~"ItemBinding"))(dmlEngine, __traits(getMember, item, member)); // Instanciate subitem binding
-					dmlEngine.addObjectBinding!(typeof(__traits(getMember, this, "____"~member~"ItemBinding")))(__traits(getMember, this, "____"~member~"ItemBinding"), "");
-					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, this);  // Instantiate property binding
+					__traits(getMember, this, "__"~getSignalNameFromPropertyName(member))(__traits(getMember, item, member));
+					//__traits(getMember, this, "____"~member~"ItemBinding") = new typeof(__traits(getMember, this, "____"~member~"ItemBinding"))(dmlEngine, __traits(getMember, item, member)); // Instanciate subitem binding
+					//dmlEngine.addObjectBinding!(typeof(__traits(getMember, this, "____"~member~"ItemBinding")))(__traits(getMember, this, "____"~member~"ItemBinding"), "");
+					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, this);  // Instantiate property binding linked to __member inside this
+					__traits(getMember, this, "__"~getSignalNameFromPropertyName(member~"ItemBinding")).connect(cast(TypeTuple!(ParameterTypeTuple!(__traits(getMember, this, "__"~getSignalNameFromPropertyName(member~"ItemBinding")).connect))[0])(&__traits(getMember, this, member).onChanged)); // Signal
 				}
 				else // Simple type
-					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, item);  // Instantiate property binding
+				{
+					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, item);  // Instantiate property binding linked to member inside item
+					__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect(cast(TypeTuple!(ParameterTypeTuple!(__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect))[0])(&__traits(getMember, this, member).onChanged)); // Signal
+				}
 
 				/*foreach (overload; __traits(getOverloads, T, member)) 
 				{
@@ -51,8 +57,6 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 						}
 					}
 				}*/
-
-				__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect(cast(TypeTuple!(ParameterTypeTuple!(__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect))[0])(&__traits(getMember, this, member).onChanged));
 			}
 		}
 	}
@@ -242,10 +246,61 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 									static if (is(ReturnType!(overload) : dquick.item.declarative_item.DeclarativeItem))
 									{
 										//pragma(msg, fullyQualifiedName!(dquick.script.item_binding.ItemBinding!(ReturnType!(overload))));
-										result ~= format("dquick.script.item_binding.ItemBinding!(%s)\t____%sItemBinding;\n", fullyQualifiedName2!(ReturnType!(overload)), member); // ItemBinding
-										result ~= format("dquick.script.item_binding.ItemBinding!(%s)\t__%sItemBinding() {return ____%sItemBinding;}", fullyQualifiedName2!(ReturnType!(overload)), member, member); //getter
-										result ~= format("void\t__%sItemBinding(dquick.script.item_binding.ItemBinding!(%s) value) { ____%sItemBinding = value;}", member, fullyQualifiedName2!(ReturnType!(overload)), member);	//setter
-										result ~= format("dquick.script.native_property_binding.NativePropertyBinding!(dquick.script.item_binding.ItemBinding!(%s), dquick.script.item_binding.ItemBinding!T, \"__%sItemBinding\")\t%s;\n", fullyQualifiedName2!(ReturnType!(overload)), member, member);
+
+										result ~= format("void															__%s(%s value) {
+																if ((value && ____%sItemBinding is null) || value != ____%sItemBinding.item)
+																{
+																	if (____%sItemBinding)
+																		dmlEngine.unregisterItem!(%s)(____%sItemBinding.item);
+																	if (value)
+																		____%sItemBinding = dmlEngine.registerItem!(%s)(value);
+																	__%s.emit(____%sItemBinding);
+																}																
+														}",
+														 getSignalNameFromPropertyName(member), fullyQualifiedName2!(ReturnType!(overload)),
+														 member, member,
+														 member,
+														 fullyQualifiedName2!(ReturnType!(overload)), member,
+														 member, fullyQualifiedName2!(ReturnType!(overload)),
+														 getSignalNameFromPropertyName(member~"ItemBinding"), member);	// Item Signal
+
+										result ~= format("dquick.script.item_binding.ItemBinding!(%s)					____%sItemBinding;\n", fullyQualifiedName2!(ReturnType!(overload)), member); // ItemBinding
+										result ~= format("dquick.script.item_binding.ItemBinding!(%s)					__%sItemBinding() {
+																return ____%sItemBinding;
+														 }",
+														 fullyQualifiedName2!(ReturnType!(overload)), member,
+														 member); // ItemBinding Getter
+										result ~= format("void															__%sItemBinding(dquick.script.item_binding.ItemBinding!(%s) value) {
+																if (value != ____%sItemBinding)
+																{
+																	if (____%sItemBinding)
+														 				dmlEngine.unregisterItem!(%s)(____%sItemBinding.item);
+																	____%sItemBinding = value;
+																	if (____%sItemBinding)
+																	{
+																		dmlEngine.registerItem!(%s)(____%sItemBinding.item);
+																		item.%s = value.item;
+																	}
+																	else
+																	{
+																		item.%s = null;
+																	}
+																	__%s.emit(value);
+																}
+															}",
+															member, fullyQualifiedName2!(ReturnType!(overload)),
+															member,
+															member,
+															fullyQualifiedName2!(ReturnType!(overload)), member,
+															member,
+															member,
+															fullyQualifiedName2!(ReturnType!(overload)), member,
+															member,
+															member,
+															getSignalNameFromPropertyName(member~"ItemBinding"));	// ItemBinding Setter
+										result ~= format("mixin Signal!(dquick.script.item_binding.ItemBinding!(%s))	__%s;", fullyQualifiedName2!(ReturnType!(overload)), getSignalNameFromPropertyName(member~"ItemBinding"));
+
+										result ~= format("dquick.script.native_property_binding.NativePropertyBinding!(dquick.script.item_binding.ItemBinding!(%s), dquick.script.item_binding.ItemBinding!T, \"__%sItemBinding\")	%s;\n", fullyQualifiedName2!(ReturnType!(overload)), member, member);
 									}
 									else
 										result ~= format("dquick.script.native_property_binding.NativePropertyBinding!(%s, T, \"%s\")\t%s;\n", fullyQualifiedName2!(ReturnType!(overload)), member, member);
