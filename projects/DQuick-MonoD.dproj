@@ -286,6 +286,7 @@
     <Compile Include="..\src\dquick\item\textItem.d" />
     <Compile Include="..\src\dquick\system\win32\guiApplicationWin32.d" />
     <Compile Include="..\src\dquick\system\win32\openglContextWin32.d" />
+    <Compile Include="..\src\dquick\maths\rect2s32.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dquick\" />
