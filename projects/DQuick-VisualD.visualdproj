@@ -306,6 +306,7 @@
     <File path="..\src\dquick\maths\color.d" />
     <File path="..\src\dquick\maths\matrix4x4.d" />
     <File path="..\src\dquick\maths\quaternion.d" />
+    <File path="..\src\dquick\maths\rect2s32.d" />
     <File path="..\src\dquick\maths\transformation.d" />
     <File path="..\src\dquick\maths\vector2f32.d" />
     <File path="..\src\dquick\maths\vector2s32.d" />

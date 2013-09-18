@@ -1,6 +1,7 @@
 module dquick.algorithms.atlas;
 
 import dquick.maths.vector2s32;
+import dquick.maths.rect2s32;
 
 import gl3n.linalg;
 
@@ -18,13 +19,7 @@ import gl3n.linalg;
 class Atlas
 {
 public:
-	struct Region
-	{
-		int	x;
-		int y;
-		int width;
-		int height;
-	}
+	bool	allowRotation = false;
 
 	void	create(Vector2s32 size)
 	{
@@ -38,123 +33,126 @@ public:
 	}
 
 	/// Return -1 in all Region properties when not enough space found
-	Region	allocateRegion(uint width, uint height)
+	Rect2s32	allocateRegion(uint width, uint height)	// TODO use a Vector2s32
 	{
-		int y;
-		int	bestHeight;
-		int	bestWidth;
-		int	bestIndex;
+		int			bestHeight;
+		int			bestWidth;
+		int			bestIndex;
+		Rect2s32	newNode = findPositionForNewNodeBottomLeft(width, height, bestHeight, bestWidth, bestIndex);
 
-		Region	region;
-		size_t	i;
-
-		region.x = 0;
-		region.y = 0;
-		region.width = width;
-		region.height = height;
-
-		bestHeight = int.max;
-		bestIndex  = -1;
-		// Used to break ties if there are nodes at the same level. Then pick the narrowest one.
-		bestWidth = int.max;
-		for (i = 0; i < mNodes.length; i++)
+		if (bestIndex != -1)
 		{
-			y = rectangleFits(cast(uint)i, width, height);
-			if (y >= 0)
-			{
-				if (y + height < bestHeight || (y + height == bestHeight && mNodes[i].width < bestWidth))
-				{
-					bestHeight = y + height;
-					bestIndex = cast(int)i;
-					bestWidth = mNodes[i].width;
-					region.x = mNodes[i].x;
-					region.y = y;
-					region.width = width;
-					region.height = height;
-				}
-			}
+			// Perform the actual packing.
+			addSkylineLevel(bestIndex, newNode);
 		}
-
-		if (bestIndex == -1)
-			return Region(-1, -1, -1, -1);
-
-		addSkylineLevel(bestIndex, region);
-
-		return region;
+		else
+			return Rect2s32(-1, -1, -1, -1);
+		return newNode;
 	}
 
 	void	clear()
 	{
-		mNodes.length = 1;
-		mNodes[0].x = 0;
-		mNodes[0].y = 0;
-		mNodes[0].width = mSize.x;
+		mSkyLine.length = 0;
+
+		SkylineNode	node;
+		node.x = 0;
+		node.y = 0;
+		node.width = mSize.x;
+		mSkyLine ~= node;
 	}
 
 private:
-	struct Skyline
+	Rect2s32	findPositionForNewNodeBottomLeft(int width, int height, ref int bestHeight, ref int bestWidth, ref int bestIndex) const
 	{
-		/// The starting x-coordinate (leftmost).
-		uint x;
+		Rect2s32	newNode;
 
-		/// The y-coordinate of the skyline level line.
-		uint y;
+		bestHeight = int.max;
+		bestIndex = -1;
+		// Used to break ties if there are nodes at the same level. Then pick the narrowest one.
+		bestWidth = int.max;
+		for (size_t i = 0; i < mSkyLine.length; ++i)
+		{
+			int y;
+			if (rectangleFits(i, width, height, y))
+			{
+				if (y + height < bestHeight || (y + height == bestHeight && mSkyLine[i].width < bestWidth))
+				{
+					bestHeight = y + height;
+					bestIndex = i;
+					bestWidth = mSkyLine[i].width;
+					newNode.x = mSkyLine[i].x;
+					newNode.y = y;
+					newNode.width = width;
+					newNode.height = height;
+				}
+			}
+			// Try to find something best with a 90 degres rotation
+			if (allowRotation && rectangleFits(i, height, width, y))
+			{
+				if (y + width < bestHeight || (y + width == bestHeight && mSkyLine[i].width < bestWidth))
+				{
+					bestHeight = y + width;
+					bestIndex = i;
+					bestWidth = mSkyLine[i].width;
+					newNode.x = mSkyLine[i].x;
+					newNode.y = y;
+					newNode.width = height;
+					newNode.height = width;
+				}
+			}
+		}
 
-		/// The line width. The ending coordinate (inclusive) will be x+width-1.
-		uint width;
+		return newNode;
 	}
 
-	int	rectangleFits(uint index, uint width, uint height)
+	bool	rectangleFits(int skylineNodeIndex, int width, int height, ref int y) const
 	{
-		int	x = mNodes[index].x;
-
+		int x = mSkyLine[skylineNodeIndex].x;
 		if (x + width > mSize.x)
-			return -1;
-
-		int		y = mNodes[index].y;
-		size_t	i = index;
-		int		widthLeft = width;
-
+			return false;
+		int widthLeft = width;
+		int i = skylineNodeIndex;
+		y = mSkyLine[skylineNodeIndex].y;
 		while (widthLeft > 0)
 		{
-			y = max(y, mNodes[i].y);
+			y = max(y, mSkyLine[i].y);
 			if (y + height > mSize.y)
-				return -1;
-			widthLeft -= mNodes[i].width;
+				return false;
+			widthLeft -= mSkyLine[i].width;
 			++i;
-			assert(i < mNodes.length || widthLeft <= 0);
+			assert(i < mSkyLine.length || widthLeft <= 0);
 		}
-		assert(y >= 0);
-		return y;
+		return true;
 	}
 
-	void	addSkylineLevel(int index, Region region)
-	{		
-		Skyline	node;
+	void	addSkylineLevel(int skylineNodeIndex, const ref Rect2s32 rect)
+	{
+		SkylineNode newNode;
+		newNode.x = rect.x;
+		newNode.y = rect.y + rect.height;
+		newNode.width = rect.width;
+//		mSkyLine.insert(mSkyLine.begin() + skylineNodeIndex, newNode);
+		mSkyLine = mSkyLine[0..skylineNodeIndex] ~ newNode ~ mSkyLine[skylineNodeIndex..$];	// insert node at skylineNodeIndex
 
-		node.x = region.x;
-		node.y = region.y + region.height;
-		node.width = region.width;
+		assert(newNode.x + newNode.width <= mSize.x);
+		assert(newNode.y <= mSize.y);
 
-		mNodes = mNodes[0..index] ~ node ~ mNodes[index..$];	// insert node at index
-
-		assert(node.x + node.width <= mSize.x);
-		assert(node.y <= mSize.y);
-
-		for (size_t i = index + 1; i < mNodes.length; i++)
+		for (size_t i = skylineNodeIndex+1; i < mSkyLine.length; ++i)
 		{
-			assert(mNodes[i - 1].x <= mNodes[i].x);
+			assert(mSkyLine[i-1].x <= mSkyLine[i].x);
 
-			if (mNodes[i].x < mNodes[i - 1].x + mNodes[i - 1].width)
+			if (mSkyLine[i].x < mSkyLine[i-1].x + mSkyLine[i-1].width)
 			{
-				int	shrink = mNodes[i - 1].x + mNodes[i - 1].width - mNodes[i].x;
+				int shrink = mSkyLine[i-1].x + mSkyLine[i-1].width - mSkyLine[i].x;
 
-				mNodes[i].x += shrink;
-				mNodes[i].width -= shrink;
-				if (mNodes[i].width <= 0)
+				mSkyLine[i].x += shrink;
+				mSkyLine[i].width -= shrink;
+
+				if (mSkyLine[i].width <= 0)
 				{
-					mNodes = mNodes[0..i] ~ mNodes[i + 1..$];	// remove i node
-					i--;
+//					mSkyLine.erase(mSkyLine.begin() + i);
+					mSkyLine = mSkyLine[0..i] ~ mSkyLine[i + 1..$];	// remove i node
+					--i;
 				}
 				else
 					break;
@@ -165,23 +163,34 @@ private:
 		mergeSkylines();
 	}
 
+	/// Merges all skyline nodes that are at the same level.
 	void	mergeSkylines()
 	{
-		size_t	i;
-
-		for (i = 0; i < mNodes.length - 1; i++)
-		{
-			if (mNodes[i].y == mNodes[i + 1].y)
+		for (size_t i = 0; i < mSkyLine.length-1; ++i)
+			if (mSkyLine[i].y == mSkyLine[i+1].y)
 			{
-				mNodes[i].width += mNodes[i + 1].width;
-				mNodes = mNodes[0..i + 1] ~ mNodes[i + 2..$];	// remove i + 1 node
+				mSkyLine[i].width += mSkyLine[i+1].width;
+//				mSkyLine.erase(mSkyLine.begin() + (i+1));
+				mSkyLine = mSkyLine[0..i + 1] ~ mSkyLine[i + 2..$];	// remove i + 1 node
 				--i;
 			}
-		}
 	}
 
-	Skyline[]	mNodes;
-	Vector2s32	mSize;
+	/// Represents a single level (a horizontal line) of the skyline/horizon/envelope.
+	struct	SkylineNode
+	{
+		/// The starting x-coordinate (leftmost).
+		int	x;
+
+		/// The y-coordinate of the skyline level line.
+		int	y;
+
+		/// The line width. The ending coordinate (inclusive) will be x+width-1.
+		int	width;
+	};
+
+	Vector2s32		mSize;
+	SkylineNode[]	mSkyLine;
 }
 
 import derelict.sdl2.sdl;
@@ -198,8 +207,8 @@ unittest
 {
 	void	fillAtlas(ref Atlas atlas, Image imageAtlas, Vector2s32 size, Color color)
 	{
-		Atlas.Region	region;
-		Image			subImage = new Image;
+		Rect2s32	region;
+		Image		subImage = new Image;
 
 		subImage.create("subImage", size.x, size.y, 3);
 		subImage.fill(color, Vector2s32(0, 0), subImage.size());
@@ -212,10 +221,10 @@ unittest
 			imageAtlas.fill(color, Vector2s32(region.x, region.y), Vector2s32(region.width, region.height));
 
 			// Uncomment it to generate the code of the result Image
-			/*			writeln(format("\texpectedResult.fill(Color(%0.1f, %0.1f, %0.1f), Vector2s32(%3d, %3d), Vector2s32(%3d, %3d));",
-			color.x, color.y, color.z,
-			region.x, region.y,
-			size.x, size.y));*/
+/*			writeln(format("\texpectedResult.fill(Color(%0.1f, %0.1f, %0.1f), Vector2s32(%3d, %3d), Vector2s32(%3d, %3d));",
+						   color.x, color.y, color.z,
+						   region.x, region.y,
+						   size.x, size.y));*/
 		}
 	}
 
@@ -272,14 +281,11 @@ unittest
 	expectedResult.fill(Color(0.0, 0.0, 0.5), Vector2s32( 40,  40), Vector2s32( 25,  12));
 	expectedResult.fill(Color(0.5, 0.5, 0.0), Vector2s32(115,  20), Vector2s32( 10,  70));
 	expectedResult.fill(Color(0.0, 0.5, 0.5), Vector2s32( 40,  52), Vector2s32( 30,  30));
-	expectedResult.fill(Color(0.5, 0.0, 0.5), Vector2s32( 65,  80), Vector2s32( 45,  20));
+	expectedResult.fill(Color(0.5, 0.0, 0.5), Vector2s32( 70,  80), Vector2s32( 45,  20));
 	expectedResult.fill(Color(0.5, 0.5, 0.0), Vector2s32(  0,  65), Vector2s32( 15,   5));
 	expectedResult.fill(Color(1.0, 0.0, 0.0), Vector2s32(  0, 110), Vector2s32(126,   1));
 	expectedResult.fill(Color(0.0, 1.0, 0.0), Vector2s32(  0, 111), Vector2s32(127,   1));
 	expectedResult.fill(Color(0.0, 0.0, 1.0), Vector2s32(  0, 112), Vector2s32(128,   1));
-	expectedResult.fill(Color(1.0, 0.0, 0.0), Vector2s32(120,   0), Vector2s32(  1, 126));
-	expectedResult.fill(Color(0.0, 1.0, 0.0), Vector2s32(121,   0), Vector2s32(  1, 127));
-	expectedResult.fill(Color(0.0, 0.0, 1.0), Vector2s32(122,   0), Vector2s32(  1, 128));
 
 	expectedResult.save("../data/AtlasTestResult.bmp");
 

@@ -7,6 +7,7 @@ import dquick.media.image;
 
 import dquick.maths.vector2s32;
 import dquick.maths.vector2f32;
+import dquick.maths.rect2s32;
 import dquick.maths.color;
 
 import std.stdio;
@@ -133,7 +134,7 @@ public:
 		FT_Bitmap		ftBitmap;
 		FT_UInt			glyphIndex;
 		size_t			depth;	// TODO replace x,y and width,height per Vector2s32
-		Atlas.Region	region;
+		Rect2s32		region;
 		Atlas			imageAtlas = fontManager.lastAtlas();
 
 		depth  = 1;	// TODO do something better (because it impact the quality of rendering)
@@ -380,14 +381,14 @@ private:
 // http://www.freetype.org/freetype2/docs/tutorial/step2.html
 struct Glyph
 {
-    Vector2f32		offset;
-    Vector2f32		advance;
-    int				outlineType;
-    float			outlineThickness;
+    Vector2f32	offset;
+    Vector2f32	advance;
+    int			outlineType;
+    float		outlineThickness;
 
-	size_t			atlasIndex;
-	Atlas.Region	atlasRegion;	// TODO check redundancy with width and height
-	Image			image;
+	size_t		atlasIndex;
+	Rect2s32	atlasRegion;	// TODO check redundancy with width and height
+	Image		image;
 }
 
 shared static this()
