@@ -262,7 +262,6 @@ private:
 		tY = cast(float)glyph.atlasRegion.y / cast(float)atlasSize.y;
 		tWidth = cast(float)width / cast(float)atlasSize.x;
 		tHeight = cast(float)height / cast(float)atlasSize.y;
-//		writeln(format("tY : %.02f\ttHeight : %.02f", 1.0 - (tY), 1.0 - (tY + tHeight)));
 
 		indexes ~= cast(GLuint[])[glyphIndex * 4 + 0, glyphIndex * 4 + 1, glyphIndex * 4 + 2, glyphIndex * 4 + 1, glyphIndex * 4 + 3, glyphIndex * 4 + 2];
 		vertices ~= cast(GLfloat[])[
