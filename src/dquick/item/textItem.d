@@ -259,7 +259,7 @@ private:
 		height = glyph.atlasRegion.height;
 
 		tX = cast(float)glyph.atlasRegion.x / cast(float)atlasSize.x;
-		tY = cast(float)(atlasSize.y - glyph.atlasRegion.y) / cast(float)atlasSize.y;
+		tY = cast(float)glyph.atlasRegion.y / cast(float)atlasSize.y;
 		tWidth = cast(float)width / cast(float)atlasSize.x;
 		tHeight = cast(float)height / cast(float)atlasSize.y;
 
@@ -269,7 +269,7 @@ private:
 			x + width,	y,			0.0f,
 			x,			y + height,	0.0f,
 			x + width,	y + height,	0.0f];
-		texCoords ~= cast(GLfloat[])[
+		texCoords ~= cast(GLfloat[])[// Don't forget opengl is down to top oriented (left-top corner = 0,1 coords)
 			tX,				tY,
 			tX + tWidth,	tY,
 			tX,				tY + tHeight,
