@@ -212,11 +212,11 @@ unittest
 
 		subImage.create("subImage", size.x, size.y, 3);
 		subImage.fill(color, Vector2s32(0, 0), subImage.size());
-		region = atlas.allocateRegion(subImage.width, subImage.height);
+		region = atlas.allocateRegion(subImage.width(), subImage.height());
 		if (region.x >= 0)
 		{
-			assert(subImage.width == region.width);
-			assert(subImage.height == region.height);
+			assert(subImage.width() == region.width);
+			assert(subImage.height() == region.height);
 
 			imageAtlas.fill(color, Vector2s32(region.x, region.y), Vector2s32(region.width, region.height));
 
@@ -234,8 +234,8 @@ unittest
 
 	atlas.create(Vector2s32(128, 128));
 
-	imageAtlas.create("imageAtlas", atlas.size.x, atlas.size.y, 3);
-	expectedResult.create("result", imageAtlas.width, imageAtlas.height, imageAtlas.nbBytesPerPixel);
+	imageAtlas.create("imageAtlas", atlas.size().x, atlas.size().y, 3);
+	expectedResult.create("result", imageAtlas.width(), imageAtlas.height(), imageAtlas.nbBytesPerPixel());
 
 	fillAtlas(atlas, imageAtlas, Vector2s32( 20,  30), Color(1.0, 0.0, 0.0));
 	fillAtlas(atlas, imageAtlas, Vector2s32(100,  10), Color(0.0, 1.0, 0.0));
@@ -289,5 +289,5 @@ unittest
 
 	expectedResult.save("../data/AtlasTestResult.bmp");
 
-	assert(0 == memcmp(expectedResult.pixels, imageAtlas.pixels, imageAtlas.width * imageAtlas.height * imageAtlas.nbBytesPerPixel));
+	assert(0 == memcmp(expectedResult.pixels(), imageAtlas.pixels(), imageAtlas.width() * imageAtlas.height() * imageAtlas.nbBytesPerPixel()));
 }
