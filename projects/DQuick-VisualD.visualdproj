@@ -23,7 +23,6 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
-  <errDeprecated>0</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -54,14 +53,14 @@
   <objname />
   <libname />
   <doDocComments>0</doDocComments>
-  <docdir />
+  <docdir>$(ConfigurationName)/../../doc</docdir>
   <docname />
   <modules_ddoc />
   <ddocfiles />
   <doHdrGeneration>0</doHdrGeneration>
   <hdrdir />
   <hdrname />
-  <doXGeneration>1</doXGeneration>
+  <doXGeneration>0</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
   <debugids />
@@ -107,7 +106,7 @@
   <verbose>0</verbose>
   <vtls>0</vtls>
   <symdebug>0</symdebug>
-  <optimize>0</optimize>
+  <optimize>1</optimize>
   <cpu>0</cpu>
   <isX86_64>0</isX86_64>
   <isLinux>0</isLinux>
@@ -117,7 +116,6 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
-  <errDeprecated>0</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -147,8 +145,8 @@
   <objdir>$(OutDir)</objdir>
   <objname />
   <libname />
-  <doDocComments>0</doDocComments>
-  <docdir />
+  <doDocComments>1</doDocComments>
+  <docdir>$(ConfigurationName)/../../doc</docdir>
   <docname />
   <modules_ddoc />
   <ddocfiles />
