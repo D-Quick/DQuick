@@ -32,7 +32,7 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 		if (popFromStack)
 			lua_remove(L, index);
 		static if (__traits(compiles, __traits(getMember, cast(ItemType)(itemBinding.declarativeItem), PropertyName)(value)))
-			__traits(getMember, cast(ItemType)(itemBinding.declarativeItem), PropertyName)(value);
+			__traits(getMember, item, PropertyName)(value);
 		else
 			throw new Exception(format("Property \"%s\" is not writeable\n", PropertyName));			
 	}

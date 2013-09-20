@@ -118,6 +118,18 @@ T	valueFromLua(T)(lua_State* L, int index)
 			throw new Exception(format("Lua value at index %d is a \"%s\", a string was expected\n", index, getLuaTypeName(L, index)));
 		value = to!(string)(lua_tostring(L, index));
 	}
+	else static if (is(T : dquick.script.i_item_binding.IItemBinding))
+	{
+		if (lua_isnil(L, index))
+			value = null;
+		else
+		{
+			if (!lua_isuserdata(L, index))
+				throw new Exception(format("Lua value at index %d is a \"%s\", a userdata or nil was expected\n", index, getLuaTypeName(L, index)));
+			void*	itemBindingPtr = *(cast(void**)lua_touserdata(L, index));
+			value = cast(T)(itemBindingPtr);
+		}
+	}
 	else
 	{
 		throw new Exception(format("Lua value at index %d is a \"%s\", a number, boolean or string was expected\n", index, getLuaTypeName(L, index)));

@@ -17,6 +17,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 	{
 		this.mDMLEngine = dmlEngine;
 		this.item = item;
+		creating = true;
 
 		foreach (member; __traits(allMembers, typeof(this)))
 		{
@@ -24,11 +25,13 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 			{
 				static if (__traits(hasMember, this, "____"~member~"ItemBinding")) // Instanciate subitem binding
 				{
-					__traits(getMember, this, "__"~getSignalNameFromPropertyName(member))(__traits(getMember, item, member));
 					//__traits(getMember, this, "____"~member~"ItemBinding") = new typeof(__traits(getMember, this, "____"~member~"ItemBinding"))(dmlEngine, __traits(getMember, item, member)); // Instanciate subitem binding
 					//dmlEngine.addObjectBinding!(typeof(__traits(getMember, this, "____"~member~"ItemBinding")))(__traits(getMember, this, "____"~member~"ItemBinding"), "");
 					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, this);  // Instantiate property binding linked to __member inside this
 					__traits(getMember, this, "__"~getSignalNameFromPropertyName(member~"ItemBinding")).connect(cast(TypeTuple!(ParameterTypeTuple!(__traits(getMember, this, "__"~getSignalNameFromPropertyName(member~"ItemBinding")).connect))[0])(&__traits(getMember, this, member).onChanged)); // Signal
+
+					__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect(cast(TypeTuple!(ParameterTypeTuple!(__traits(getMember, this.item, getSignalNameFromPropertyName(member)).connect))[0])(&__traits(getMember, this, "__"~getSignalNameFromPropertyName(member)))); // Signal
+					__traits(getMember, this, "__"~getSignalNameFromPropertyName(member))(__traits(getMember, item, member)); // Set initial value
 				}
 				else // Simple type
 				{
@@ -248,7 +251,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 										//pragma(msg, fullyQualifiedName!(dquick.script.item_binding.ItemBinding!(ReturnType!(overload))));
 
 										result ~= format("void															__%s(%s value) {
-																if ((value && ____%sItemBinding is null) || value != ____%sItemBinding.item)
+																if (!(value is null && ____%sItemBinding is null) && !(____%sItemBinding && value == ____%sItemBinding.item))
 																{
 																	if (____%sItemBinding)
 																		dmlEngine.unregisterItem!(%s)(____%sItemBinding.item);
@@ -258,7 +261,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 																}																
 														}",
 														 getSignalNameFromPropertyName(member), fullyQualifiedName2!(ReturnType!(overload)),
-														 member, member,
+														 member, member, member,
 														 member,
 														 fullyQualifiedName2!(ReturnType!(overload)), member,
 														 member, fullyQualifiedName2!(ReturnType!(overload)),
