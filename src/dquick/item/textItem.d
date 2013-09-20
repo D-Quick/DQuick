@@ -110,6 +110,13 @@ public:
 	}
 
 private:
+	struct Line
+	{
+		Vector2s32		size;
+		Glyph[]			glyphes;
+		Vector2f32[]	offsets;	// Offsets of glyphes, y need to be added to the verticalCursor value
+		float			verticalCursor = 0.0f;	// Global vertical offset for the line
+	}
 
 	// TODO Use resource manager to update texture atlas, textures have to be shared between all TextItems
 	void	rebuildMesh()
@@ -119,29 +126,23 @@ private:
 		if (!mText.length)
 			return;
 
+		Line[]	lines;
+		mImplicitSize = Vector2f32(0.0f, 0.0f);
+
 		try
 		{
 			Font	font;
 
 			font = fontManager.getFont(mFont, mFontSize);
 
-			mMesh = new Mesh();
-			mMesh.setShader(mShader);
-			mMesh.setShaderProgram(mShaderProgram);
-
-			GLuint[]	indexes;
-			GLfloat[]	vertices;
-			GLfloat[]	texCoords;
-			GLfloat[]	colors;
-
 			Vector2f32	cursor;
 			bool		newLineStarted = true;
-			size_t		glyphIndex = 0;
 			dchar		prevCharCode;
 
 			cursor.x = 0;
 			cursor.y = /*cast(int)font.linegap*/ mFontSize;
 
+			lines ~= Line();
 			foreach (dchar charCode; mText)
 			{
 				if (charCode == '\r')
@@ -152,6 +153,7 @@ private:
 					cursor.x = 0;
 					cursor.y = cursor.y + cast(int)font.linegap();
 					newLineStarted = true;
+					lines ~= Line();
 				}
 				else
 				{
@@ -181,16 +183,6 @@ private:
 														Vector2s32(0, 0),
 														Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
 														Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
-
-/*						writeln(format("font : \"%s\"\n"
-									   "atlas index %d\n"
-									   "glyph size %02d,%02d\n"
-									   "glyph position %03d,%03d"
-									   , font.filePath()
-									   , glyph.atlasIndex
-									   , glyph.atlasRegion.width, glyph.atlasRegion.height
-									   , glyph.atlasRegion.x, glyph.atlasRegion.y
-									   ));*/
 					}
 
 					Vector2f32	pos;
@@ -205,17 +197,42 @@ private:
 						pos.x = 0.0f;
 					pos.y = -glyph.offset.y;
 
+					// TODO set des data pour le mesh
 					if (!isSpace(charCode))
 					{
-						addGlyphToMesh(indexes, vertices, texCoords, colors,
-									   Vector2s32(cast(int)round(cursor.x + pos.x), cast(int)round(cursor.y + pos.y)),
-									   glyph, glyphIndex, mImages[glyph.atlasIndex].size());
-						glyphIndex++;
+						lines[$ - 1].glyphes ~= glyph;
+						lines[$ - 1].offsets ~= Vector2f32(cursor.x + pos.x, pos.y);
+						if (cursor.y > lines[$ - 1].verticalCursor)
+							lines[$ - 1].verticalCursor = cursor.y;
 					}
+					// --
 
 					cursor.x = cursor.x + glyph.advance.x;
 					newLineStarted = false;
 					prevCharCode = charCode;
+				}
+			}
+
+			// Building the Mesh
+			mMesh = new Mesh();
+			mMesh.setShader(mShader);
+			mMesh.setShaderProgram(mShaderProgram);
+
+			GLuint[]	indexes;
+			GLfloat[]	vertices;
+			GLfloat[]	texCoords;
+			GLfloat[]	colors;
+
+			size_t		glyphIndex = 0;
+
+			foreach (Line line; lines)
+			{
+				for (size_t i = 0; i < line.glyphes.length; i++)
+				{
+					addGlyphToMesh(indexes, vertices, texCoords, colors,
+								   Vector2s32(cast(int)round(line.offsets[i].x), cast(int)round(line.verticalCursor + line.offsets[i].y)),
+								   line.glyphes[i], glyphIndex, mImages[line.glyphes[i].atlasIndex].size());
+					glyphIndex++;
 				}
 			}
 
@@ -282,6 +299,8 @@ private:
 	}
 
 	static const string	defaultFont = "Verdana";
+
+	Vector2f32		mImplicitSize;
 
 	bool			mNeedRebuild = true;
 	Mesh			mMesh;
