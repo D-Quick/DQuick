@@ -193,6 +193,13 @@ GraphicItem
 	},
 
 	Text {
+		width = function()
+			return main.width
+		end,
+		height = function()
+			return main.height
+		end,
+
 		id = "text",
 		y = 50,
 		text = textFr,

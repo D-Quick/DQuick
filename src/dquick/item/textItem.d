@@ -98,14 +98,16 @@ public:
 
 	override
 	{
+		// TODO put mNeedRebuild at true only when wrapping is activated
 		void	setSize(Vector2f32 size)
 		{
 			GraphicItem.setSize(size);
+			mNeedRebuild = true;
 		}
 
-		@property void	width(float width) {GraphicItem.width = width;}
+		@property void	width(float width) {GraphicItem.width = width; mNeedRebuild = true;}
 		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height) {GraphicItem.height = height;}
+		@property void	height(float height) {GraphicItem.height = height; mNeedRebuild = true;}
 		@property float	height() {return GraphicItem.height;}
 	}
 
@@ -140,7 +142,7 @@ private:
 			dchar		prevCharCode;
 
 			cursor.x = 0;
-			cursor.y = /*cast(int)font.linegap*/ mFontSize;
+			cursor.y = cast(int)font.linegap /*mFontSize*/;
 
 			lines ~= Line();
 			foreach (dchar charCode; mText)
@@ -202,9 +204,12 @@ private:
 					{
 						lines[$ - 1].glyphes ~= glyph;
 						lines[$ - 1].offsets ~= Vector2f32(cursor.x + pos.x, pos.y);
-						if (cursor.y > lines[$ - 1].verticalCursor)
+						if (lines[$ - 1].verticalCursor < cursor.y)
 							lines[$ - 1].verticalCursor = cursor.y;
 					}
+
+					if (lines[$ - 1].size.y < font.linegap())
+						lines[$ - 1].size.y = cast(int)round(font.linegap());
 					// --
 
 					cursor.x = cursor.x + glyph.advance.x;
