@@ -21,7 +21,96 @@
 <br><br>
 <b>http:</b><br>
 //clb.demon.fi/files/RectangleBinPack/SkylineBinPack.cpp<br><br>
+<b>Examples:</b><br>
+This test will use images to simplify the debugging
+<pre class="d_code">
+	<font color=blue>void</font>	fillAtlas(<font color=blue>ref</font> <u>Atlas</u> atlas, Image imageAtlas, Vector2s32 size, Color color)
+	{
+		Rect2s32	region;
+		Image		subImage = <font color=blue>new</font> Image;
 
+		subImage.create(<font color=red>"subImage"</font>, size.x, size.y, 3);
+		subImage.fill(color, Vector2s32(0, 0), subImage.size());
+		region = atlas.allocateRegion(subImage.width(), subImage.height());
+		<font color=blue>if</font> (region.x &gt;= 0)
+		{
+			<font color=blue>assert</font>(subImage.width() == region.width);
+			<font color=blue>assert</font>(subImage.height() == region.height);
+
+			imageAtlas.fill(color, Vector2s32(region.x, region.y), Vector2s32(region.width, region.height));
+
+			<font color=green>// Uncomment it to generate the code of the result Image
+</font><font color=green>/*			writeln(format("\texpectedResult.fill(Color(%0.1f, %0.1f, %0.1f), Vector2s32(%3d, %3d), Vector2s32(%3d, %3d));",
+						   color.x, color.y, color.z,
+						   region.x, region.y,
+						   size.x, size.y));*/</font>
+		}
+	}
+
+	<u>Atlas</u>	atlas = <font color=blue>new</font> <u>Atlas</u>;
+	Image	imageAtlas = <font color=blue>new</font> Image;
+	Image	expectedResult = <font color=blue>new</font> Image;
+
+	atlas.create(Vector2s32(128, 128));
+
+	imageAtlas.create(<font color=red>"imageAtlas"</font>, atlas.size().x, atlas.size().y, 3);
+	expectedResult.create(<font color=red>"result"</font>, imageAtlas.width(), imageAtlas.height(), imageAtlas.nbBytesPerPixel());
+
+	fillAtlas(atlas, imageAtlas, Vector2s32( 20,  30), Color(1.0, 0.0, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32(100,  10), Color(0.0, 1.0, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 10, 100), Color(0.0, 0.0, 1.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 10,  60), Color(1.0, 1.0, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 30,  30), Color(0.0, 1.0, 1.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 45,  70), Color(1.0, 0.0, 1.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 15,   5), Color(1.0, 1.0, 1.0));
+
+	<font color=green>// ============================================================================
+</font>
+	fillAtlas(atlas, imageAtlas, Vector2s32( 20,  30), Color(0.5, 0.0, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 10,  10), Color(0.0, 0.5, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 25,  12), Color(0.0, 0.0, 0.5));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 10,  70), Color(0.5, 0.5, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 30,  30), Color(0.0, 0.5, 0.5));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 45,  20), Color(0.5, 0.0, 0.5));
+	fillAtlas(atlas, imageAtlas, Vector2s32( 15,   5), Color(0.5, 0.5, 0.));
+
+	<font color=green>// ============================================================================
+</font>
+	fillAtlas(atlas, imageAtlas, Vector2s32(126,   1), Color(1.0, 0.0, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32(127,   1), Color(0.0, 1.0, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32(128,   1), Color(0.0, 0.0, 1.0));
+
+	<font color=green>// ============================================================================
+</font>
+	fillAtlas(atlas, imageAtlas, Vector2s32(  1, 126), Color(1.0, 0.0, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32(  1, 127), Color(0.0, 1.0, 0.0));
+	fillAtlas(atlas, imageAtlas, Vector2s32(  1, 128), Color(0.0, 0.0, 1.0));
+
+	imageAtlas.save(<font color=red>"../data/ImageAtlasTest.bmp"</font>);
+
+	expectedResult.fill(Color(1.0, 0.0, 0.0), Vector2s32(  0,   0), Vector2s32( 20,  30));
+	expectedResult.fill(Color(0.0, 1.0, 0.0), Vector2s32( 20,   0), Vector2s32(100,  10));
+	expectedResult.fill(Color(0.0, 0.0, 1.0), Vector2s32( 20,  10), Vector2s32( 10, 100));
+	expectedResult.fill(Color(1.0, 1.0, 0.0), Vector2s32( 30,  10), Vector2s32( 10,  60));
+	expectedResult.fill(Color(0.0, 1.0, 1.0), Vector2s32( 40,  10), Vector2s32( 30,  30));
+	expectedResult.fill(Color(1.0, 0.0, 1.0), Vector2s32( 70,  10), Vector2s32( 45,  70));
+	expectedResult.fill(Color(1.0, 1.0, 1.0), Vector2s32(  0,  30), Vector2s32( 15,   5));
+	expectedResult.fill(Color(0.5, 0.0, 0.0), Vector2s32(  0,  35), Vector2s32( 20,  30));
+	expectedResult.fill(Color(0.0, 0.5, 0.0), Vector2s32(115,  10), Vector2s32( 10,  10));
+	expectedResult.fill(Color(0.0, 0.0, 0.5), Vector2s32( 40,  40), Vector2s32( 25,  12));
+	expectedResult.fill(Color(0.5, 0.5, 0.0), Vector2s32(115,  20), Vector2s32( 10,  70));
+	expectedResult.fill(Color(0.0, 0.5, 0.5), Vector2s32( 40,  52), Vector2s32( 30,  30));
+	expectedResult.fill(Color(0.5, 0.0, 0.5), Vector2s32( 70,  80), Vector2s32( 45,  20));
+	expectedResult.fill(Color(0.5, 0.5, 0.0), Vector2s32(  0,  65), Vector2s32( 15,   5));
+	expectedResult.fill(Color(1.0, 0.0, 0.0), Vector2s32(  0, 110), Vector2s32(126,   1));
+	expectedResult.fill(Color(0.0, 1.0, 0.0), Vector2s32(  0, 111), Vector2s32(127,   1));
+	expectedResult.fill(Color(0.0, 0.0, 1.0), Vector2s32(  0, 112), Vector2s32(128,   1));
+
+	expectedResult.save(<font color=red>"../data/AtlasTestResult.bmp"</font>);
+
+	<font color=blue>assert</font>(0 == memcmp(expectedResult.pixels(), imageAtlas.pixels(), imageAtlas.width() * imageAtlas.height() * imageAtlas.nbBytesPerPixel()));
+</pre>
+<br><br>
 <dl><dt><big><a name="Atlas.allocateRegion"></a>Rect2s32 <u>allocateRegion</u>(uint <i>width</i>, uint <i>height</i>);
 </big></dt>
 <dd>Return -1 in all Region properties when not enough space found<br><br>

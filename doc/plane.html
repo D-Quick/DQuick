@@ -14,12 +14,12 @@
 <td>all values get stored as this type (must be floating point)</td></tr>
 </table><br>
 
-<dl><dt><big><a name="pt"></a>alias type <u>pt</u>;
+<dl><dt><big><a name="pt"></a>alias <u>pt</u> = type;
 </big></dt>
 <dd>Holds the internal type of the plane.<br><br>
 
 </dd>
-<dt><big><a name="vec3"></a>alias Vector!(pt, 3) <u>vec3</u>;
+<dt><big><a name="vec3"></a>alias <u>vec3</u> = Vector!(pt, 3);
 </big></dt>
 <dd>Convenience alias to the corresponding vector type.<br><br>
 
@@ -64,7 +64,7 @@
 <dt><big><a name="normalized"></a>const PlaneT <u>normalized</u>();
 </big></dt>
 <dd>Returns a <u>normalized</u> copy of the plane.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="distance"></a>const pt <u>distance</u>(vec3 <i>point</i>);
 </big></dt>
@@ -80,7 +80,7 @@ the plane <font color=red>must</font> be normalized, the result can be negative.
 <br><br>
 <b>Note:</b><br>
 the plane does not have to be normalized, the result can be negative.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 </dl>
 </dd>

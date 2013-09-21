@@ -36,13 +36,13 @@ All static methods are strongly pure.<br><br>
 <td>specifies the dimension of the vector, can be 1, 2, 3 or 4</td></tr>
 </table><br>
 <b>Examples:</b><br>
-<pre class="d_code"> <font color=blue>alias</font> <u>Vector</u>!(<font color=blue>int</font>, 3) vec3i;
- <font color=blue>alias</font> <u>Vector</u>!(<font color=blue>float</font>, 4) vec4;
- <font color=blue>alias</font> <u>Vector</u>!(<font color=blue>real</font>, 2) vec2r;
+<pre class="d_code"><font color=blue>alias</font> <u>Vector</u>!(<font color=blue>int</font>, 3) vec3i;
+<font color=blue>alias</font> <u>Vector</u>!(<font color=blue>float</font>, 4) vec4;
+<font color=blue>alias</font> <u>Vector</u>!(<font color=blue>real</font>, 2) vec2r;
 </pre>
 <br><br>
 
-<dl><dt><big><a name="vt"></a>alias type <u>vt</u>;
+<dl><dt><big><a name="vt"></a>alias <u>vt</u> = type;
 </big></dt>
 <dd>Holds the internal type of the vector.<br><br>
 
@@ -63,25 +63,25 @@ All static methods are strongly pure.<br><br>
 
 </dd>
 <dt><big><a name="as_string"></a>string <u>as_string</u>();
-<br><a name="toString"></a>alias as_string <u>toString</u>;
+<br><a name="toString"></a>alias <u>toString</u> = as_string;
 </big></dt>
 <dd>Returns the current vector formatted as string, useful for printing the vector.<br><br>
 
 </dd>
-<dt><big><a name="x"></a>alias get_!('<u>x</u>') <u>x</u>;
-<br><a name="y"></a>alias get_!('<u>y</u>') <u>y</u>;
-<br><a name="u"></a>alias x <u>u</u>;
-<br><a name="v"></a>alias y <u>v</u>;
-<br><a name="s"></a>alias x <u>s</u>;
-<br><a name="t"></a>alias y <u>t</u>;
-<br><a name="r"></a>alias x <u>r</u>;
-<br><a name="g"></a>alias y <u>g</u>;
-<br><a name="z"></a>alias get_!('<u>z</u>') <u>z</u>;
-<br><a name="b"></a>alias z <u>b</u>;
-<br><a name="p"></a>alias z <u>p</u>;
-<br><a name="w"></a>alias get_!('<u>w</u>') <u>w</u>;
-<br><a name="a"></a>alias w <u>a</u>;
-<br><a name="q"></a>alias w <u>q</u>;
+<dt><big><a name="x"></a>alias <u>x</u> = get_!('<u>x</u>');
+<br><a name="y"></a>alias <u>y</u> = get_!('<u>y</u>');
+<br><a name="u"></a>alias <u>u</u> = x;
+<br><a name="v"></a>alias <u>v</u> = y;
+<br><a name="s"></a>alias <u>s</u> = x;
+<br><a name="t"></a>alias <u>t</u> = y;
+<br><a name="r"></a>alias <u>r</u> = x;
+<br><a name="g"></a>alias <u>g</u> = y;
+<br><a name="z"></a>alias <u>z</u> = get_!('<u>z</u>');
+<br><a name="b"></a>alias <u>b</u> = z;
+<br><a name="p"></a>alias <u>p</u> = z;
+<br><a name="w"></a>alias <u>w</u> = get_!('<u>w</u>');
+<br><a name="a"></a>alias <u>a</u> = w;
+<br><a name="q"></a>alias <u>q</u> = w;
 </big></dt>
 <dd>static properties to access the values.<br><br>
 
@@ -96,10 +96,10 @@ All static methods are strongly pure.<br><br>
  If mixed types are passed they will be joined together (allowed types: vector, static array, <i>vt</i>).
 <br><br>
 <b>Examples:</b><br>
-<pre class="d_code"> vec4 v4 = vec4(1.0f, vec2(2.0f, 3.0f), 4.0f);
- vec3 v3 = vec3(v4); <font color=green>// v3 = vec3(1.0f, 2.0f, 3.0f);
-</font> vec2 v2 = v3.xy; <font color=green>// swizzling returns a static array.
-</font> vec3 v3_2 = vec3(1.0f); <font color=green>// vec3 v3_2 = vec3(1.0f, 1.0f, 1.0f);
+<pre class="d_code">vec4 v4 = vec4(1.0f, vec2(2.0f, 3.0f), 4.0f);
+vec3 v3 = vec3(v4); <font color=green>// v3 = vec3(1.0f, 2.0f, 3.0f);
+</font>vec2 v2 = v3.xy; <font color=green>// swizzling returns a static array.
+</font>vec3 v3_2 = vec3(1.0f); <font color=green>// vec3 v3_2 = vec3(1.0f, 1.0f, 1.0f);
 </font></pre>
 <br><br>
 
@@ -112,12 +112,12 @@ All static methods are strongly pure.<br><br>
 <dt><big><a name="clear"></a>void <u>clear</u>(vt <i>value</i>);
 </big></dt>
 <dd>Sets all values of the vector to <i>value</i>.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="update"></a>void <u>update</u>(Vector!(vt, dimension) <i>other</i>);
 </big></dt>
 <dd>Updates the vector with the values from <i>other</i>.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="opDispatch"></a>const vt[s.length] <u>opDispatch</u>(string s)();
 </big></dt>
@@ -125,7 +125,7 @@ All static methods are strongly pure.<br><br>
 <br><br>
 <b>Returns:</b><br>
 a static array of coordinates.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="magnitude_squared"></a>const real <u>magnitude_squared</u>();
 </big></dt>
@@ -133,8 +133,8 @@ a static array of coordinates.<br><br>
 
 </dd>
 <dt><big><a name="magnitude"></a>const real <u>magnitude</u>();
-<br><a name="length_squared"></a>alias magnitude_squared <u>length_squared</u>;
-<br><a name="length"></a>alias magnitude <u>length</u>;
+<br><a name="length_squared"></a>alias <u>length_squared</u> = magnitude_squared;
+<br><a name="length"></a>alias <u>length</u> = magnitude;
 </big></dt>
 <dd>Returns the <u>magnitude</u> of the vector.<br><br>
 
@@ -164,17 +164,17 @@ a static array of coordinates.<br><br>
 <dt><big><a name="distance"></a>T.vt <u>distance</u>(T)(const T <i>veca</i>, const T <i>vecb</i>);
 </big></dt>
 <dd>Calculates the <u>distance</u> between two vectors.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
-<dt><big><a name="vec2"></a>alias Vector!(float, 2).Vector <u>vec2</u>;
-<br><a name="vec3"></a>alias Vector!(float, 3).Vector <u>vec3</u>;
-<br><a name="vec4"></a>alias Vector!(float, 4).Vector <u>vec4</u>;
-<br><a name="vec2d"></a>alias Vector!(double, 2).Vector <u>vec2d</u>;
-<br><a name="vec3d"></a>alias Vector!(double, 3).Vector <u>vec3d</u>;
-<br><a name="vec4d"></a>alias Vector!(double, 4).Vector <u>vec4d</u>;
-<br><a name="vec2i"></a>alias Vector!(int, 2).Vector <u>vec2i</u>;
-<br><a name="vec3i"></a>alias Vector!(int, 3).Vector <u>vec3i</u>;
-<br><a name="vec4i"></a>alias Vector!(int, 4).Vector <u>vec4i</u>;
+<dt><big><a name="vec2"></a>alias <u>vec2</u> = Vector!(float, 2).Vector;
+<br><a name="vec3"></a>alias <u>vec3</u> = Vector!(float, 3).Vector;
+<br><a name="vec4"></a>alias <u>vec4</u> = Vector!(float, 4).Vector;
+<br><a name="vec2d"></a>alias <u>vec2d</u> = Vector!(double, 2).Vector;
+<br><a name="vec3d"></a>alias <u>vec3d</u> = Vector!(double, 3).Vector;
+<br><a name="vec4d"></a>alias <u>vec4d</u> = Vector!(double, 4).Vector;
+<br><a name="vec2i"></a>alias <u>vec2i</u> = Vector!(int, 2).Vector;
+<br><a name="vec3i"></a>alias <u>vec3i</u> = Vector!(int, 3).Vector;
+<br><a name="vec4i"></a>alias <u>vec4i</u> = Vector!(int, 4).Vector;
 </big></dt>
 <dd>Pre-defined vector types, the number represents the dimension and the last letter the type (none = float, d = double, i = int).<br><br>
 
@@ -192,13 +192,13 @@ a static array of coordinates.<br><br>
 <td>columns of the matrix</td></tr>
 </table><br>
 <b>Examples:</b><br>
-<pre class="d_code"> <font color=blue>alias</font> <u>Matrix</u>!(<font color=blue>float</font>, 4, 4) mat4;
- <font color=blue>alias</font> <u>Matrix</u>!(<font color=blue>double</font>, 3, 4) mat34d;
- <font color=blue>alias</font> <u>Matrix</u>!(<font color=blue>real</font>, 2, 2) mat2r;
+<pre class="d_code"><font color=blue>alias</font> <u>Matrix</u>!(<font color=blue>float</font>, 4, 4) mat4;
+<font color=blue>alias</font> <u>Matrix</u>!(<font color=blue>double</font>, 3, 4) mat34d;
+<font color=blue>alias</font> <u>Matrix</u>!(<font color=blue>real</font>, 2, 2) mat2r;
 </pre>
 <br><br>
 
-<dl><dt><big><a name="mt"></a>alias type <u>mt</u>;
+<dl><dt><big><a name="mt"></a>alias <u>mt</u> = type;
 </big></dt>
 <dd>Holds the internal type of the matrix;<br><br>
 
@@ -225,20 +225,20 @@ a static array of coordinates.<br><br>
  <font color=red>this means you've to set the transpose argument to GL_TRUE when passing it to OpenGL</font>.
 <br><br>
 <b>Examples:</b><br>
-<pre class="d_code"> <font color=green>// 3rd argument = GL_TRUE
-</font> glUniformMatrix4fv(programs.main.model, 1, GL_TRUE, mat4.translation(-0.5f, -0.5f, 1.0f).<u>value_ptr</u>);
+<pre class="d_code"><font color=green>// 3rd argument = GL_TRUE
+</font>glUniformMatrix4fv(programs.main.model, 1, GL_TRUE, mat4.translation(-0.5f, -0.5f, 1.0f).<u>value_ptr</u>);
 </pre>
 <br><br>
 
 </dd>
 <dt><big><a name="as_string"></a>string <u>as_string</u>();
-<br><a name="toString"></a>alias as_string <u>toString</u>;
+<br><a name="toString"></a>alias <u>toString</u> = as_string;
 </big></dt>
 <dd>Returns the current matrix formatted as flat string.<br><br>
 
 </dd>
 <dt><big><a name="as_pretty_string"></a>string <u>as_pretty_string</u>();
-<br><a name="toPrettyString"></a>alias as_pretty_string <u>toPrettyString</u>;
+<br><a name="toPrettyString"></a>alias <u>toPrettyString</u> = as_pretty_string;
 </big></dt>
 <dd>Returns the current matrix as pretty formatted string. <br><br>
 
@@ -255,11 +255,11 @@ a static array of coordinates.<br><br>
  It's also allowed to pass vectors and scalars at a time, but the vectors dimension must match the number of columns and align correctly.
 <br><br>
 <b>Examples:</b><br>
-<pre class="d_code"> mat2 m2 = mat2(0.0f); <font color=green>// mat2 m2 = mat2(0.0f, 0.0f, 0.0f, 0.0f);
-</font> mat3 m3 = mat3(m2); <font color=green>// mat3 m3 = mat3(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-</font> mat3 m3_2 = mat3(vec3(1.0f, 2.0f, 3.0f), 4.0f, 5.0f, 6.0f, vec3(7.0f, 8.0f, 9.0f));
- mat4 m4 = mat4.identity; <font color=green>// just an identity matrix
-</font> mat3 m3_3 = mat3(m4); <font color=green>// mat3 m3_3 = mat3.identity
+<pre class="d_code">mat2 m2 = mat2(0.0f); <font color=green>// mat2 m2 = mat2(0.0f, 0.0f, 0.0f, 0.0f);
+</font>mat3 m3 = mat3(m2); <font color=green>// mat3 m3 = mat3(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+</font>mat3 m3_2 = mat3(vec3(1.0f, 2.0f, 3.0f), 4.0f, 5.0f, 6.0f, vec3(7.0f, 8.0f, 9.0f));
+mat4 m4 = mat4.identity; <font color=green>// just an identity matrix
+</font>mat3 m3_3 = mat3(m4); <font color=green>// mat3 m3_3 = mat3.identity
 </font></pre>
 <br><br>
 
@@ -272,7 +272,7 @@ a static array of coordinates.<br><br>
 <dt><big><a name="clear"></a>void <u>clear</u>(mt <i>value</i>);
 </big></dt>
 <dd>Sets all values of the matrix to <i>value</i> (each column in each row will contain this <i>value</i>).<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="make_identity"></a>void <u>make_identity</u>();
 </big></dt>
@@ -287,7 +287,7 @@ a static array of coordinates.<br><br>
 <dt><big><a name="transpose"></a>void <u>transpose</u>();
 </big></dt>
 <dd>Transposes the current matrix;<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="transposed"></a>const Matrix <u>transposed</u>();
 </big></dt>
@@ -328,7 +328,7 @@ a static array of coordinates.<br><br>
 <dt><big><a name="rotatez"></a>Matrix <u>rotatez</u>(real <i>alpha</i>);
 </big></dt>
 <dd>Rotates the current matrix around the z-axis and returns <i>this</i> (nxn matrices, n &gt;= 3).<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="translation"></a>void <u>translation</u>(mt[] <i>values</i>...);
 </big></dt>
@@ -343,7 +343,7 @@ a static array of coordinates.<br><br>
 <dt><big><a name="translation"></a>Matrix <u>translation</u>();
 </big></dt>
 <dd>Returns an identity matrix with the current <u>translation</u> applied (nxn matrices, n &gt;= 3)..<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="scale"></a>void <u>scale</u>(mt[] <i>values</i>...);
 </big></dt>
@@ -358,7 +358,7 @@ a static array of coordinates.<br><br>
 <dt><big><a name="scale"></a>Matrix <u>scale</u>();
 </big></dt>
 <dd>Returns an identity matrix with the current <u>scale</u> applied (nxn matrices, n &gt;= 3).<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="rotation"></a>void <u>rotation</u>(Matrix!(mt, 3, 3) <i>rot</i>);
 </big></dt>
@@ -368,7 +368,7 @@ a static array of coordinates.<br><br>
 <dt><big><a name="rotation"></a>Matrix!(mt, 3, 3) <u>rotation</u>();
 </big></dt>
 <dd>Returns an identity matrix with the current <u>rotation</u> applied (nxn matrices, n &gt;= 3).<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="inverse"></a>const Matrix <u>inverse</u>();
 </big></dt>
@@ -378,11 +378,11 @@ a static array of coordinates.<br><br>
 <dt><big><a name="invert"></a>void <u>invert</u>();
 </big></dt>
 <dd>Inverts the current matrix (nxn matrices, n &lt;= 4).<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 </dl>
 </dd>
-<dt><big><a name="mat2"></a>alias Matrix!(float, 2, 2).Matrix <u>mat2</u>;
+<dt><big><a name="mat2"></a>alias <u>mat2</u> = Matrix!(float, 2, 2).Matrix;
 </big></dt>
 <dd>Pre-defined matrix types, the first number represents the number of rows 
  and the second the number of columns, if there's just one it's a nxn matrix.
@@ -398,7 +398,7 @@ a static array of coordinates.<br><br>
 <td>all values get stored as this type</td></tr>
 </table><br>
 
-<dl><dt><big><a name="qt"></a>alias type <u>qt</u>;
+<dl><dt><big><a name="qt"></a>alias <u>qt</u> = type;
 </big></dt>
 <dd>Holds the internal type of the quaternion.<br><br>
 
@@ -418,10 +418,10 @@ a static array of coordinates.<br><br>
 <dd>Returns the current vector formatted as string, useful for printing the quaternion.<br><br>
 
 </dd>
-<dt><big><a name="w"></a>alias get_!('<u>w</u>') <u>w</u>;
-<br><a name="x"></a>alias get_!('<u>x</u>') <u>x</u>;
-<br><a name="y"></a>alias get_!('<u>y</u>') <u>y</u>;
-<br><a name="z"></a>alias get_!('<u>z</u>') <u>z</u>;
+<dt><big><a name="w"></a>alias <u>w</u> = get_!('<u>w</u>');
+<br><a name="x"></a>alias <u>x</u> = get_!('<u>x</u>');
+<br><a name="y"></a>alias <u>y</u> = get_!('<u>y</u>');
+<br><a name="z"></a>alias <u>z</u> = get_!('<u>z</u>');
 </big></dt>
 <dd>static properties to access the values.<br><br>
 
@@ -439,7 +439,7 @@ a static array of coordinates.<br><br>
 <dt><big><a name="ok"></a>const bool <u>ok</u>();
 </big></dt>
 <dd>Returns <b>true</b> if all values are not nan and finite, otherwise <b>false</b>.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="magnitude_squared"></a>const real <u>magnitude_squared</u>();
 </big></dt>
@@ -462,13 +462,13 @@ a static array of coordinates.<br><br>
 
 </dd>
 <dt><big><a name="invert"></a>void <u>invert</u>();
-<br><a name="conjugate"></a>alias invert <u>conjugate</u>;
+<br><a name="conjugate"></a>alias <u>conjugate</u> = invert;
 </big></dt>
 <dd>Inverts the quaternion.<br><br>
 
 </dd>
 <dt><big><a name="inverse"></a>const Quaternion <u>inverse</u>();
-<br><a name="conjugated"></a>alias inverse <u>conjugated</u>;
+<br><a name="conjugated"></a>alias <u>conjugated</u> = inverse;
 </big></dt>
 <dd>Returns an inverted copy of the current quaternion.<br><br>
 
@@ -495,7 +495,7 @@ A quaternion representing the rotation (3x3 <i>matrix</i>)<br><br>
 <tr><td>cols</td>
 <td>number of columns of the resulting matrix (min 3)</td></tr>
 </table><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="normalize"></a>void <u>normalize</u>();
 </big></dt>
@@ -505,7 +505,7 @@ A quaternion representing the rotation (3x3 <i>matrix</i>)<br><br>
 <dt><big><a name="normalized"></a>const Quaternion <u>normalized</u>();
 </big></dt>
 <dd>Returns a <u>normalized</u> copy of the current quaternion.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="yaw"></a>const real <u>yaw</u>();
 </big></dt>
@@ -520,7 +520,7 @@ A quaternion representing the rotation (3x3 <i>matrix</i>)<br><br>
 <dt><big><a name="roll"></a>const real <u>roll</u>();
 </big></dt>
 <dd>Returns the <u>roll</u>.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="xrotation"></a>Quaternion <u>xrotation</u>(real <i>alpha</i>);
 </big></dt>
@@ -570,11 +570,11 @@ A quaternion representing the rotation (3x3 <i>matrix</i>)<br><br>
 <dt><big><a name="rotate_euler"></a>Quaternion <u>rotate_euler</u>(real <i>heading</i>, real <i>attitude</i>, real <i>bank</i>);
 </big></dt>
 <dd>Applies an euler rotation to the current quaternion and returns <i>this</i>.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 </dl>
 </dd>
-<dt><big><a name="quat"></a>alias Quaternion!(float).Quaternion <u>quat</u>;
+<dt><big><a name="quat"></a>alias <u>quat</u> = Quaternion!(float).Quaternion;
 </big></dt>
 <dd>Pre-defined quaternion of type float.<br><br>
 

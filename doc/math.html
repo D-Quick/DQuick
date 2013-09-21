@@ -56,7 +56,7 @@ MIT<br><br>
 <dt><big><a name="sign"></a>float <u>sign</u>(T)(T <i>x</i>);
 </big></dt>
 <dd>Returns 1.0 if x &gt; 0, 0.0 if x = 0, or -1.0 if x &lt; 0.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="almost_equal"></a>bool <u>almost_equal</u>(T, S)(T <i>a</i>, S <i>b</i>, float <i>epsilon</i> = 1e-06F);
 <br><a name="almost_equal"></a>bool <u>almost_equal</u>(T, S)(T <i>a</i>, S <i>b</i>, float <i>epsilon</i> = 1e-06F);
@@ -82,12 +82,12 @@ MIT<br><br>
 <dt><big><a name="cdegrees"></a>real <u>cdegrees</u>(real radians)();
 </big></dt>
 <dd>Compiletime version of <i>degrees</i>.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="clamp"></a>auto <u>clamp</u>(T1, T2, T3)(T1 <i>x</i>, T2 <i>min_val</i>, T3 <i>max_val</i>);
 </big></dt>
 <dd>Returns min(max(x, min_val), max_val), Results are undefined if min_val &gt; max_val.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="step"></a>float <u>step</u>(T1, T2)(T1 <i>edge</i>, T2 <i>x</i>);
 </big></dt>
@@ -99,7 +99,7 @@ MIT<br><br>
 <dd>Returns 0.0 if x &lt;= edge0 and 1.0 if x &gt;= edge1 and performs smooth 
  hermite interpolation between 0 and 1 when edge0 &lt; x &lt; edge1. 
  This is useful in cases where you would want a threshold function with a smooth transition.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 </dl>
 
