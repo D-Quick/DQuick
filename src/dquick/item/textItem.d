@@ -28,6 +28,14 @@ class TextItem : GraphicItem
 public:
 	alias Font.Family	FontFamily;
 
+	enum WrapMode
+	{
+		NoWrap,			/// (default) No wrapping will be performed. If the text contains insufficient newlines, then contentWidth will exceed a set width.
+		WordWrap,		/// Wrapping is done on word boundaries only. If a word is too long, contentWidth will exceed a set width.
+		WrapAnywhere,	/// Wrapping is done at any point on a line, even if it occurs in the middle of a word.
+		Wrap			/// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
+	}
+
 	this()
 	{
 		mShaderProgram = new ShaderProgram();
@@ -75,6 +83,15 @@ public:
 	@property FontFamily	fontFamily() {return mFontFamily;}
 	mixin Signal!(FontFamily) onFontFamilyChanged;
 
+	@property void	wrapMode(WrapMode mode)
+	{
+		mWrapMode = mode;
+		mNeedRebuild = true;
+		onWrapModeChanged.emit(mode);
+	}
+	@property WrapMode	wrapMode() {return mWrapMode;}
+	mixin Signal!(WrapMode) onWrapModeChanged;
+
 	@property void	kerning(bool flag)
 	{
 		mKerning = flag;
@@ -102,12 +119,23 @@ public:
 		void	setSize(Vector2f32 size)
 		{
 			GraphicItem.setSize(size);
-			mNeedRebuild = true;
+			if (mWrapMode != WrapMode.NoWrap)
+				mNeedRebuild = true;
 		}
 
-		@property void	width(float width) {GraphicItem.width = width; mNeedRebuild = true;}
+		@property void	width(float width)
+		{
+			GraphicItem.width = width;
+			if (mWrapMode != WrapMode.NoWrap)
+				mNeedRebuild = true;
+		}
 		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height) {GraphicItem.height = height; mNeedRebuild = true;}
+		@property void	height(float height)
+		{
+			GraphicItem.height = height;
+			if (mWrapMode != WrapMode.NoWrap)
+				mNeedRebuild = true;
+		}
 		@property float	height() {return GraphicItem.height;}
 	}
 
@@ -316,6 +344,7 @@ private:
 	int				mFontSize = 24;
 	FontFamily		mFontFamily = FontFamily.Regular;
 	bool			mKerning = true;
+	WrapMode		mWrapMode = WrapMode.NoWrap;
 
 	static Image[]		mImages;
 	static Texture[]	mTextures;
