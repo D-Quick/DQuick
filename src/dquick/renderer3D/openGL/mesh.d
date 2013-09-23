@@ -129,14 +129,10 @@ private:
 	{
 		dquick.renderer_3d.opengl.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
-		delete indexes;
-		indexes = null;
-		delete vertices;
-		vertices = null;
-		delete colors;
-		colors = null;
-		delete texCoords;
-		texCoords = null;
+		clear(indexes);
+		clear(vertices);
+		clear(colors);
+		clear(texCoords);
 
 //		.destroy(mShader);
 	}
