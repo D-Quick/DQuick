@@ -152,6 +152,7 @@ private:
 	void	rebuildMesh()
 	{
 		mNeedRebuild = false;
+		delete mMesh;
 		mMesh = null;
 		if (!mText.length)
 			return;
@@ -297,6 +298,7 @@ private:
 		catch (Exception e)
 		{
 			writeln(e.toString());
+			delete mMesh;
 			mMesh = null;
 		}
 	}
