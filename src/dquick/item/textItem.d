@@ -159,6 +159,8 @@ private:
 		Line[]	lines;
 		mImplicitSize = Vector2f32(0.0f, 0.0f);
 
+		bool	updateTexture = false;	// True if a new glyph is loaded (this is a little optimization)
+
 		try
 		{
 			Font	font;
@@ -197,6 +199,7 @@ private:
 
 					if (!alreadyLoaded)
 					{
+						updateTexture = true;
 						// Allocate image if need
 						while (glyph.atlasIndex >= mImages.length)
 						{
@@ -283,7 +286,7 @@ private:
 				mTextures ~= new Texture();	// TODO do a loop to insert as many texture as needed
 				mTextures[0].load(mImages[0].filePath(), options);
 			}
-			else	// We can only do an update
+			else if (updateTexture)	// We can only do an update
 			{
 				mTextures[0].update(mImages[0]);
 			}
@@ -344,7 +347,7 @@ private:
 	int				mFontSize = 24;
 	FontFamily		mFontFamily = FontFamily.Regular;
 	bool			mKerning = true;
-	WrapMode		mWrapMode = WrapMode.NoWrap;
+	WrapMode		mWrapMode = WrapMode.WrapAnywhere;
 
 	static Image[]		mImages;
 	static Texture[]	mTextures;
