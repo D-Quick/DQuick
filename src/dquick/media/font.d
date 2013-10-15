@@ -403,6 +403,37 @@ shared static ~this()
 	DerelictFT.unload();
 }
 
+string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
+{
+	version(Windows)
+	{
+		import std.windows.registry;
+
+		string	fontPath = "C:/Windows/Fonts/";
+		string	fontFileName;
+		Key		fontKey;
+
+		fontKey = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
+
+		if (family == Font.Family.Regular)
+			fontFileName = fontKey.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
+		else if (family == Font.Family.Bold)
+			fontFileName = fontKey.getValue(name ~ " Bold (TrueType)").value_EXPAND_SZ();
+		else if (family == Font.Family.Italic)
+			fontFileName = fontKey.getValue(name ~ " Italic (TrueType)").value_EXPAND_SZ();
+		else if (family == (Font.Family.Bold | Font.Family.Italic))
+			fontFileName = fontKey.getValue(name ~ " Bold Italic (TrueType)").value_EXPAND_SZ();
+		return fontPath ~ fontFileName;
+	}
+}
+
+unittest
+{
+	assert(fontPathFromName("Arial") == "C:/Windows/Fonts/arial.ttf");
+	assert(fontPathFromName("arial") == "C:/Windows/Fonts/arial.ttf");	// Test with wrong case
+	assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:/Windows/Fonts/arialbi.ttf");
+}
+
 // TODO make unnittest using resource manager to share image atlas between us and applications (throw TextItem)
 // it's certainly better than the call of fontManager.clear()
 unittest
