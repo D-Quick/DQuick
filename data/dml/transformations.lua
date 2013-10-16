@@ -24,7 +24,7 @@ GraphicItem
 		Text {
 			id = "text",
 			text = "Iñtërnâtiônàlizætiøn",
-            font = "samples/fonts/Vera.ttf",
+            font = "arial",
             fontSize = 36,
             family = Text.Regular,
 		},

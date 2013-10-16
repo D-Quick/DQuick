@@ -33,7 +33,7 @@ import std.math;
 class FontManager
 {
 public:
-	ref Font	getFont(string name, int size)
+	ref Font	getFont(in string name, in int size, in Font.Family family = Font.Family.Regular)
 	{
 		string	fontKey;
 		Font*	font;
@@ -45,7 +45,7 @@ public:
 
 		Font	newFont = new Font;
 
-		newFont.load(name, size);
+		newFont.load(fontPathFromName(name, family), family, size);
 		mFonts[fontKey] = newFont;
 		return *(fontKey in mFonts);
 	}
@@ -278,7 +278,7 @@ public:
 	}
 
 private:
-	void	load(string filePath, int size)
+	void	load(in string filePath, in Font.Family family, in int size)
 	{
 		mFilePath = filePath;
 		mSize = size;
@@ -454,7 +454,7 @@ unittest
 
 	Image[]	images;
 
-	font = fontManager.getFont("../data/samples/fonts/Vera.ttf", 36);
+	font = fontManager.getFont("Times New Roman", 36);
 	text = "Iñtërnâtiônàlizætiøn";
 
 	Image		textImage;
