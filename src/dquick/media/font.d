@@ -107,9 +107,9 @@ class Font
 public:
 	enum Family
 	{
-		Regular = 0x01,
-		Bold = 0x02,
-		Italic = 0x04
+		Regular = 0x00,	// 0 because Regular is the implicit family and couldn't be combined with others
+		Bold = 0x01,
+		Italic = 0x02
 	}
 
 	~this()
@@ -415,14 +415,24 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 
 		fontKey = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
 
-		if (family == Font.Family.Regular)
+		try
+		{
+			if (family == Font.Family.Regular)
+				fontFileName = fontKey.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
+			else if (family == Font.Family.Bold)
+				fontFileName = fontKey.getValue(name ~ " Bold (TrueType)").value_EXPAND_SZ();
+			else if (family == Font.Family.Italic)
+				fontFileName = fontKey.getValue(name ~ " Italic (TrueType)").value_EXPAND_SZ();
+			else if (family == (Font.Family.Bold | Font.Family.Italic))
+				fontFileName = fontKey.getValue(name ~ " Bold Italic (TrueType)").value_EXPAND_SZ();
+			else
+				throw new Exception(format("Unsupported family combination : %X", family));
+		}
+		catch (RegistryException e)
+		{
 			fontFileName = fontKey.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
-		else if (family == Font.Family.Bold)
-			fontFileName = fontKey.getValue(name ~ " Bold (TrueType)").value_EXPAND_SZ();
-		else if (family == Font.Family.Italic)
-			fontFileName = fontKey.getValue(name ~ " Italic (TrueType)").value_EXPAND_SZ();
-		else if (family == (Font.Family.Bold | Font.Family.Italic))
-			fontFileName = fontKey.getValue(name ~ " Bold Italic (TrueType)").value_EXPAND_SZ();
+			// TODO catch exception and return a FontException with a "font not found" message
+		}
 		return fontPath ~ fontFileName;
 	}
 }
@@ -432,6 +442,7 @@ unittest
 	assert(fontPathFromName("Arial") == "C:/Windows/Fonts/arial.ttf");
 	assert(fontPathFromName("arial") == "C:/Windows/Fonts/arial.ttf");	// Test with wrong case
 	assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:/Windows/Fonts/arialbi.ttf");
+	assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:/Windows/Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
 }
 
 // TODO make unnittest using resource manager to share image atlas between us and applications (throw TextItem)
