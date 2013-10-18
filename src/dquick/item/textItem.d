@@ -165,7 +165,7 @@ private:
 		{
 			Font	font;
 
-			font = fontManager.getFont(mFont, mFontSize);
+			font = fontManager.getFont(mFont, mFontFamily, mFontSize);
 
 			Vector2f32	cursor;
 			bool		newLineStarted = true;

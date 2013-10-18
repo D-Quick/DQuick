@@ -217,7 +217,7 @@ GraphicItem
 			-- end
 			-- return 24
 		-- end,
-		family = Text.Italic,
+		fontFamily = Text.Italic,
 		-- function()
 			-- if (kerningButton.pressed) then
 				-- return Text.Italic
