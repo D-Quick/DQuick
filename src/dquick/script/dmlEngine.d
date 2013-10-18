@@ -24,6 +24,11 @@ version(unittest)
 {
 	class SubItem : DeclarativeItem
 	{
+		this()
+		{
+			writefln("SubItem.this() %x", cast(void*)(this));
+		}
+
 		void	nativeProperty(int value)
 		{
 			if (mNativeProperty != value)
@@ -105,6 +110,7 @@ version(unittest)
 			if (mNativeSubItem != value)
 			{
 				mNativeSubItem = value;
+				writefln("setter SubItem %x", cast(void*)(value));
 				onNativeSubItemChanged.emit(value);
 			}
 		}
@@ -346,7 +352,9 @@ unittest
 		assert(testObject3.nativeSubItem.nativeProperty == 30);
 
 		testObject3.nativeSubItem = new SubItem;
+		writeln("100 =============================");
 		dmlEngine.execute("testObject3.nativeSubItem = nil", "");
+		//testObject3.nativeSubItem = null;
 		assert(testObject3.nativeSubItem is null);
 
 		Item	testObject5 = new Item;
@@ -354,9 +362,14 @@ unittest
 		dmlEngine.execute("testObject3.nativeSubItem = testObject5.nativeSubItem", "");
 		assert(testObject3.nativeSubItem is null);
 		testObject5.nativeSubItem = new SubItem;
+		SubItem	toto = testObject5.nativeSubItem();
+		toto.id("toto");
+		//dmlEngine.execute("toto = testObject5.nativeSubItem", "");
+		writeln("200 =============================");
+		writefln("testObject5.nativeSubItem = %x", cast(void*)(toto));
 		dmlEngine.execute("testObject3.nativeSubItem = testObject5.nativeSubItem", "");
-		dmlEngine.execute("subItemGlobal8 = testObject3.nativeSubItem", "");
-		assert(dmlEngine.getLuaGlobal!SubItem("subItemGlobal8") is testObject5.nativeSubItem);
+		//dmlEngine.execute("subItemGlobal8 = testObject3.nativeSubItem", "");
+		//assert(dmlEngine.getLuaGlobal!SubItem("subItemGlobal8") is testObject5.nativeSubItem);
 	}
 }
 
@@ -448,7 +461,7 @@ public:
 		static if (is(T : DeclarativeItem))
 			object.id = luaName;
 
-			itemBinding.item.id = luaName;
+		dquick.script.item_binding.ItemBinding!T	itemBinding = new dquick.script.item_binding.ItemBinding!T(this, object);
 		addObjectBinding!(dquick.script.item_binding.ItemBinding!T)(itemBinding, luaName);
 	}
 
