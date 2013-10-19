@@ -409,25 +409,40 @@ shared static ~this()
 	DerelictFT.unload();
 }
 
-string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
+/// Return the default font folder with an ending /
+string	getFontFolder()
 {
+	string	fontPath;
+
 	version(Windows)
 	{
-		string	fontPath = "C:/Windows/Fonts/";
-		string	fontFileName;
 		Key		key;
 
 		// http://msdn.microsoft.com/en-us/library/windows/desktop/bb762188%28v=vs.85%29.aspx
-/*		PWSTR	fontPathBuffer;
+		/*		PWSTR	fontPathBuffer;
 		scope(exit) CoTaskMemFree(fontPathBuffer);
 		if (SHGetKnownFolderPath(FOLDERID_Fonts, 0, NULL, &fontPathBuffer) != S_OK)
-			throw new Exception("Unable to determine the font folder.");
+		throw new Exception("Unable to determine the font folder.");
 		fontPath = ;
 		*/
 
 		// TODO use SHGetKnownFolderPath with FOLDERID_Fonts in place of direct registry access
 		key = Registry.currentUser().getKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
-		fontPath = key.getValue("Fonts").value_EXPAND_SZ() ~ "\\";
+		fontPath = key.getValue("Fonts").value_EXPAND_SZ() ~ "/";
+	}
+	return fontPath;
+}
+
+string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
+{
+	string	fontPath;
+	string	fontFileName;
+
+	version(Windows)
+	{
+		Key		key;
+
+		fontPath = getFontFolder();
 
 		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
 
@@ -449,17 +464,77 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 			fontFileName = key.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
 			// TODO catch exception and return a FontException with a "font not found" message
 		}
-		return fontPath ~ fontFileName;
 	}
+	return fontPath ~ fontFileName;
 }
 
-/*unittest
+string[]	getSystemFonts()
 {
-	assert(fontPathFromName("Arial") == "C:\\Windows\\Fonts\\arial.ttf");
-	assert(fontPathFromName("arial") == "C:\\Windows\\Fonts\\arial.ttf");	// Test with wrong case
-	assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:\\Windows\\Fonts\\arialbi.ttf");
-	assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:\\Windows\\Fonts\\andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
+	string[]	fontNames;
+
+	version(Windows)
+	{
+		string	fontFileName;
+		Key		key;
+
+		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
+
+		foreach(Value v; key.values())
+		{
+			string	name = v.name();
+			if (name.indexOf(" Regular") == -1 && name.indexOf(" Condensed") == -1 && name.indexOf(" Bold") == -1 && name.indexOf(" Italic") == -1)
+				fontNames ~= remove(name, "(TrueType)");
+		}
+		// Some fonts are only in Bold or Italic families (ex : "Arial Rounded MT Bold")
+		foreach(Value v; key.values())
+		{
+			string	name = v.name();
+
+			name = remove(name, "(TrueType)");
+
+			string	shortName = name;
+
+			shortName = remove(shortName, " Regular");
+			shortName = remove(shortName, " Condensed");
+			shortName = remove(shortName, " Bold");
+			shortName = remove(shortName, " Italic");
+
+			if (std.algorithm.find(fontNames, shortName).length == 0)
+				fontNames ~= shortName;
+		}
+		// Meiryo Bold & Meiryo Bold Italic & Meiryo UI Bold & Meiryo UI Bold Italic (TrueType)
+	}
+	return fontNames;
+}
+
+private string	remove(in string source, in string str)
+{
+	ptrdiff_t	pos;
+	if ((pos = source.indexOf(str)) != -1)
+		return strip(source[0..pos] ~ source[pos + str.length..$]);
+	return source;
+}
+
+/*private string	chomp(in string source)
+{
+	string	result;
+
+	result = source;
+	while (result.length && isWhite(result[$ - 1]))
+		result = result.chop();
+	return result;
 }*/
+
+unittest
+{
+	assert(fontPathFromName("Arial") == "C:\\Windows\\Fonts/arial.ttf");
+	assert(fontPathFromName("arial") == "C:\\Windows\\Fonts/arial.ttf");	// Test with wrong case
+	assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:\\Windows\\Fonts/arialbi.ttf");
+	assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:\\Windows\\Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
+
+	writeln(getSystemFonts());
+	writeln(getSystemFonts().length);
+}
 
 // TODO make unnittest using resource manager to share image atlas between us and applications (throw TextItem)
 // it's certainly better than the call of fontManager.clear()
