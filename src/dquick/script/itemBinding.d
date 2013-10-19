@@ -118,7 +118,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 			{
 				static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding))
 				{
-					assert(__traits(getMember, this, member) != null);
+					assert(__traits(getMember, this, member) !is null);
 					result ~= format("%s\n", member);
 					result ~= shiftRight(__traits(getMember, this, member).displayDependents(), "\t", 1);
 				}

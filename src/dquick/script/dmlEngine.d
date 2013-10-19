@@ -518,12 +518,11 @@ public:
 			binding.executeBindings();
 		initializationPhase = false;
 
-
 		static if (showDebug)
 		{
 			writeln("DEPENDANCY TREE ==================================================================================================");
-			foreach (key, binding; mDeclarativeItems)
-				writefln("%s\n%s", key, shiftRight(binding.displayDependents(), "\t", 1));
+			foreach (key, bindingRef; mItemsToItemBindings)
+				writefln("%s\n%s", key, shiftRight(bindingRef.iItemBinding.displayDependents(), "\t", 1));
 			writeln("=======================================================================================================");
 		}
 	}
