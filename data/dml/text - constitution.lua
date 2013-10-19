@@ -217,13 +217,12 @@ GraphicItem
 			-- end
 			-- return 24
 		-- end,
-		fontFamily = Text.Italic,
-		-- function()
-			-- if (kerningButton.pressed) then
-				-- return Text.Italic
-			-- end
-			-- return Text.Regular
-		-- end,
+		fontFamily = function()
+			if (kerningButton.pressed) then
+				return Text.FontFamily.Italic
+			end
+			return Text.FontFamily.Regular
+		end,
 		-- kerning = function()
 			-- return kerningButton.pressed
 		-- end,
