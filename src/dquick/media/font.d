@@ -16,6 +16,12 @@ import std.typecons;
 import std.c.string;	// for memcpy
 import std.math;
 
+version(Windows)
+{
+	import std.windows.registry;
+	import std.c.windows.windows;
+}
+
 /**
 * One Font per size
 * kerning requested at runtime
@@ -33,7 +39,7 @@ import std.math;
 class FontManager
 {
 public:
-	ref Font	getFont(string name, int size)
+	ref Font	getFont(in string name, in Font.Family family, in int size)
 	{
 		string	fontKey;
 		Font*	font;
@@ -45,7 +51,7 @@ public:
 
 		Font	newFont = new Font;
 
-		newFont.load(name, size);
+		newFont.load(fontPathFromName(name, family), family, size);
 		mFonts[fontKey] = newFont;
 		return *(fontKey in mFonts);
 	}
@@ -107,9 +113,9 @@ class Font
 public:
 	enum Family
 	{
-		Regular = 0x01,
-		Bold = 0x02,
-		Italic = 0x04
+		Regular = 0x00,	// 0 because Regular is the implicit family and couldn't be combined with others
+		Bold = 0x01,
+		Italic = 0x02
 	}
 
 	~this()
@@ -278,7 +284,7 @@ public:
 	}
 
 private:
-	void	load(string filePath, int size)
+	void	load(in string filePath, in Font.Family family, in int size)
 	{
 		mFilePath = filePath;
 		mSize = size;
@@ -403,6 +409,58 @@ shared static ~this()
 	DerelictFT.unload();
 }
 
+string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
+{
+	version(Windows)
+	{
+		string	fontPath = "C:/Windows/Fonts/";
+		string	fontFileName;
+		Key		key;
+
+		// http://msdn.microsoft.com/en-us/library/windows/desktop/bb762188%28v=vs.85%29.aspx
+/*		PWSTR	fontPathBuffer;
+		scope(exit) CoTaskMemFree(fontPathBuffer);
+		if (SHGetKnownFolderPath(FOLDERID_Fonts, 0, NULL, &fontPathBuffer) != S_OK)
+			throw new Exception("Unable to determine the font folder.");
+		fontPath = ;
+		*/
+
+		// TODO use SHGetKnownFolderPath with FOLDERID_Fonts in place of direct registry access
+		key = Registry.currentUser().getKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
+		fontPath = key.getValue("Fonts").value_EXPAND_SZ() ~ "\\";
+
+		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
+
+		try
+		{
+			if (family == Font.Family.Regular)
+				fontFileName = key.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
+			else if (family == Font.Family.Bold)
+				fontFileName = key.getValue(name ~ " Bold (TrueType)").value_EXPAND_SZ();
+			else if (family == Font.Family.Italic)
+				fontFileName = key.getValue(name ~ " Italic (TrueType)").value_EXPAND_SZ();
+			else if (family == (Font.Family.Bold | Font.Family.Italic))
+				fontFileName = key.getValue(name ~ " Bold Italic (TrueType)").value_EXPAND_SZ();
+			else
+				throw new Exception(format("Unsupported family combination : %X", family));
+		}
+		catch (RegistryException e)
+		{
+			fontFileName = key.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
+			// TODO catch exception and return a FontException with a "font not found" message
+		}
+		return fontPath ~ fontFileName;
+	}
+}
+
+/*unittest
+{
+	assert(fontPathFromName("Arial") == "C:\\Windows\\Fonts\\arial.ttf");
+	assert(fontPathFromName("arial") == "C:\\Windows\\Fonts\\arial.ttf");	// Test with wrong case
+	assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:\\Windows\\Fonts\\arialbi.ttf");
+	assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:\\Windows\\Fonts\\andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
+}*/
+
 // TODO make unnittest using resource manager to share image atlas between us and applications (throw TextItem)
 // it's certainly better than the call of fontManager.clear()
 unittest
@@ -412,7 +470,7 @@ unittest
 
 	Image[]	images;
 
-	font = fontManager.getFont("../data/samples/fonts/Vera.ttf", 36);
+	font = fontManager.getFont("Times New Roman", Font.Family.Regular, 36);
 	text = "Iñtërnâtiônàlizætiøn";
 
 	Image		textImage;
@@ -469,3 +527,19 @@ unittest
 
 	fontManager.clear();
 }
+
+/*
+extern (Windows)
+{
+	HRESULT SHGetKnownFolderPath(REFKNOWNFOLDERID rfid, DWORD dwFlags, HANDLE hToken, PWSTR *ppszPath);
+	alias GUID KNOWNFOLDERID;
+	alias KNOWNFOLDERID* REFKNOWNFOLDERID;
+
+	struct GUID {
+		ulong  Data1;
+		ushort Data2;
+		ushort Data3;
+		ubyte  Data4[ 8 ];
+	};
+}
+*/

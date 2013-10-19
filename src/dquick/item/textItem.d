@@ -28,6 +28,14 @@ class TextItem : GraphicItem
 public:
 	alias Font.Family	FontFamily;
 
+	enum WrapMode
+	{
+		NoWrap,			/// (default) No wrapping will be performed. If the text contains insufficient newlines, then contentWidth will exceed a set width.
+		WordWrap,		/// Wrapping is done on word boundaries only. If a word is too long, contentWidth will exceed a set width.
+		WrapAnywhere,	/// Wrapping is done at any point on a line, even if it occurs in the middle of a word.
+		Wrap			/// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
+	}
+
 	this()
 	{
 		mShaderProgram = new ShaderProgram();
@@ -75,6 +83,15 @@ public:
 	@property FontFamily	fontFamily() {return mFontFamily;}
 	mixin Signal!(FontFamily) onFontFamilyChanged;
 
+	@property void	wrapMode(WrapMode mode)
+	{
+		mWrapMode = mode;
+		mNeedRebuild = true;
+		onWrapModeChanged.emit(mode);
+	}
+	@property WrapMode	wrapMode() {return mWrapMode;}
+	mixin Signal!(WrapMode) onWrapModeChanged;
+
 	@property void	kerning(bool flag)
 	{
 		mKerning = flag;
@@ -98,50 +115,66 @@ public:
 
 	override
 	{
+		// TODO put mNeedRebuild at true only when wrapping is activated
 		void	setSize(Vector2f32 size)
 		{
 			GraphicItem.setSize(size);
+			if (mWrapMode != WrapMode.NoWrap)
+				mNeedRebuild = true;
 		}
 
-		@property void	width(float width) {GraphicItem.width = width;}
+		@property void	width(float width)
+		{
+			GraphicItem.width = width;
+			if (mWrapMode != WrapMode.NoWrap)
+				mNeedRebuild = true;
+		}
 		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height) {GraphicItem.height = height;}
+		@property void	height(float height)
+		{
+			GraphicItem.height = height;
+			if (mWrapMode != WrapMode.NoWrap)
+				mNeedRebuild = true;
+		}
 		@property float	height() {return GraphicItem.height;}
 	}
 
 private:
+	struct Line
+	{
+		Vector2s32		size;
+		Glyph[]			glyphes;
+		Vector2f32[]	offsets;	// Offsets of glyphes, y need to be added to the verticalCursor value
+		float			verticalCursor = 0.0f;	// Global vertical offset for the line
+	}
 
 	// TODO Use resource manager to update texture atlas, textures have to be shared between all TextItems
 	void	rebuildMesh()
 	{
 		mNeedRebuild = false;
-		mMesh = null;
+		clear(mMesh);
 		if (!mText.length)
 			return;
+
+		Line[]	lines;
+		mImplicitSize = Vector2f32(0.0f, 0.0f);
+
+		bool	updateTexture = false;	// True if a new glyph is loaded (this is a little optimization)
 
 		try
 		{
 			Font	font;
 
-			font = fontManager.getFont(mFont, mFontSize);
-
-			mMesh = new Mesh();
-			mMesh.setShader(mShader);
-			mMesh.setShaderProgram(mShaderProgram);
-
-			GLuint[]	indexes;
-			GLfloat[]	vertices;
-			GLfloat[]	texCoords;
-			GLfloat[]	colors;
+			font = fontManager.getFont(mFont, mFontFamily, mFontSize);
 
 			Vector2f32	cursor;
 			bool		newLineStarted = true;
-			size_t		glyphIndex = 0;
 			dchar		prevCharCode;
 
 			cursor.x = 0;
-			cursor.y = /*cast(int)font.linegap*/ mFontSize;
+			cursor.y = cast(int)font.linegap /*mFontSize*/;
 
+			lines ~= Line();
 			foreach (dchar charCode; mText)
 			{
 				if (charCode == '\r')
@@ -152,6 +185,7 @@ private:
 					cursor.x = 0;
 					cursor.y = cursor.y + cast(int)font.linegap();
 					newLineStarted = true;
+					lines ~= Line();
 				}
 				else
 				{
@@ -165,6 +199,7 @@ private:
 
 					if (!alreadyLoaded)
 					{
+						updateTexture = true;
 						// Allocate image if need
 						while (glyph.atlasIndex >= mImages.length)
 						{
@@ -181,16 +216,6 @@ private:
 														Vector2s32(0, 0),
 														Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
 														Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
-
-/*						writeln(format("font : \"%s\"\n"
-									   "atlas index %d\n"
-									   "glyph size %02d,%02d\n"
-									   "glyph position %03d,%03d"
-									   , font.filePath()
-									   , glyph.atlasIndex
-									   , glyph.atlasRegion.width, glyph.atlasRegion.height
-									   , glyph.atlasRegion.x, glyph.atlasRegion.y
-									   ));*/
 					}
 
 					Vector2f32	pos;
@@ -205,17 +230,45 @@ private:
 						pos.x = 0.0f;
 					pos.y = -glyph.offset.y;
 
+					// TODO set des data pour le mesh
 					if (!isSpace(charCode))
 					{
-						addGlyphToMesh(indexes, vertices, texCoords, colors,
-									   Vector2s32(cast(int)round(cursor.x + pos.x), cast(int)round(cursor.y + pos.y)),
-									   glyph, glyphIndex, mImages[glyph.atlasIndex].size());
-						glyphIndex++;
+						lines[$ - 1].glyphes ~= glyph;
+						lines[$ - 1].offsets ~= Vector2f32(cursor.x + pos.x, pos.y);
+						if (lines[$ - 1].verticalCursor < cursor.y)
+							lines[$ - 1].verticalCursor = cursor.y;
 					}
+
+					if (lines[$ - 1].size.y < font.linegap())
+						lines[$ - 1].size.y = cast(int)round(font.linegap());
+					// --
 
 					cursor.x = cursor.x + glyph.advance.x;
 					newLineStarted = false;
 					prevCharCode = charCode;
+				}
+			}
+
+			// Building the Mesh
+			mMesh = new Mesh();
+			mMesh.setShader(mShader);
+			mMesh.setShaderProgram(mShaderProgram);
+
+			GLuint[]	indexes;
+			GLfloat[]	vertices;
+			GLfloat[]	texCoords;
+			GLfloat[]	colors;
+
+			size_t		glyphIndex = 0;
+
+			foreach (Line line; lines)
+			{
+				for (size_t i = 0; i < line.glyphes.length; i++)
+				{
+					addGlyphToMesh(indexes, vertices, texCoords, colors,
+								   Vector2s32(cast(int)round(line.offsets[i].x), cast(int)round(line.verticalCursor + line.offsets[i].y)),
+								   line.glyphes[i], glyphIndex, mImages[line.glyphes[i].atlasIndex].size());
+					glyphIndex++;
 				}
 			}
 
@@ -233,7 +286,7 @@ private:
 				mTextures ~= new Texture();	// TODO do a loop to insert as many texture as needed
 				mTextures[0].load(mImages[0].filePath(), options);
 			}
-			else	// We can only do an update
+			else if (updateTexture)	// We can only do an update
 			{
 				mTextures[0].update(mImages[0]);
 			}
@@ -244,7 +297,7 @@ private:
 		catch (Exception e)
 		{
 			writeln(e.toString());
-			mMesh = null;
+			clear(mMesh);
 		}
 	}
 
@@ -283,6 +336,8 @@ private:
 
 	static const string	defaultFont = "Verdana";
 
+	Vector2f32		mImplicitSize;
+
 	bool			mNeedRebuild = true;
 	Mesh			mMesh;
 	Shader			mShader;
@@ -292,6 +347,7 @@ private:
 	int				mFontSize = 24;
 	FontFamily		mFontFamily = FontFamily.Regular;
 	bool			mKerning = true;
+	WrapMode		mWrapMode = WrapMode.WrapAnywhere;
 
 	static Image[]		mImages;
 	static Texture[]	mTextures;

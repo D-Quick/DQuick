@@ -28,7 +28,7 @@
  either because it does not exist in the library or because the library is corrupt.<br><br>
 
 </dd>
-<dt><big><a name="MissingSymbolCallbackFunc"></a>alias bool function(string libName, string symbolName) <u>MissingSymbolCallbackFunc</u>;
+<dt><big><a name="MissingSymbolCallbackFunc"></a>alias <u>MissingSymbolCallbackFunc</u> = bool function(string libName, string symbolName);
 </big></dt>
 <dd>The MissingSymbolCallback allows the app to handle the case of missing symbols. By default,
  a SharedLibSymbolLoadException is thrown. However, if a the app determines that

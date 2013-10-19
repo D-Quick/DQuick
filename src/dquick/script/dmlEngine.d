@@ -474,7 +474,7 @@ public:
 	{
 		assert(isCreated());
 
-		GC.disable();
+		//GC.disable();
 		//scope(exit) GC.enable();
 
 		lua_pushstring(luaState(), "__This");

@@ -14,12 +14,12 @@
 <td>all values get stored as this type</td></tr>
 </table><br>
 
-<dl><dt><big><a name="at"></a>alias type <u>at</u>;
+<dl><dt><big><a name="at"></a>alias <u>at</u> = type;
 </big></dt>
 <dd>Holds the internal type of the AABB.<br><br>
 
 </dd>
-<dt><big><a name="vec3"></a>alias Vector!(at, 3) <u>vec3</u>;
+<dt><big><a name="vec3"></a>alias <u>vec3</u> = Vector!(at, 3);
 </big></dt>
 <dd>Convenience alias to the corresponding vector type.<br><br>
 
@@ -49,7 +49,7 @@
 <dt><big><a name="from_points"></a>AABBT <u>from_points</u>(vec3[] <i>points</i>);
 </big></dt>
 <dd>Constructs the AABB around N <i>points</i> (all <i>points</i> will be part of the AABB).<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="expand"></a>void <u>expand</u>(AABBT <i>b</i>);
 </big></dt>
@@ -59,13 +59,13 @@
 <dt><big><a name="expand"></a>void <u>expand</u>(vec3 <i>v</i>);
 </big></dt>
 <dd>Expands the AABB, so that <i><i>v</i></i> is part of the AABB.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="intersects"></a>const bool <u>intersects</u>(AABBT <i>box</i>);
 </big></dt>
 <dd>Returns <b>true</b> if the AABBs intersect.
  This also returns <b>true</b> if one AABB lies inside another.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="extent"></a>const vec3 <u>extent</u>();
 </big></dt>
@@ -75,17 +75,17 @@
 <dt><big><a name="half_extent"></a>const vec3 <u>half_extent</u>();
 </big></dt>
 <dd>Returns the half extent.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="area"></a>const at <u>area</u>();
 </big></dt>
 <dd>Returns the <u>area</u> of the AABB.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="center"></a>const vec3 <u>center</u>();
 </big></dt>
 <dd>Returns the <u>center</u> of the AABB.<br><br>
-<b>Example:</b><br><br>
+
 </dd>
 <dt><big><a name="vertices"></a>const vec3[] <u>vertices</u>();
 </big></dt>

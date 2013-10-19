@@ -172,12 +172,12 @@ GraphicItem
 		height = 50,
 
 		-- Text {
-			-- font = "samples/fonts/Vera.ttf",
+			-- font = "AngsanaUPC",
 			-- text = function()
 				-- if (kerningButton.pressed) then
 					-- return "Ayuma2yk"
 				-- end
-				-- return "Vera"
+				-- return "AngsanaUPC"
 			-- end,
 		-- },
 		
@@ -193,15 +193,22 @@ GraphicItem
 	},
 
 	Text {
+		width = function()
+			return main.width
+		end,
+		height = function()
+			return main.height
+		end,
+
 		id = "text",
 		y = 50,
 		text = textFr,
-		-- font = "samples/fonts/Vera.ttf",
+		-- font = "AngsanaUPC",
 		font = function()
 			if (kerningButton.pressed) then
-				return "samples/fonts/Vera.ttf"
+				return "AngsanaUPC"
 			end
-			return "samples/fonts/Ayuma2yk.ttf"
+			return "Arial"
 		end,
 		fontSize = 24,
 		-- fontSize = function()
@@ -210,7 +217,13 @@ GraphicItem
 			-- end
 			-- return 24
 		-- end,
-		family = Text.Regular,
+		fontFamily = Text.Italic,
+		-- function()
+			-- if (kerningButton.pressed) then
+				-- return Text.Italic
+			-- end
+			-- return Text.Regular
+		-- end,
 		-- kerning = function()
 			-- return kerningButton.pressed
 		-- end,

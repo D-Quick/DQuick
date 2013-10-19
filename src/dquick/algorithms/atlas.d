@@ -70,7 +70,7 @@ private:
 		bestIndex = -1;
 		// Used to break ties if there are nodes at the same level. Then pick the narrowest one.
 		bestWidth = int.max;
-		for (size_t i = 0; i < mSkyLine.length; ++i)
+		for (int i = 0; i < mSkyLine.length; ++i)
 		{
 			int y;
 			if (rectangleFits(i, width, height, y))

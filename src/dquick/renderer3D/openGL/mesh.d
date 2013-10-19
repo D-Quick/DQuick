@@ -128,9 +128,12 @@ private:
 	void	destroy()
 	{
 		dquick.renderer_3d.opengl.renderer.resourceManager.releaseResource(mTexture);
-		dquick.renderer_3d.opengl.renderer.resourceManager.releaseResource(indexes);
 		mTexture = null;
-		indexes = null;
+		clear(indexes);
+		clear(vertices);
+		clear(colors);
+		clear(texCoords);
+
 //		.destroy(mShader);
 	}
 
