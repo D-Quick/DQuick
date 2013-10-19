@@ -9,45 +9,43 @@ import derelict.lua.lua;
 
 import dquick.script.property_binding;
 import dquick.script.i_item_binding;
+import dquick.script.item_binding;
 import dquick.script.utils;
 
-class NativePropertyBinding(T) : PropertyBinding
+class NativePropertyBinding(ValueType, ItemType, string PropertyName) : PropertyBinding
 {
-	T delegate()		getter;
-	void delegate(T)	setter;
-
-	this(IItemBinding itemBinding, T delegate() getter, void delegate(T) setter, string propertyName)
+	ItemType	item;
+	this(IItemBinding itemBinding, ItemType item)
 	{
-		super(itemBinding, propertyName);
-		this.getter = getter;
-		this.setter = setter;
+		this.item = item;
+		super(itemBinding, PropertyName);
 	}
 
-	this(IItemBinding itemBinding, T delegate() getter, string propertyName)
-	{
-		super(itemBinding, propertyName);
-		this.getter = getter;
-	}
-
-	void	onChanged(T t)
+	void	onChanged(ValueType t)
 	{
 		super.onChanged();
 	}
 
 	override void	valueFromLua(lua_State* L, int index, bool popFromStack = false)
 	{
-		if (setter.ptr == null)
-			return;
-
-		T	value = dquick.script.utils.valueFromLua!T(L, index);
+		ValueType	value = dquick.script.utils.valueFromLua!ValueType(L, index);
 		if (popFromStack)
 			lua_remove(L, index);
-		setter(value);
+		static if (__traits(compiles, __traits(getMember, cast(ItemType)(itemBinding.declarativeItem), PropertyName)(value)))
+			__traits(getMember, item, PropertyName)(value);
+		else
+			throw new Exception(format("Property \"%s\" is not writeable\n", PropertyName));			
 	}
 
 	override void	valueToLua(lua_State* L)
 	{
 		super.valueToLua(L);
-		dquick.script.utils.valueToLua!T(L, getter());
+		ValueType	value = __traits(getMember, cast(ItemType)(item), PropertyName);
+		dquick.script.utils.valueToLua!ValueType(L, value);
+	}
+
+	template	type()
+	{
+		alias T	type;
 	}
 }

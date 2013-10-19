@@ -87,7 +87,7 @@ class PropertyBinding
 				if (loopCount != 0)
 					writefln("DMLEngine.IItemBinding.PropertyBinding.executeBinding: property binding loop detected, callstack:\n%s...", bindingLoopCallStack);
 				else
-					writeln("DMLEngine.IItemBinding.PropertyBinding.executeBinding: error, binding stack overflow (more than 100)");
+					writeln("DMLEngine.IItemBinding.PropertyBinding.executeBinding: error, binding stack overflow (more than 50)");
 				return;
 			}
 
