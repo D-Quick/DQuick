@@ -19,8 +19,6 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 		this.item = item;
 		creating = true;
 
-		writefln("this = %x ItemBinding.this()", cast(void*)(this));
-
 		foreach (member; __traits(allMembers, typeof(this)))
 		{
 			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding)) // Instantiate property binding
@@ -255,20 +253,22 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 										result ~= format("void															__%s(%s value) {
 																if (!(value is null && ____%sItemBinding is null) && !(____%sItemBinding && value is ____%sItemBinding.item))
 																{
-																	writefln(\"this = %%x slot Item = %%x %%s ItemBinding = %%x ItemBinding.item = %%x %%s\", cast(void*)(this), cast(void*)(value), value? value.id() : \"\", cast(void*)(____%sItemBinding), ____%sItemBinding? cast(void*)(____%sItemBinding.item) : null, ____%sItemBinding? (____%sItemBinding.item.id()) : \"\");
+
 																	if (____%sItemBinding)
 																		dmlEngine.unregisterItem!(%s)(____%sItemBinding.item);
 																	if (value)
 																		____%sItemBinding = dmlEngine.registerItem!(%s)(value);
+																	else
+																		____%sItemBinding = null;
 																	__%s.emit(____%sItemBinding);
 																}																
 														}",
 														 getSignalNameFromPropertyName(member), fullyQualifiedName2!(ReturnType!(overload)),
 														 member, member, member,
-														 member, member, member, member, member,
 														 member,
 														 fullyQualifiedName2!(ReturnType!(overload)), member,
 														 member, fullyQualifiedName2!(ReturnType!(overload)),
+														 member,
 														 getSignalNameFromPropertyName(member~"ItemBinding"), member);	// Item Signal
 
 										result ~= format("dquick.script.item_binding.ItemBinding!(%s)					____%sItemBinding;\n", fullyQualifiedName2!(ReturnType!(overload)), member); // ItemBinding
@@ -280,16 +280,12 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 										result ~= format("void															__%sItemBinding(dquick.script.item_binding.ItemBinding!(%s) value) {
 																if (value != ____%sItemBinding)
 																{
-			writefln(\"this = %%x before ItemBinding = %%x Item = %%x %%s\", cast(void*)(this), cast(void*)(____%sItemBinding), ____%sItemBinding? cast(void*)(____%sItemBinding.item) : null, ____%sItemBinding? ____%sItemBinding.item.id() : \"\");
-
 																	if (____%sItemBinding !is null)
 														 				dmlEngine.unregisterItem!(%s)(____%sItemBinding.item);
 																	____%sItemBinding = value;
 																	if (____%sItemBinding !is null)
 																	{
 																		dmlEngine.registerItem!(%s)(____%sItemBinding.item);
-														 				writefln(\"this = %%x before after ItemBinding = %%x Item = %%x %%s\", cast(void*)(this), cast(void*)(____%sItemBinding), ____%sItemBinding? cast(void*)(____%sItemBinding.item) : null, ____%sItemBinding? ____%sItemBinding.item.id() : \"\");
-																		writefln(\"this = %%x after ItemBinding = %%x Item = %%x %%s\", cast(void*)(this), cast(void*)(value), value? cast(void*)(value.item) : null, value? value.item.id() : \"\");
 																		item.%s = value.item;
 																	}
 																	else
@@ -297,18 +293,15 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 																		item.%s = null;
 																	}
 																	__%s.emit(value);
-																	writeln(\"__%%sItemBinding end \");
 																}
 															}",
 															member, fullyQualifiedName2!(ReturnType!(overload)),
 															member,
-member, member, member, member, member,
 															member,
 															fullyQualifiedName2!(ReturnType!(overload)), member,
 															member,
 															member,
 															fullyQualifiedName2!(ReturnType!(overload)), member,
-					member, member, member, member, member,
 															member,
 															member,
 															getSignalNameFromPropertyName(member~"ItemBinding"));	// ItemBinding Setter

@@ -24,11 +24,6 @@ version(unittest)
 {
 	class SubItem : DeclarativeItem
 	{
-		this()
-		{
-			writefln("SubItem.this() %x", cast(void*)(this));
-		}
-
 		void	nativeProperty(int value)
 		{
 			if (mNativeProperty != value)
@@ -110,7 +105,6 @@ version(unittest)
 			if (mNativeSubItem != value)
 			{
 				mNativeSubItem = value;
-				writefln("setter SubItem %x", cast(void*)(value));
 				onNativeSubItemChanged.emit(value);
 			}
 		}
@@ -134,7 +128,7 @@ unittest
 	dmlEngine.create();
 	dmlEngine.addItemType!(Item, "Item");
 
-	/+// Test basic item
+	// Test basic item
 	string lua1 = q"(
 		Item {
 			id = "item1"
@@ -318,7 +312,7 @@ unittest
 		total = testObject2.testNormalMethod(1, 10)
 	)";
 	dmlEngine.execute(lua12, "");
-	assert(dmlEngine.getLuaGlobal!int("total") == 111);+/
+	assert(dmlEngine.getLuaGlobal!int("total") == 111);
 
 	// Test subitem property binding
 	{
@@ -344,17 +338,19 @@ unittest
 		assert(dmlEngine.getLuaGlobal!int("subItemGlobal5") == 20);
 
 		dmlEngine.addObject(testObject3, "testObject4");
-		//dmlEngine.execute("subItemGlobal6 = testObject3.nativeSubItem", "");
-		//dmlEngine.execute("subItemGlobal7 = testObject4.nativeSubItem", "");
-		//assert(dmlEngine.getLuaGlobal!SubItem("subItemGlobal6") is dmlEngine.getLuaGlobal!SubItem("subItemGlobal7"));
+		dmlEngine.execute("subItemGlobal6 = testObject3.nativeSubItem", "");
+		dmlEngine.execute("subItemGlobal7 = testObject4.nativeSubItem", "");
+		assert(dmlEngine.getLuaGlobal!SubItem("subItemGlobal6") is dmlEngine.getLuaGlobal!SubItem("subItemGlobal7"));
 
 		dmlEngine.execute("testObject3.nativeSubItem.nativeProperty = 30", "");
 		assert(testObject3.nativeSubItem.nativeProperty == 30);
 
 		testObject3.nativeSubItem = new SubItem;
-		writeln("100 =============================");
 		dmlEngine.execute("testObject3.nativeSubItem = nil", "");
-		//testObject3.nativeSubItem = null;
+		assert(testObject3.nativeSubItem is null);
+		testObject3.nativeSubItem = new SubItem;
+		assert(testObject3.nativeSubItem !is null);
+		testObject3.nativeSubItem = null;
 		assert(testObject3.nativeSubItem is null);
 
 		Item	testObject5 = new Item;
@@ -362,14 +358,9 @@ unittest
 		dmlEngine.execute("testObject3.nativeSubItem = testObject5.nativeSubItem", "");
 		assert(testObject3.nativeSubItem is null);
 		testObject5.nativeSubItem = new SubItem;
-		SubItem	toto = testObject5.nativeSubItem();
-		toto.id("toto");
-		//dmlEngine.execute("toto = testObject5.nativeSubItem", "");
-		writeln("200 =============================");
-		writefln("testObject5.nativeSubItem = %x", cast(void*)(toto));
 		dmlEngine.execute("testObject3.nativeSubItem = testObject5.nativeSubItem", "");
-		//dmlEngine.execute("subItemGlobal8 = testObject3.nativeSubItem", "");
-		//assert(dmlEngine.getLuaGlobal!SubItem("subItemGlobal8") is testObject5.nativeSubItem);
+		dmlEngine.execute("subItemGlobal8 = testObject3.nativeSubItem", "");
+		assert(dmlEngine.getLuaGlobal!SubItem("subItemGlobal8") is testObject5.nativeSubItem);
 	}
 }
 
@@ -461,8 +452,8 @@ public:
 		static if (is(T : DeclarativeItem))
 			object.id = luaName;
 
-		dquick.script.item_binding.ItemBinding!T	itemBinding = new dquick.script.item_binding.ItemBinding!T(this, object);
-		addObjectBinding!(dquick.script.item_binding.ItemBinding!T)(itemBinding, luaName);
+		dquick.script.item_binding.ItemBinding!T	itemBinding = registerItem!T(object);
+		setLuaGlobal(luaName, object);
 	}
 
 	bool	isCreated()
@@ -613,16 +604,15 @@ public:
 	{
 		static if (is(T : dquick.item.declarative_item.DeclarativeItem))
 		{
-			dquick.script.i_item_binding.IItemBinding iItemBinding = registerItem!(T)(value);
-			dquick.script.utils.valueToLua!(dquick.script.i_item_binding.IItemBinding)(mLuaState, iItemBinding);
+			dquick.script.item_binding.ItemBinding!T itemBinding = registerItem!(T)(value);
+			dquick.script.utils.valueToLua!(dquick.script.item_binding.ItemBinding!T)(mLuaState, itemBinding);
 		}
 		else
 		{
-			value = dquick.script.utils.valueFromLua!T(mLuaState, -1);
+			dquick.script.utils.valueToLua!T(mLuaState, value);
 		}
 
-		lua_pop(mLuaState, 1);
-		return value;
+		lua_setglobal(mLuaState, name.toStringz());
 	}
 
 	static immutable bool showDebug = 0;
@@ -655,6 +645,7 @@ private:
 		if (refCountPtr is null)
 		{
 			int toto = 10;
+			writefln("");
 		}
 		assert(refCountPtr !is null);
 
