@@ -1,4 +1,4 @@
-module dquick.item.text_item;
+module dquick.item.image_item;
 
 import dquick.item.graphic_item;
 
@@ -6,7 +6,7 @@ import dquick.renderer_2d.opengl.rectangle;
 
 import std.stdio;
 
-class TextItem : GraphicItem
+class ImageItem : GraphicItem
 {
 public:
 	enum	FillMode

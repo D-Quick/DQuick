@@ -1,4 +1,4 @@
-module dquick.renderer_2d.opengl.font;
+module dquick.media.font;
 
 import derelict.freetype.ft;
 
@@ -6,25 +6,29 @@ import dquick.algorithms.atlas;
 import dquick.media.image;
 
 import dquick.maths.vector2s32;
+import dquick.maths.vector2f32;
+import dquick.maths.rect2s32;
 import dquick.maths.color;
 
+import std.stdio;
 import std.string;
 import std.typecons;
 import std.c.string;	// for memcpy
+import std.math;
 
 /**
 * One Font per size
 * kerning requested at runtime
-*
-*
 **/
 
 // TODO The font manager have to find fonts files in system folders
 // The function FT_Open_Face may help to discover mFaces types (regular, italic, bold,...) registered in a font file
 // http://www.freetype.org/freetype2/docs/reference/ft2-base_intermFace.html#FT_Open_Face
 // http://forum.dlang.org/thread/kcqstrprmrzluvfoylqb@forum.dlang.org#post-fbojhpvgewysrrapfapw:40forum.dlang.org
+// registry DB : HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft \Windows NT\CurrentVersion\Fonts
 
 // TODO migrate FT_Library to FontManager (if it share memory)
+// TODO check kerning computation it doesn't seems working fine
 
 class FontManager
 {
@@ -34,7 +38,7 @@ public:
 		string	fontKey;
 		Font*	font;
 
-		fontKey = format("%s-%d", name.toStringz(), size);
+		fontKey = format("%s-%d", name, size);
 		font = (fontKey in mFonts);
 		if (font !is null)
 			return *font;
@@ -62,7 +66,18 @@ public:
 		return mAtlases[index];
 	}
 
+	size_t	getAtlasCount()
+	{
+		return mAtlases.length;
+	}
+
 private:
+	void	clear()	// used by unnitest to avoid conflict with applications
+	{
+		mAtlases.length = 0;
+		mFonts.clear();
+	}
+
 	Atlas	lastAtlas()
 	{
 		if (mAtlases.length)
@@ -87,16 +102,16 @@ private:
 
 FontManager	fontManager;
 
-enum FontFamily
-{
-	Regular = 0x01,
-	Bold = 0x02,
-	Italic = 0x04
-}
-
 class Font
 {
 public:
+	enum Family
+	{
+		Regular = 0x01,
+		Bold = 0x02,
+		Italic = 0x04
+	}
+
 	~this()
 	{
 		FT_Done_Face(mFace);
@@ -119,7 +134,7 @@ public:
 		FT_Bitmap		ftBitmap;
 		FT_UInt			glyphIndex;
 		size_t			depth;	// TODO replace x,y and width,height per Vector2s32
-		Atlas.Region	region;
+		Rect2s32		region;
 		Atlas			imageAtlas = fontManager.lastAtlas();
 
 		depth  = 1;	// TODO do something better (because it impact the quality of rendering)
@@ -219,7 +234,7 @@ public:
 		// Discard hinting to get advance
 		FT_Load_Glyph(mFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_NO_HINTING);
 		ftGlyphSlot = mFace.glyph;
-		glyph.advance = Vector2s32(cast(int)(ftGlyphSlot.advance.x / 64.0), cast(int)(ftGlyphSlot.advance.y / 64.0));
+		glyph.advance = Vector2f32(ftGlyphSlot.advance.x >> 6, ftGlyphSlot.advance.y >> 6);
 
 		FT_Done_Glyph(ftGlyph);
 
@@ -238,9 +253,36 @@ public:
 		return mLinegap;
 	}
 
+	string	filePath()
+	{
+		return mFilePath;
+	}
+
+	string	name()
+	{
+		return mName;
+	}
+
+	Vector2f32	kerning(uint previousCharacter, uint currentCharacter)
+	{
+		FT_Error	error;
+		FT_Vector	kerning;
+
+		if (mFace == null)
+			Vector2f32(0.0f, 0.0f);
+
+		error = FT_Get_Kerning(mFace, previousCharacter, currentCharacter, FT_Kerning_Mode.FT_KERNING_DEFAULT, &kerning);
+		if (error > 0)
+			throw new Exception("Failed to retrieve kerning.");
+		return	Vector2f32(kerning.x >> 6, kerning.y >> 6);
+	}
+
 private:
 	void	load(string filePath, int size)
 	{
+		mFilePath = filePath;
+		mSize = size;
+
 		FT_Error		error;
 		size_t			hres = 64;
 /*		FT_Matrix		matrix = {cast(int)((1.0 / hres) * 0x10000L),
@@ -254,7 +296,7 @@ private:
 
 		error = FT_New_Face(mLibrary, filePath.toStringz(), 0, &mFace);
 		if (error)
-			throw new Exception(format("Failed to load mFace. Error : %d", error));
+			throw new Exception(format("Failed to load face \"%s\". Error : %d", filePath, error));
 
 		error = FT_Select_Charmap(mFace, FT_Encoding.FT_ENCODING_UNICODE);
 		if (error)
@@ -266,6 +308,21 @@ private:
 			throw new Exception(format("Failed to select charmap. Error : %d", error));
 
 //		FT_Set_Transform(mFace, &matrix, null);
+
+		mUnderlinePosition = mFace.underline_position / cast(float)mSize;
+		mUnderlinePosition = round(mUnderlinePosition);
+		if (mUnderlinePosition > -2)
+			mUnderlinePosition = -2.0;
+
+		mUnderlineThickness = mFace.underline_thickness / cast(float)mSize;
+		mUnderlineThickness = round(mUnderlineThickness);
+		if (mUnderlineThickness < 1)
+			mUnderlineThickness = 1.0;
+
+		mAscender = mFace.size.metrics.ascender >> 6;
+		mDescender = mFace.size.metrics.descender >> 6;
+		mHeight = mFace.size.metrics.height >> 6;
+		mLinegap = mHeight /* - mAscender + mDescender*/;
 	}
 
 	void	blitGlyph(const ref FT_Bitmap ftBitmap, ref Glyph glyph)
@@ -288,11 +345,11 @@ private:
 			{
 				ubyte	color[4];
 
-				color[0] = 255 - ftBitmap.buffer[j * ftBitmap.pitch + i];
-				color[1] = 255 - ftBitmap.buffer[j * ftBitmap.pitch + i];
-				color[2] = 255 - ftBitmap.buffer[j * ftBitmap.pitch + i];
+				color[0] = 0;
+				color[1] = 0;
+				color[2] = 0;
 				color[3] = ftBitmap.buffer[j * ftBitmap.pitch + i];
-				memcpy(glyph.image.pixels + ((y + j) * ftBitmap.width + (x + i)) * depth, 
+				memcpy(glyph.image.pixels + ((y + j) * ftBitmap.width + (x + i)) * depth,
 					   color.ptr,
 					   color.sizeof);
 			}
@@ -300,37 +357,38 @@ private:
 
 	Glyph[uint]	mGlyphs;
 
-	FT_Library	mLibrary;
-	FT_Face		mFace;
+	FT_Library		mLibrary;
+	FT_Face			mFace;
 
-    string	mFilename;	// TODO Set it
+    string	mFilePath;
+	string	mName;	// TODO Set it
 
-    float	mSize;		// TODO Set it
+    float	mSize;
     int		mHinting;
     int		mOutlineType;	// (0 = None, 1 = line, 2 = inner, 3 = outer)
     float	mOutlineThickness;
     int		mFiltering;
     ubyte	mLcdWeights[5];
 
-    float	mHeight;	// TODO Set it
-    float	mLinegap;	// TODO Set it
-    float	mAscender;	// TODO Set it
-    float	mDescender;	// TODO Set it
-    float	mUnderlinePosition;	// TODO Set it
-    float	mUnderlineThickness;	// TODO Set it
+    float	mHeight;
+    float	mLinegap;
+    float	mAscender;
+    float	mDescender;
+    float	mUnderlinePosition;
+    float	mUnderlineThickness;
 }
 
 // http://www.freetype.org/freetype2/docs/tutorial/step2.html
 struct Glyph
 {
-    Vector2s32		offset;
-    Vector2s32		advance;
-    int				outlineType;
-    float			outlineThickness;
+    Vector2f32	offset;
+    Vector2f32	advance;
+    int			outlineType;
+    float		outlineThickness;
 
-	size_t			atlasIndex;
-	Atlas.Region	atlasRegion;	// TODO check redundancy with width and height
-	Image			image;
+	size_t		atlasIndex;
+	Rect2s32	atlasRegion;	// TODO check redundancy with width and height
+	Image		image;
 }
 
 shared static this()
@@ -345,6 +403,8 @@ shared static ~this()
 	DerelictFT.unload();
 }
 
+// TODO make unnittest using resource manager to share image atlas between us and applications (throw TextItem)
+// it's certainly better than the call of fontManager.clear()
 unittest
 {
 	Font	font;
@@ -356,7 +416,7 @@ unittest
 	text = "Iñtërnâtiônàlizætiøn";
 
 	Image		textImage;
-	Vector2s32	cursor;
+	Vector2f32	cursor;
 
 	cursor.x = 0;
 	cursor.y = /*cast(int)font.linegap*/ 36;
@@ -384,7 +444,7 @@ unittest
 									 fontManager.getAtlas(images.length - 1).size().x,
 									 fontManager.getAtlas(images.length - 1).size().y,
 									 4);
-				images[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 0.0f), Vector2s32(0, 0), images[$ - 1].size());
+				images[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), images[$ - 1].size());
 			}
 
 			// Write glyph in image
@@ -394,16 +454,18 @@ unittest
 										  Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
 		}
 
-		Vector2s32	pos;
+		Vector2f32	pos;
 
 		pos.x = glyph.offset.x;
 		pos.y = -glyph.offset.y;
 		textImage.blit(glyph.image,
 					   Vector2s32(0, 0),
 					   Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
-					   Vector2s32(cursor.x + pos.x, cursor.y + pos.y));
+					   Vector2s32(cast(int)round(cursor.x + pos.x), cast(int)round(cursor.y + pos.y)));
 		cursor.x = cursor.x + glyph.advance.x;
 	}
 
 	textImage.save("../data/FontTestText.bmp");
+
+	fontManager.clear();
 }

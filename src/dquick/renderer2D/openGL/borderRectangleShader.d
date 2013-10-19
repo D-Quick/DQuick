@@ -25,6 +25,10 @@ import std.variant;
 // TODO Implement TileMode switch
 // TODO use triangle strip
 
+// TODO PS : We use 9 quads (on per Mesh) to avoid fragment shader in the center and be able to use fragment shader specifics to borders (reducing conditions in shaders)
+
+// TODO activate back face culling
+
 struct BorderRectangleShader
 {
 public:
@@ -179,14 +183,14 @@ private:
 		GLfloat	rows[4];
 		GLfloat	columns[4];
 
-		rows[0] = -mSize.y / 2.0f;
+		rows[0] = 0.0f;
 		rows[1] = rows[0] + mTopBorder;
-		rows[3] = mSize.y / 2.0f;
+		rows[3] = mSize.y;
 		rows[2] = rows[3] - mBottomBorder;
 
-		columns[0] = -mSize.x / 2.0f;
+		columns[0] = 0.0f;
 		columns[1] = columns[0] + mLeftBorder;
-		columns[3] = mSize.x / 2.0f;
+		columns[3] = mSize.x;
 		columns[2] = columns[3] - mRightBorder;
 
 		return cast(GLfloat[])[
