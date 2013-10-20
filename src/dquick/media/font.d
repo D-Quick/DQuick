@@ -23,7 +23,7 @@ version(Windows)
 }
 
 /**
-* One Font per size
+* One Font per size and family
 * kerning requested at runtime
 **/
 
@@ -525,16 +525,6 @@ private string	remove(in string source, in string str)
 		return strip(source[0..pos] ~ source[pos + str.length..$]);
 	return source;
 }
-
-/*private string	chomp(in string source)
-{
-	string	result;
-
-	result = source;
-	while (result.length && isWhite(result[$ - 1]))
-		result = result.chop();
-	return result;
-}*/
 
 unittest
 {
