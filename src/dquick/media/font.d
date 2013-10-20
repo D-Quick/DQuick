@@ -468,6 +468,7 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 	return fontPath ~ fontFileName;
 }
 
+// TODO improve rules, this method contains few erronous results
 string[]	getSystemFonts()
 {
 	string[]	fontNames;
@@ -479,25 +480,35 @@ string[]	getSystemFonts()
 
 		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
 
-		foreach(Value v; key.values())
+		string[]	families = [
+			" Regular",
+			" Condensed",
+			" Bold",
+			" Italic",
+			" Normal",
+			" Sans",
+			" Sherif",
+			" Monospace"
+		];
+
+		foreach (Value v; key.values())
 		{
-			string	name = v.name();
-			if (name.indexOf(" Regular") == -1 && name.indexOf(" Condensed") == -1 && name.indexOf(" Bold") == -1 && name.indexOf(" Italic") == -1)
-				fontNames ~= remove(name, "(TrueType)");
+			string	name = remove(v.name(), "(TrueType)");
+
+			bool	flag = true;
+			for (size_t i = 0; flag && i < families.length; i++)
+				flag = name.indexOf(families[i]) == -1;
+			if (flag)
+				fontNames ~= name;
 		}
 		// Some fonts are only in Bold or Italic families (ex : "Arial Rounded MT Bold")
-		foreach(Value v; key.values())
+		foreach (Value v; key.values())
 		{
-			string	name = v.name();
-
-			name = remove(name, "(TrueType)");
-
+			string	name = remove(v.name(), "(TrueType)");
 			string	shortName = name;
 
-			shortName = remove(shortName, " Regular");
-			shortName = remove(shortName, " Condensed");
-			shortName = remove(shortName, " Bold");
-			shortName = remove(shortName, " Italic");
+			for (size_t i = 0; i < families.length; i++)
+				shortName = remove(shortName, families[i]);
 
 			if (std.algorithm.find(fontNames, shortName).length == 0)
 				fontNames ~= shortName;
