@@ -430,6 +430,8 @@ string	getFontFolder()
 		key = Registry.currentUser().getKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
 		fontPath = key.getValue("Fonts").value_EXPAND_SZ() ~ "/";
 	}
+	else
+		assert(true);
 	return fontPath;
 }
 
@@ -465,6 +467,8 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 			// TODO catch exception and return a FontException with a "font not found" message
 		}
 	}
+	else
+		assert(true);
 	return fontPath ~ fontFileName;
 }
 
@@ -515,6 +519,8 @@ string[]	getSystemFonts()
 		}
 		// Meiryo Bold & Meiryo Bold Italic & Meiryo UI Bold & Meiryo UI Bold Italic (TrueType)
 	}
+	else
+		assert(true);
 	return fontNames;
 }
 
