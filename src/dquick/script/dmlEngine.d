@@ -362,6 +362,37 @@ unittest
 		dmlEngine.execute("subItemGlobal8 = testObject3.nativeSubItem", "");
 		assert(dmlEngine.getLuaGlobal!SubItem("subItemGlobal8") is testObject5.nativeSubItem);
 	}
+
+	// This
+	{
+		string lua = q"(
+			Item {
+				id = "item16",
+				virtualProperty = 10,
+				nativeProperty = function()
+					return virtualProperty
+				end
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		assert(dmlEngine.item!Item("item16").nativeProperty == 10);
+	}
+	
+	// Parent
+	{
+		string lua = q"(
+			Item {
+				virtualProperty = 100,
+				Item {
+					id = "item17",
+					nativeProperty = function()
+						return parent.virtualProperty
+					end
+				}
+			)";
+		dmlEngine.execute(lua, "");
+		assert(dmlEngine.item!Item("item17").nativeProperty == 100);
+	}
 }
 
 class DMLEngine
