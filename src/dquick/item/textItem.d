@@ -179,6 +179,14 @@ private:
 			bool		newLineStarted = true;
 			dchar		prevCharCode;
 
+			void	startNewLine()
+			{
+				cursor.x = 0;
+				cursor.y = cursor.y + cast(int)font.linegap();
+				newLineStarted = true;
+				lines ~= Line();
+			}
+
 			cursor.x = 0;
 			cursor.y = cast(int)font.linegap /*mFontSize*/;
 
@@ -189,12 +197,7 @@ private:
 				{
 				}
 				else if (charCode == '\n')
-				{
-					cursor.x = 0;
-					cursor.y = cursor.y + cast(int)font.linegap();
-					newLineStarted = true;
-					lines ~= Line();
-				}
+					startNewLine();
 				else
 				{
 					Tuple!(Glyph, bool)	glyphTuple;
@@ -252,11 +255,7 @@ private:
 						case WrapMode.WrapAnywhere:
 							if (lines[$ - 1].size.x + pos.x + glyph.advance.x > mSize.x)
 							{
-								cursor.x = 0;
-								cursor.y = cursor.y + cast(int)font.linegap();
-								newLineStarted = true;
-								lines ~= Line();
-
+								startNewLine();
 								pos.x = 0.0f;
 							}
 							break;
