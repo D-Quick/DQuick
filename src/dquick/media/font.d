@@ -468,7 +468,7 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 		}
 	}
 	else
-		assert(true);
+		static assert(false);
 	return fontPath ~ fontFileName;
 }
 
