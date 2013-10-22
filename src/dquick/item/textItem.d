@@ -21,7 +21,10 @@ import std.uni;
 // TODO Support multiline
 // TODO Optimize the generated mesh (strip it)
 // TODO Add a markup system (merge meshes by texture, but limit their size for a good support of occluders)
+
+
 // TODO Make Font a property (fontFamily, fontSize,... have to be in a struct)
+// TODO Check vocabulary (family, bold,...)
 
 class TextItem : GraphicItem
 {
@@ -248,6 +251,7 @@ private:
 */
 					switch (mWrapMode)
 					{
+						default:	// Default == NoWrap
 						case WrapMode.NoWrap:
 							break;
 						case WrapMode.WordWrap:
@@ -260,8 +264,6 @@ private:
 							}
 							break;
 						case WrapMode.Wrap:
-							break;
-						default:
 							break;
 					}
 
@@ -281,14 +283,17 @@ private:
 
 					if (lines[$ - 1].size.x > mImplicitSize.x)
 						mImplicitSize.x = lines[$ - 1].size.x;
-					if (lines[$ - 1].size.y > mImplicitSize.y)
-						mImplicitSize.y = lines[$ - 1].size.y;
+					if (lines.length > 1 && newLineStarted)	// Previous line just ended (line height is computed now)
+						mImplicitSize.y = mImplicitSize.y + lines[$ - 2].size.y;
 
 					cursor.x = cursor.x + glyph.advance.x;
 					newLineStarted = false;
 					prevCharCode = charCode;
 				}
 			}
+
+			if (lines.length)
+				mImplicitSize.y = mImplicitSize.y + lines[$ - 1].size.y;
 
 			// Building the Mesh
 			mMesh = new Mesh();
