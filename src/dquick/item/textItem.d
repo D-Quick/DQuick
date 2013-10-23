@@ -175,13 +175,15 @@ private:
 			Vector2f32	cursor;
 			bool		newLineStarted = true;
 			dchar		prevCharCode;
+			Vector2f32	pos;
 
-			void	startNewLine()
+			void	startNewLine(size_t wordIndex)
 			{
-				cursor.x = 0;
+				cursor.x = 0.0f;
 				cursor.y = cursor.y + cast(int)font.linegap();
 				newLineStarted = true;
 				lines ~= Line();
+				pos.x = 0.0f;
 			}
 
 			Glyph	getGlyph(dchar charCode)
@@ -232,10 +234,11 @@ private:
 					{
 					}
 					else if (charCode == '\n')
-						startNewLine();
+						startNewLine(wordIndex);
 					else
 					{
-						Vector2f32	pos;
+						if (cursor.x == 0.0f && isWhite(charCode))
+							break;
 
 						glyph = getGlyph(charCode);
 
@@ -251,7 +254,7 @@ private:
 
 						switch (mWrapMode)
 						{
-							default:	// Default == NoWrap
+							default:					// Default == NoWrap
 							case WrapMode.NoWrap:		// (default) No wrapping will be performed. If the text contains insufficient newlines, then contentWidth will exceed a set width.
 								break;
 							case WrapMode.WordWrap:		// Wrapping is done on word boundaries only. If a word is too long, contentWidth will exceed a set width.
@@ -259,23 +262,15 @@ private:
 								{
 									float	advance = 0.0f;
 									foreach (dchar charCode; word)
-									{
 										advance += getGlyph(charCode).advance.x;
-									}
 									if (lines[$ - 1].size.x + pos.x + advance > mSize.x)
-									{
-										startNewLine();
-										pos.x = 0.0f;
-									}
+										startNewLine(wordIndex);
 									previousWordIndex = wordIndex;
 								}
 								break;
 							case WrapMode.WrapAnywhere:	// Wrapping is done at any point on a line, even if it occurs in the middle of a word.
 								if (lines[$ - 1].size.x + pos.x + glyph.advance.x > mSize.x)
-								{
-									startNewLine();
-									pos.x = 0.0f;
-								}
+									startNewLine(wordIndex);
 								break;
 							case WrapMode.Wrap:			// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
 								break;
@@ -300,7 +295,8 @@ private:
 						if (lines.length > 1 && newLineStarted)	// Previous line just ended (line height is computed now)
 							mImplicitSize.y = mImplicitSize.y + lines[$ - 2].size.y;
 
-						cursor.x = cursor.x + glyph.advance.x;
+						if (!(newLineStarted && isWhite(charCode)))
+							cursor.x = cursor.x + glyph.advance.x;
 						newLineStarted = false;
 						prevCharCode = charCode;
 					}
