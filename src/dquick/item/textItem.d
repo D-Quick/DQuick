@@ -151,14 +151,6 @@ private:
 		float			verticalCursor = 0.0f;	// Global vertical offset for the line
 	}
 
-	struct Word
-	{
-		Vector2f32		size = Vector2f32(0.0f, 0.0f);
-		Glyph[]			glyphes;
-		Vector2f32[]	offsets;	// Offsets of glyphes, y need to be added to the verticalCursor value
-		float			verticalCursor = 0.0f;	// Global vertical offset for the word
-	}
-
 	// TODO Use resource manager to update texture atlas, textures have to be shared between all TextItems
 	void	rebuildMesh()
 	{
@@ -174,6 +166,8 @@ private:
 
 		try
 		{
+			string[]	words = splitToConservativesWords(mText);
+
 			Font	font;
 
 			font = fontManager.getFont(mFont, mFontFamily, mFontSize);
@@ -190,105 +184,126 @@ private:
 				lines ~= Line();
 			}
 
+			Glyph	getGlyph(dchar charCode)
+			{
+				Tuple!(Glyph, bool)	glyphTuple;
+				Glyph				glyph;
+				bool				alreadyLoaded;
+
+				glyphTuple = font.loadGlyph(charCode);
+				glyph = glyphTuple[0];
+				alreadyLoaded = glyphTuple[1];
+
+				if (!alreadyLoaded)
+				{
+					updateTexture = true;
+					// Allocate image if need
+					while (glyph.atlasIndex >= mImages.length)
+					{
+						mImages ~= new Image;
+						mImages[$ - 1].create(format("ImageAtlas-%d", mImages.length),
+											  fontManager.getAtlas(mImages.length - 1).size().x,
+											  fontManager.getAtlas(mImages.length - 1).size().y,
+											  4);
+						mImages[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), mImages[$ - 1].size());
+					}
+
+					// Write glyph in image
+					mImages[glyph.atlasIndex].blit(glyph.image,
+												   Vector2s32(0, 0),
+												   Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
+												   Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
+				}
+				return glyph;
+			}
+
 			cursor.x = 0;
 			cursor.y = cast(int)font.linegap /*mFontSize*/;
 
 			lines ~= Line();
-			foreach (dchar charCode; mText)
+			size_t	previousWordIndex = -1;
+			foreach (size_t wordIndex, word; words)
 			{
-				if (charCode == '\r')
+				foreach (dchar charCode; word)
 				{
-				}
-				else if (charCode == '\n')
-					startNewLine();
-				else
-				{
-					Tuple!(Glyph, bool)	glyphTuple;
-					Glyph				glyph;
-					bool				alreadyLoaded;
+					Glyph	glyph;
 
-					glyphTuple = font.loadGlyph(charCode);
-					glyph = glyphTuple[0];
-					alreadyLoaded = glyphTuple[1];
-
-					if (!alreadyLoaded)
+					if (charCode == '\r')
 					{
-						updateTexture = true;
-						// Allocate image if need
-						while (glyph.atlasIndex >= mImages.length)
+					}
+					else if (charCode == '\n')
+						startNewLine();
+					else
+					{
+						Vector2f32	pos;
+
+						glyph = getGlyph(charCode);
+
+						pos.x = 0.0f;
+						pos.y = -glyph.offset.y;
+
+						if (!newLineStarted)
 						{
-							mImages ~= new Image;
-							mImages[$ - 1].create(format("ImageAtlas-%d", mImages.length),
-													fontManager.getAtlas(mImages.length - 1).size().x,
-													fontManager.getAtlas(mImages.length - 1).size().y,
-													4);
-							mImages[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), mImages[$ - 1].size());
+							pos.x = glyph.offset.x;
+							if (mKerning)
+								pos.x = pos.x + font.kerning(prevCharCode, charCode).x;
 						}
 
-						// Write glyph in image
-						mImages[glyph.atlasIndex].blit(glyph.image,
-														Vector2s32(0, 0),
-														Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height),
-														Vector2s32(glyph.atlasRegion.x, glyph.atlasRegion.y));
+						switch (mWrapMode)
+						{
+							default:	// Default == NoWrap
+							case WrapMode.NoWrap:		// (default) No wrapping will be performed. If the text contains insufficient newlines, then contentWidth will exceed a set width.
+								break;
+							case WrapMode.WordWrap:		// Wrapping is done on word boundaries only. If a word is too long, contentWidth will exceed a set width.
+								if (wordIndex != previousWordIndex)
+								{
+									float	advance = 0.0f;
+									foreach (dchar charCode; word)
+									{
+										advance += getGlyph(charCode).advance.x;
+									}
+									if (lines[$ - 1].size.x + pos.x + advance > mSize.x)
+									{
+										startNewLine();
+										pos.x = 0.0f;
+									}
+									previousWordIndex = wordIndex;
+								}
+								break;
+							case WrapMode.WrapAnywhere:	// Wrapping is done at any point on a line, even if it occurs in the middle of a word.
+								if (lines[$ - 1].size.x + pos.x + glyph.advance.x > mSize.x)
+								{
+									startNewLine();
+									pos.x = 0.0f;
+								}
+								break;
+							case WrapMode.Wrap:			// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
+								break;
+						}
+
+						// Update Line struct data
+						if (!isWhite(charCode))
+						{
+							lines[$ - 1].glyphes ~= glyph;
+							lines[$ - 1].offsets ~= Vector2f32(cursor.x + pos.x, pos.y);
+							if (lines[$ - 1].verticalCursor < cursor.y)
+								lines[$ - 1].verticalCursor = cursor.y;
+						}
+
+						lines[$ - 1].size.x = cursor.x + pos.x + glyph.advance.x;
+						if (lines[$ - 1].size.y < font.linegap())
+							lines[$ - 1].size.y = font.linegap();
+						// --
+
+						if (lines[$ - 1].size.x > mImplicitSize.x)
+							mImplicitSize.x = lines[$ - 1].size.x;
+						if (lines.length > 1 && newLineStarted)	// Previous line just ended (line height is computed now)
+							mImplicitSize.y = mImplicitSize.y + lines[$ - 2].size.y;
+
+						cursor.x = cursor.x + glyph.advance.x;
+						newLineStarted = false;
+						prevCharCode = charCode;
 					}
-
-					Vector2f32	pos;
-
-					pos.x = 0.0f;
-					pos.y = -glyph.offset.y;
-
-					if (!newLineStarted)
-					{
-						pos.x = glyph.offset.x;
-						if (mKerning)
-							pos.x = pos.x + font.kerning(prevCharCode, charCode).x;
-					}
-
-/*					NoWrap,			/// (default) No wrapping will be performed. If the text contains insufficient newlines, then contentWidth will exceed a set width.
-						WordWrap,		/// Wrapping is done on word boundaries only. If a word is too long, contentWidth will exceed a set width.
-						WrapAnywhere,	/// Wrapping is done at any point on a line, even if it occurs in the middle of a word.
-						Wrap			/// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
-*/
-					switch (mWrapMode)
-					{
-						default:	// Default == NoWrap
-						case WrapMode.NoWrap:
-							break;
-						case WrapMode.WordWrap:
-							break;
-						case WrapMode.WrapAnywhere:
-							if (lines[$ - 1].size.x + pos.x + glyph.advance.x > mSize.x)
-							{
-								startNewLine();
-								pos.x = 0.0f;
-							}
-							break;
-						case WrapMode.Wrap:
-							break;
-					}
-
-					// Update Line struct data
-					if (!isSpace(charCode))
-					{
-						lines[$ - 1].glyphes ~= glyph;
-						lines[$ - 1].offsets ~= Vector2f32(cursor.x + pos.x, pos.y);
-						if (lines[$ - 1].verticalCursor < cursor.y)
-							lines[$ - 1].verticalCursor = cursor.y;
-					}
-
-					lines[$ - 1].size.x = cursor.x + pos.x + glyph.advance.x;
-					if (lines[$ - 1].size.y < font.linegap())
-						lines[$ - 1].size.y = font.linegap();
-					// --
-
-					if (lines[$ - 1].size.x > mImplicitSize.x)
-						mImplicitSize.x = lines[$ - 1].size.x;
-					if (lines.length > 1 && newLineStarted)	// Previous line just ended (line height is computed now)
-						mImplicitSize.y = mImplicitSize.y + lines[$ - 2].size.y;
-
-					cursor.x = cursor.x + glyph.advance.x;
-					newLineStarted = false;
-					prevCharCode = charCode;
 				}
 			}
 
@@ -393,8 +408,39 @@ private:
 	int				mFontSize = 24;
 	FontFamily		mFontFamily = FontFamily.Regular;
 	bool			mKerning = true;
-	WrapMode		mWrapMode = WrapMode.WrapAnywhere;
+	WrapMode		mWrapMode = WrapMode.WordWrap;
 
 	static Image[]		mImages;
 	static Texture[]	mTextures;
+}
+
+/// This function return an array of string that contains words (array of alphanumerical characters or white characters)
+string[]	splitToConservativesWords(in string text)
+{
+	string[]	textAsWords;
+	bool		previousCharIsSpace = false;
+
+	foreach (dchar charCode; text)
+	{
+		if (textAsWords.length == 0 || previousCharIsSpace != isWhite(charCode))	// Need to start a new word
+			textAsWords ~= "";
+		textAsWords[$ - 1] ~= charCode;
+
+		previousCharIsSpace = isWhite(charCode);
+	}
+	return textAsWords;
+}
+
+unittest
+{
+	string[]	words;
+
+	words = splitToConservativesWords("Un test  relativement \tsimple.");
+	assert(words[0] == "Un");
+	assert(words[1] == " ");
+	assert(words[2] == "test");
+	assert(words[3] == "  ");
+	assert(words[4] == "relativement");
+	assert(words[5] == " \t");
+	assert(words[6] == "simple.");
 }
