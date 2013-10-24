@@ -237,7 +237,7 @@ private:
 						startNewLine(wordIndex);
 					else
 					{
-						if (cursor.x == 0.0f && isWhite(charCode))
+						if (cursor.x == 0.0f && isWhite(charCode) /*&& !(word[0] == '\r' || word[0] == '\n')*/)
 							break;
 
 						glyph = getGlyph(charCode);
@@ -431,12 +431,12 @@ unittest
 {
 	string[]	words;
 
-	words = splitToConservativesWords("Un test  relativement \tsimple.");
+	words = splitToConservativesWords("Un test  relativement\n\tsimple.");
 	assert(words[0] == "Un");
 	assert(words[1] == " ");
 	assert(words[2] == "test");
 	assert(words[3] == "  ");
 	assert(words[4] == "relativement");
-	assert(words[5] == " \t");
+	assert(words[5] == "\n\t");
 	assert(words[6] == "simple.");
 }

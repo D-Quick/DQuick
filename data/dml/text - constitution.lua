@@ -18,12 +18,12 @@ Proclame la présente Déclaration universelle des droits de l'homme comme l'id�
 
 
 Article premier
-Tous les êtres humains naissent libres et égaux en dignité et en droits.
+	Tous les êtres humains naissent libres et égaux en dignité et en droits.
 Ils sont doués de raison et de conscience et doivent agir les uns envers les autres dans un esprit de fraternité.
 
 
 Article 2
-Chacun peut se prévaloir de tous les droits et de toutes les libertés proclamés dans la présente Déclaration, sans distinction aucune, notamment de race, de couleur, de sexe, de langue, de religion, d'opinion politique ou de toute autre opinion, d'origine nationale ou sociale, de fortune, de naissance ou de toute autre situation.
+	Chacun peut se prévaloir de tous les droits et de toutes les libertés proclamés dans la présente Déclaration, sans distinction aucune, notamment de race, de couleur, de sexe, de langue, de religion, d'opinion politique ou de toute autre opinion, d'origine nationale ou sociale, de fortune, de naissance ou de toute autre situation.
 De plus, il ne sera fait aucune distinction fondée sur le statut politique, juridique ou international du pays ou du territoire dont une personne est ressortissante, que ce pays ou territoire soit indépendant, sous tutelle, non autonome ou soumis à une limitation quelconque de souveraineté.
 
 
