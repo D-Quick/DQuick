@@ -6,7 +6,7 @@ textFr = [[Déclaration universelle des droits de l'homme
 
 Préambule 
 
-Considérant que la reconnaissance de la dignité inhérente à tous               les membres de la famille humaine et de leurs droits égaux et inaliénables constitue le fondement de la liberté, de la justice et de la paix dans le monde,
+Considérant que la reconnaissance de la dignité inhérente à tous les membres de la famille humaine et de leurs droits égaux et inaliénables constitue le fondement de la liberté, de la justice et de la paix dans le monde,
 Considérant que la méconnaissance et le mépris des droits de l'homme ont conduit à des actes de barbarie qui révoltent la conscience de l'humanité et que l'avènement d'un monde où les êtres humains seront libres de parler et de croire, libérés de la terreur et de la misère, a été proclamé comme la plus haute aspiration de l'homme,
 Considérant qu'il est essentiel que les droits de l'homme soient protégés par un régime de droit pour que l'homme ne soit pas contraint, en suprême recours, à la révolte contre la tyrannie et l'oppression,
 Considérant qu'il est essentiel d'encourager le développement de relations amicales entre nations,
@@ -18,12 +18,12 @@ Proclame la présente Déclaration universelle des droits de l'homme comme l'id�
 
 
 Article premier
-	Tous les êtres humains naissent libres et égaux en dignité et en droits.
+Tous les êtres humains naissent libres et égaux en dignité et en droits.
 Ils sont doués de raison et de conscience et doivent agir les uns envers les autres dans un esprit de fraternité.
 
 
 Article 2
-	Chacun peut se prévaloir de tous les droits et de toutes les libertés proclamés dans la présente Déclaration, sans distinction aucune, notamment de race, de couleur, de sexe, de langue, de religion, d'opinion politique ou de toute autre opinion, d'origine nationale ou sociale, de fortune, de naissance ou de toute autre situation.
+Chacun peut se prévaloir de tous les droits et de toutes les libertés proclamés dans la présente Déclaration, sans distinction aucune, notamment de race, de couleur, de sexe, de langue, de religion, d'opinion politique ou de toute autre opinion, d'origine nationale ou sociale, de fortune, de naissance ou de toute autre situation.
 De plus, il ne sera fait aucune distinction fondée sur le statut politique, juridique ou international du pays ou du territoire dont une personne est ressortissante, que ce pays ou territoire soit indépendant, sous tutelle, non autonome ou soumis à une limitation quelconque de souveraineté.
 
 

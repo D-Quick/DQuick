@@ -237,7 +237,7 @@ private:
 						startNewLine(wordIndex);
 					else
 					{
-						if (cursor.x == 0.0f && isWhite(charCode) /*&& !(word[0] == '\r' || word[0] == '\n')*/)
+						if (cursor.x == 0.0f && isWhite(charCode) && !(word[0] == '\r' || word[0] == '\n' || wordIndex == 0))
 							break;
 
 						glyph = getGlyph(charCode);
@@ -392,6 +392,7 @@ private:
 	}
 
 	static const string	defaultFont = "Verdana";
+	static const int	tabSize = 4;
 
 	Vector2f32		mImplicitSize;
 
@@ -411,6 +412,7 @@ private:
 }
 
 /// This function return an array of string that contains words (array of alphanumerical characters or white characters)
+/// Notice that '\t' characters are transformed into spaces, number is depending on TextItem.spaceSize
 string[]	splitToConservativesWords(in string text)
 {
 	string[]	textAsWords;
@@ -420,7 +422,11 @@ string[]	splitToConservativesWords(in string text)
 	{
 		if (textAsWords.length == 0 || previousCharIsSpace != isWhite(charCode))	// Need to start a new word
 			textAsWords ~= "";
-		textAsWords[$ - 1] ~= charCode;
+		if (charCode == '\t')
+			for (int i = 0; i < TextItem.tabSize; i++)
+				textAsWords[$ - 1] ~= " ";
+		else
+			textAsWords[$ - 1] ~= charCode;
 
 		previousCharIsSpace = isWhite(charCode);
 	}
@@ -437,6 +443,6 @@ unittest
 	assert(words[2] == "test");
 	assert(words[3] == "  ");
 	assert(words[4] == "relativement");
-	assert(words[5] == "\n\t");
+	assert(words[5] == "\n    ");
 	assert(words[6] == "simple.");
 }
