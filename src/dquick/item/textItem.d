@@ -20,10 +20,12 @@ import std.uni;
 // TODO Support pixel perfect render (check the matrix)
 // TODO Optimize the generated mesh (strip it)
 // TODO Add a markup system (merge meshes by texture, but limit their size for a good support of occluders)
-
+// TODO Fix first character position when a line wrapping occurs just before (it seems there is a little residual offset coming from removed spaces)
 
 // TODO Make Font a property (fontFamily, fontSize,... have to be in a struct)
 // TODO Check vocabulary (family, bold,...)
+
+// TODO Check how wrapping (WrapAnywhere and Wrap) works when there is no space for a character on a ligne (item width around 0)
 
 class TextItem : GraphicItem
 {
@@ -236,7 +238,8 @@ private:
 						startNewLine(wordIndex);
 					else
 					{
-						if (cursor.x == 0.0f && isWhite(charCode) && !(word[0] == '\r' || word[0] == '\n' || wordIndex == 0))
+						if (cursor.x == 0.0f && isWhite(charCode)
+							&& !(word[0] == '\r' || word[0] == '\n' || wordIndex == 0))	// We let starting spaces if it comes from the user
 							break;
 
 						glyph = getGlyph(charCode);
@@ -256,6 +259,15 @@ private:
 							default:					// Default == NoWrap
 							case WrapMode.NoWrap:		// (default) No wrapping will be performed. If the text contains insufficient newlines, then contentWidth will exceed a set width.
 								break;
+							case WrapMode.Wrap:			// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
+								{
+									float	advance = 0.0f;
+									foreach (dchar charCode; word)
+										advance += getGlyph(charCode).advance.x;
+									if (advance > mSize.x && lines[$ - 1].size.x + pos.x + glyph.advance.x > mSize.x)	// word is longuer than item width, so we cut it (works if a word need to be written on multiple line)
+										startNewLine(wordIndex);
+								}
+								//break;	// At this point we are compatible with the WordWrap mode (that why break isn't necessary)
 							case WrapMode.WordWrap:		// Wrapping is done on word boundaries only. If a word is too long, contentWidth will exceed a set width.
 								if (wordIndex != previousWordIndex)
 								{
@@ -270,8 +282,6 @@ private:
 							case WrapMode.WrapAnywhere:	// Wrapping is done at any point on a line, even if it occurs in the middle of a word.
 								if (lines[$ - 1].size.x + pos.x + glyph.advance.x > mSize.x)
 									startNewLine(wordIndex);
-								break;
-							case WrapMode.Wrap:			// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
 								break;
 						}
 
@@ -404,7 +414,7 @@ private:
 	int				mFontSize = 24;
 	FontFamily		mFontFamily = FontFamily.Regular;
 	bool			mKerning = true;
-	WrapMode		mWrapMode = WrapMode.WordWrap;
+	WrapMode		mWrapMode = WrapMode.NoWrap;
 
 	static Image[]		mImages;
 	static Texture[]	mTextures;
