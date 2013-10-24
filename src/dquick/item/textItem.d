@@ -18,7 +18,6 @@ import std.math;
 import std.uni;
 
 // TODO Support pixel perfect render (check the matrix)
-// TODO Support multiline
 // TODO Optimize the generated mesh (strip it)
 // TODO Add a markup system (merge meshes by texture, but limit their size for a good support of occluders)
 
