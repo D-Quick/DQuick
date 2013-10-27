@@ -11,6 +11,7 @@ version (Windows)
 	import dquick.item.text_item;
 	import dquick.item.border_image_item;
 	import dquick.item.mouse_area_item;
+	import dquick.item.scroll_view_item;
 	import dquick.script.dml_engine;
 
 	import std.stdio;
@@ -109,6 +110,7 @@ version (Windows)
 			mScriptContext.addItemType!(TextItem, "Text")();
 			mScriptContext.addItemType!(BorderImageItem, "BorderImage")();
 			mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
+			mScriptContext.addItemType!(ScrollViewItem, "ScrollView")();
 		}
 
 		~this()
