@@ -203,11 +203,13 @@ GraphicItem
 		end,
 
 		Text {
+			id = "text",
+		
 			width = function()
-				return implicitWidth
+				return text.implicitWidth
 			end,
 			height = function()
-				return implicitHeight
+				return text.implicitHeight
 			end,
 
 			id = "text",
