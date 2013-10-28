@@ -168,53 +168,42 @@ GraphicItem
 		id = "kerningImageButton",
 		
 		source = "images/border-image.png",
-		width = 300,
-		height = 50,
+		-- width = 300,
+		-- height = 50,
 
-		-- Text {
-			-- font = "AngsanaUPC",
-			-- text = function()
-				-- if (kerningButton.pressed) then
-					-- return "Ayuma2yk"
-				-- end
-				-- return "AngsanaUPC"
-			-- end,
-		-- },
-		
 		MouseArea {
 			id = "kerningButton",
-			width = function()
-				return kerningImageButton.width
-			end,
-			height = function()
-				return kerningImageButton.height
-			end,
+			-- width = function()
+				-- return kerningImageButton.width
+			-- end,
+			-- height = function()
+				-- return kerningImageButton.height
+			-- end,
 		},
 	},
 
 	ScrollView {
-		x = 0,
-		y = 50,
-		width = function()
-			return main.width
-		end,
-		height = function()
-			return main.height
-		end,
+		-- y = function()
+			-- return kerningImageButton.height
+		-- end,
+		-- width = function()
+			-- return main.width
+		-- end,
+		-- height = function()
+			-- return main.height
+		-- end,
 
 		Text {
 			id = "text",
 		
-			width = function()
-				return text.implicitWidth
-			end,
-			height = function()
-				return text.implicitHeight
-			end,
+			-- width = function()
+				-- return text.implicitWidth
+			-- end,
+			-- height = function()
+				-- return text.implicitHeight
+			-- end,
 
-			id = "text",
 			text = textFr,
-			-- font = "AngsanaUPC",
 			font = function()
 				if (kerningButton.pressed) then
 					return "AngsanaUPC"
@@ -222,24 +211,11 @@ GraphicItem
 				return "Arial"
 			end,
 			fontSize = 24,
-			-- fontSize = function()
-				-- if (kerningButton.pressed) then
-					-- return 16
-				-- end
-				-- return 24
-			-- end,
 			fontFamily = function()
 				if (kerningButton.pressed) then
 					return Text.FontFamily.Italic
 				end
 				return Text.FontFamily.Regular
-			end,
-			-- kerning = function()
-				-- return kerningButton.pressed
-			-- end,
-			
-			width = function()
-				return main.width
 			end,
 		},
 	},
