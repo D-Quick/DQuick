@@ -21,7 +21,27 @@ public:
 		mTransformationUpdated = true;
 	}
 
-	// TODO add implicitWidth and implicitHeight? http://qt-project.org/doc/qt-5.0/qtquick/qquickitem.html#implicitHeight-prop
+	@property void	x(float x)
+	{
+		if (x == mTransformation.position.x)
+			return;
+		mTransformation.position.x = x;
+		mTransformationUpdated = true;
+		onXChanged.emit(x);
+	}
+	@property float	x() {return mTransformation.position.x;}
+	mixin Signal!(float) onXChanged;
+
+	@property void	y(float y)
+	{
+		if (y == mTransformation.position.y)
+			return;
+		mTransformation.position.y = y;
+		mTransformationUpdated = true;
+		onYChanged.emit(y);
+	}
+	@property float	y() {return mTransformation.position.y;}
+	mixin Signal!(float) onYChanged;
 
 	/// Have to be called only on rootItem by window
 	void	setSize(Vector2f32 size)
@@ -60,27 +80,15 @@ public:
 	@property float	height() {return mSize.y;}
 	mixin Signal!(float) onHeightChanged;
 
-	@property void	x(float x)
-	{
-		if (x == mTransformation.position.x)
-			return;
-		mTransformation.position.x = x;
-		mTransformationUpdated = true;
-		onXChanged.emit(x);
-	}
-	@property float	x() {return mTransformation.position.x;}
-	mixin Signal!(float) onXChanged;
+	/// Return the natural width of the GraphicItem
+	/// The default implicit width for most items is float.nan, however some items have an inherent implicit width which cannot be overridden, e.g. Image, Text.
+	@property float	implicitWidth() {return float.nan;}
+	mixin Signal!(float) onImplicitWidthChanged;
 
-	@property void	y(float y)
-	{
-		if (y == mTransformation.position.y)
-			return;
-		mTransformation.position.y = y;
-		mTransformationUpdated = true;
-		onYChanged.emit(y);
-	}
-	@property float	y() {return mTransformation.position.y;}
-	mixin Signal!(float) onYChanged;
+	/// Return the natural height of the GraphicItem
+	/// The default implicit height for most items is float.nan, however some items have an inherent implicit height which cannot be overridden, e.g. Image, Text.
+	@property float	implicitHeight() {return float.nan;}
+	mixin Signal!(float) onImplicitHeightChanged;
 
 	/// Change the scale factor, tranformation origin is the center of item
 	@property void	scale(float value)

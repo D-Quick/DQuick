@@ -96,12 +96,6 @@ public:
 	@property WrapMode	wrapMode() {return mWrapMode;}
 	mixin Signal!(WrapMode) onWrapModeChanged;
 
-	@property float	implicitWidth() {return mImplicitSize.x;}
-	mixin Signal!(float) onImplicitWidthChanged;
-
-	@property float	implicitHeight() {return mImplicitSize.y;}
-	mixin Signal!(float) onImplicitHeightChanged;
-
 	@property void	kerning(bool flag)
 	{
 		mKerning = flag;
@@ -147,6 +141,10 @@ public:
 				mNeedRebuild = true;
 		}
 		@property float	height() {return GraphicItem.height;}
+
+		@property float	implicitWidth() {return mImplicitSize.x;}
+
+		@property float	implicitHeight() {return mImplicitSize.y;}
 	}
 
 private:
