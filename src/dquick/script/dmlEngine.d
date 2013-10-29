@@ -914,6 +914,7 @@ extern(C)
 					{
 						if (propertyId == member)
 						{
+							// TODO: Add metadata inside userdata to tell that its a method and not a simple userdata
 							// Create a userdata that contains instance void ptr and return it to emulate a method
 							// It also contains a metatable for calling
 							void*	userData = lua_newuserdata(L, itemBindingPtr.sizeof);
