@@ -168,40 +168,44 @@ GraphicItem
 		id = "kerningImageButton",
 		
 		source = "images/border-image.png",
-		-- width = 300,
-		-- height = 50,
+		width = 300,
+		height = 50,
 
 		MouseArea {
 			id = "kerningButton",
-			-- width = function()
-				-- return kerningImageButton.width
-			-- end,
-			-- height = function()
-				-- return kerningImageButton.height
-			-- end,
+			width = function()
+				return kerningImageButton.width
+			end,
+			height = function()
+				return kerningImageButton.height
+			end,
 		},
 	},
 
 	ScrollView {
-		-- y = function()
-			-- return kerningImageButton.height
-		-- end,
-		-- width = function()
-			-- return main.width
-		-- end,
-		-- height = function()
-			-- return main.height
-		-- end,
+		id = "scrollView",
+	
+		y = function()
+			return kerningImageButton.height
+		end,
+		width = function()
+			return main.width
+		end,
+		height = function()
+			return main.height
+		end,
 
 		Text {
 			id = "text",
 		
-			-- width = function()
-				-- return text.implicitWidth
-			-- end,
-			-- height = function()
-				-- return text.implicitHeight
-			-- end,
+			wrapMode = Text.WrapMode.WordWrap,
+		
+			width = function()
+				return scrollView.width
+			end,
+			height = function()
+				return scrollView.height
+			end,
 
 			text = textFr,
 			font = function()
