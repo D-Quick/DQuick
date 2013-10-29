@@ -96,6 +96,12 @@ public:
 	@property WrapMode	wrapMode() {return mWrapMode;}
 	mixin Signal!(WrapMode) onWrapModeChanged;
 
+	@property float	implicitWidth() {return mImplicitSize.x;}
+	mixin Signal!(float) onImplicitWidthChanged;
+
+	@property float	implicitHeight() {return mImplicitSize.y;}
+	mixin Signal!(float) onImplicitHeightChanged;
+
 	@property void	kerning(bool flag)
 	{
 		mKerning = flag;
@@ -359,6 +365,9 @@ private:
 			// --
 
 			mMesh.setTexture(mTextures[0]);
+			
+			onImplicitWidthChanged.emit(mImplicitSize.x);
+			onImplicitHeightChanged.emit(mImplicitSize.y);		
 		}
 		catch (Exception e)
 		{
@@ -403,7 +412,7 @@ private:
 	static const string	defaultFont = "Verdana";
 	static const int	tabSize = 4;
 
-	Vector2f32		mImplicitSize;
+	Vector2f32		mImplicitSize = Vector2f32(0.0f, 0.0f);
 
 	bool			mNeedRebuild = true;
 	Mesh			mMesh;

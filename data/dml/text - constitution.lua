@@ -171,16 +171,6 @@ GraphicItem
 		width = 300,
 		height = 50,
 
-		-- Text {
-			-- font = "AngsanaUPC",
-			-- text = function()
-				-- if (kerningButton.pressed) then
-					-- return "Ayuma2yk"
-				-- end
-				-- return "AngsanaUPC"
-			-- end,
-		-- },
-		
 		MouseArea {
 			id = "kerningButton",
 			width = function()
@@ -192,7 +182,12 @@ GraphicItem
 		},
 	},
 
-	Text {
+	ScrollView {
+		id = "scrollView",
+	
+		y = function()
+			return kerningImageButton.height
+		end,
 		width = function()
 			return main.width
 		end,
@@ -200,35 +195,32 @@ GraphicItem
 			return main.height
 		end,
 
-		id = "text",
-		y = 50,
-		text = textFr,
-		-- font = "AngsanaUPC",
-		font = function()
-			if (kerningButton.pressed) then
-				return "AngsanaUPC"
-			end
-			return "Arial"
-		end,
-		fontSize = 24,
-		-- fontSize = function()
-			-- if (kerningButton.pressed) then
-				-- return 16
-			-- end
-			-- return 24
-		-- end,
-		fontFamily = function()
-			if (kerningButton.pressed) then
-				return Text.FontFamily.Italic
-			end
-			return Text.FontFamily.Regular
-		end,
-		-- kerning = function()
-			-- return kerningButton.pressed
-		-- end,
+		Text {
+			id = "text",
 		
-		width = function()
-			return main.width
-		end,
+			wrapMode = Text.WrapMode.WordWrap,
+		
+			width = function()
+				return scrollView.width
+			end,
+			height = function()
+				return scrollView.height
+			end,
+
+			text = textFr,
+			font = function()
+				if (kerningButton.pressed) then
+					return "AngsanaUPC"
+				end
+				return "Arial"
+			end,
+			fontSize = 24,
+			fontFamily = function()
+				if (kerningButton.pressed) then
+					return Text.FontFamily.Italic
+				end
+				return Text.FontFamily.Regular
+			end,
+		},
 	},
 }

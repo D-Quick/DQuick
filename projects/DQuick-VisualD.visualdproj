@@ -23,6 +23,7 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
+  <errDeprecated>0</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -116,6 +117,7 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
+  <errDeprecated>0</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -297,6 +299,7 @@
     <File path="..\src\dquick\item\graphicItem.d" />
     <File path="..\src\dquick\item\imageItem.d" />
     <File path="..\src\dquick\item\mouseAreaItem.d" />
+    <File path="..\src\dquick\item\scrollViewItem.d" />
     <File path="..\src\dquick\item\textItem.d" />
     <File path="..\src\dquick\item\windowItem.d" />
    </Folder>

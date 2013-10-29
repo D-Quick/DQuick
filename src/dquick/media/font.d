@@ -35,6 +35,7 @@ version(Windows)
 
 // TODO migrate FT_Library to FontManager (if it share memory)
 // TODO check kerning computation it doesn't seems working fine
+// TODO check glyph rendering quality
 
 class FontManager
 {
