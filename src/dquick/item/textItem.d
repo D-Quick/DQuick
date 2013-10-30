@@ -305,8 +305,6 @@ private:
 
 						if (lines[$ - 1].size.x > mImplicitSize.x)
 							mImplicitSize.x = lines[$ - 1].size.x;
-						if (lines.length > 1 && newLineStarted)	// Previous line just ended (line height is computed now)
-							mImplicitSize.y = mImplicitSize.y + lines[$ - 2].size.y;
 
 						if (!(newLineStarted && isWhite(charCode)))
 							cursor.x = cursor.x + glyph.advance.x;
@@ -317,7 +315,7 @@ private:
 			}
 
 			if (lines.length)
-				mImplicitSize.y = mImplicitSize.y + lines[$ - 1].size.y;
+				mImplicitSize.y = lines[0].size.y + lines[$ - 1].verticalCursor + lines[$ - 1].size.y;
 
 			// Building the Mesh
 			mMesh = new Mesh();
