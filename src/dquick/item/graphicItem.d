@@ -2,12 +2,14 @@ module dquick.item.graphic_item;
 
 public import dquick.item.declarative_item;
 public import dquick.maths.vector2f32;
+public import dquick.maths.vector4f32;
 public import dquick.maths.transformation;
 
 public import dquick.renderer_3d.opengl.renderer;
 
 public import std.signals;
 import std.stdio;
+import std.math;
 
 // TODO Verifier la gestion des matrices, j'ai un doute sur la bonne application/restoration des transformation (Je crains que la matrice de la camera soit ecrasee)
 
@@ -90,6 +92,18 @@ public:
 	@property float	implicitHeight() {return float.nan;}
 	mixin Signal!(float) onImplicitHeightChanged;
 
+	/// Put it to true to clip parts of item that are out of his rectangle (determined by his size)
+	/// It's implemented with a scissor, so don't use it with rotations
+	@property void	clip(bool flag)
+	{
+		if (flag == mClip)
+			return;
+		mClip = flag;
+		onClipChanged.emit(flag);
+	}
+	@property bool	clip() {return mClip;}
+	mixin Signal!(bool) onClipChanged;
+
 	/// Change the scale factor, tranformation origin is the center of item
 	@property void	scale(float value)
 	{
@@ -139,11 +153,27 @@ protected:
 		}
 
 		Renderer.currentMDVMatrix(switchMatrixRowsColumns(Renderer.currentCamera * mMatrix));
+
+		if (mClip)
+		{
+			Vector4f32	pos = Vector4f32(x, y, 0.0f, 1.0f);
+			Vector4f32	size = Vector4f32(width, height, 0.0f, 1.0f);
+
+			glEnable(GL_SCISSOR_TEST);
+
+			pos = mMatrix * pos;
+			size = mMatrix * size;
+
+			float	invertedY = Renderer.viewportSize().y - pos.y - size.y;
+			glScissor(cast(int)round(pos.x), cast(int)round(invertedY), cast(int)round(size.x), cast(int)round(size.y));
+		}
 	}
 
 	void	endPaint()
 	{
 		mTransformationUpdated = false;
+		if (mClip)
+			glDisable(GL_SCISSOR_TEST);
 	}
 
 	bool	isIn(Vector2f32 point)
@@ -153,6 +183,7 @@ protected:
 		return false;
 	}
 
+	bool			mClip = false;
 	Transformation	mTransformation;
 	Vector2f32		mSize;
 	float			mOrientation = 0.0f;
