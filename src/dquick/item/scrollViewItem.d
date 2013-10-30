@@ -8,6 +8,7 @@ import dquick.maths.vector2f32;
 import std.stdio;
 
 // TODO update position of item when his size change
+// TODO cursor out of item/window == mouse released event
 
 class ScrollViewItem : MouseAreaItem
 {
@@ -64,12 +65,12 @@ protected:
 
 				pos = mMousePosition - mMouseStart + mStartingPosition;
 
-				if (pos.x < 0.0f - size.x)
-					pos.x = 0.0f - size.x;
+				if (pos.x < width - size.x)
+					pos.x  = width - size.x;
 				if (pos.x > 0.0f)
 					pos.x = 0.0f;
-				if (pos.y < 0.0f - size.y)
-					pos.y = 0.0f - size.y;
+				if (pos.y < height - size.y)
+					pos.y = height - size.y;
 				if (pos.y > 0.0f)
 					pos.y = 0.0f;
 
