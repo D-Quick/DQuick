@@ -156,8 +156,8 @@ protected:
 
 		if (mClip)
 		{
-			Vector4f32	pos = Vector4f32(x, y, 0.0f, 1.0f);
-			Vector4f32	size = Vector4f32(width, height, 0.0f, 1.0f);
+			Vector4f32	pos = Vector4f32(x, y, 0.0f, 0.0f);
+			Vector4f32	size = Vector4f32(width, height, 0.0f, 0.0f);
 
 			glEnable(GL_SCISSOR_TEST);
 
@@ -165,6 +165,7 @@ protected:
 			size = mMatrix * size;
 
 			float	invertedY = Renderer.viewportSize().y - pos.y - size.y;
+
 			glScissor(cast(int)round(pos.x), cast(int)round(invertedY), cast(int)round(size.x), cast(int)round(size.y));
 		}
 	}
