@@ -21,14 +21,49 @@ public:
 		onPressedChanged.connect(&onPressed);
 	}
 
-	override void	addChild(DeclarativeItem item)
+	override
 	{
-//		item.onPressedChanged.connect(&fixChildPosition);
+		void	addChild(DeclarativeItem item)
+		{
+			GraphicItem	child;
 
-		DeclarativeItem.addChild(item);
+			// We connect only the first child
+			if (mChildren.length)
+			{
+				child = cast(GraphicItem)mChildren[0];
+				if (child)
+				{
+					child.onWidthChanged.disconnect(&fixChildPosition);
+					child.onHeightChanged.disconnect(&fixChildPosition);
+					child.onImplicitWidthChanged.disconnect(&fixChildPosition);
+					child.onImplicitHeightChanged.disconnect(&fixChildPosition);
+				}
+			}
+			MouseAreaItem.addChild(item);
+			child = cast(GraphicItem)mChildren[0];
+			if (child)
+			{
+				child.onWidthChanged.connect(&fixChildPosition);
+				child.onHeightChanged.connect(&fixChildPosition);
+				child.onImplicitWidthChanged.connect(&fixChildPosition);
+				child.onImplicitHeightChanged.connect(&fixChildPosition);
+			}
+		}
+
+		@property void	width(float width)
+		{
+			MouseAreaItem.width(width);
+			fixChildPosition(0.0f);
+		}
+		@property float	width() {return MouseAreaItem.width();}
+
+		@property void	height(float height)
+		{
+			MouseAreaItem.height(height);
+			fixChildPosition(0.0f);
+		}
+		@property float	height() {return MouseAreaItem.height();}
 	}
-
-
 
 protected:
 	void	onPressed(bool pressed)
@@ -61,10 +96,11 @@ protected:
 	{
 		mPosition = mMousePosition - mMouseStart + mStartingPosition;
 
-		fixChildPosition();
+		fixChildPosition(0.0f);
 	}
 
-	void	fixChildPosition()
+	/// parameter is unused (it's only to be able to connect signals directly on it)
+	void	fixChildPosition(float)
 	{
 		if (mChildren.length > 0)
 		{
@@ -96,5 +132,5 @@ protected:
 
 	Vector2f32	mMouseStart;
 	Vector2f32	mStartingPosition;
-	Vector2f32	mPosition;
+	Vector2f32	mPosition = Vector2f32(0.0f, 0.0f);
 }
