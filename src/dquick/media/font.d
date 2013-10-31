@@ -265,6 +265,17 @@ public:
 		return mFilePath;
 	}
 
+	/// it's a negative value
+	float	underLinePosition()
+	{
+		return mUnderlinePosition;
+	}
+
+	float	underLineThickness()
+	{
+		return mUnderlineThickness;
+	}
+
 	string	name()
 	{
 		return mName;

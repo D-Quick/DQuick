@@ -96,12 +96,6 @@ public:
 	@property WrapMode	wrapMode() {return mWrapMode;}
 	mixin Signal!(WrapMode) onWrapModeChanged;
 
-	@property float	implicitWidth() {return mImplicitSize.x;}
-	mixin Signal!(float) onImplicitWidthChanged;
-
-	@property float	implicitHeight() {return mImplicitSize.y;}
-	mixin Signal!(float) onImplicitHeightChanged;
-
 	@property void	kerning(bool flag)
 	{
 		mKerning = flag;
@@ -147,6 +141,10 @@ public:
 				mNeedRebuild = true;
 		}
 		@property float	height() {return GraphicItem.height;}
+
+		@property float	implicitWidth() {return mImplicitSize.x;}
+
+		@property float	implicitHeight() {return mImplicitSize.y;}
 	}
 
 private:
@@ -156,6 +154,7 @@ private:
 		Glyph[]			glyphes;
 		Vector2f32[]	offsets;	// Offsets of glyphes, y need to be added to the verticalCursor value
 		float			verticalCursor = 0.0f;	// Global vertical offset for the line
+		float			maxHeightUnderOrigin = 0.0f;	// Used to compute implicitHeight
 	}
 
 	// TODO Use resource manager to update texture atlas, textures have to be shared between all TextItems
@@ -305,10 +304,12 @@ private:
 							lines[$ - 1].size.y = font.linegap();
 						// --
 
+						float	heightUnderOrigin = -font.underLinePosition() + font.underLineThickness();
+
 						if (lines[$ - 1].size.x > mImplicitSize.x)
 							mImplicitSize.x = lines[$ - 1].size.x;
-						if (lines.length > 1 && newLineStarted)	// Previous line just ended (line height is computed now)
-							mImplicitSize.y = mImplicitSize.y + lines[$ - 2].size.y;
+						if (heightUnderOrigin > lines[$ - 1].maxHeightUnderOrigin)
+							lines[$ - 1].maxHeightUnderOrigin = heightUnderOrigin;
 
 						if (!(newLineStarted && isWhite(charCode)))
 							cursor.x = cursor.x + glyph.advance.x;
@@ -319,7 +320,7 @@ private:
 			}
 
 			if (lines.length)
-				mImplicitSize.y = mImplicitSize.y + lines[$ - 1].size.y;
+				mImplicitSize.y = lines[$ - 1].verticalCursor + lines[$ - 1].maxHeightUnderOrigin;	// TODO clean that, it's not really exact (a little margin is necessary for character that can be draw under the cursor like 'g')
 
 			// Building the Mesh
 			mMesh = new Mesh();

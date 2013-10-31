@@ -102,7 +102,7 @@ public:
 		GraphicItem.mouseEvent(event);
 	}
 
-private:
+protected:
 	bool	isIn(Vector3f32 transformedPoint)
 	{
 		return (transformedPoint.x >= 0.0f && transformedPoint.x < width &&

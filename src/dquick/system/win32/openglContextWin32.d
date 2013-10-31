@@ -20,6 +20,7 @@ version (Windows)
 
 	import dquick.renderer_3d.opengl.renderer;
 	import dquick.maths.matrix4x4;
+	import dquick.maths.vector2s32;
 
 	class OpenGLContext
 	{
@@ -146,7 +147,8 @@ version (Windows)
 				height=1;										// Making Height Equal One
 			}
 
-			glViewport(0, 0, width, height);						// Reset The Current Viewport
+
+			Renderer.setViewportSize(Vector2s32(width, height));						// Reset The Current Viewport
 
 			Matrix4x4	camera;
 			camera = Matrix4x4.orthographic(0.0, width, height, 0.0, -100.0, 100.0);

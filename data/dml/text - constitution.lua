@@ -192,8 +192,10 @@ GraphicItem
 			return main.width
 		end,
 		height = function()
-			return main.height
+			return main.height - scrollView.y
 		end,
+		
+		clip = true,
 
 		Text {
 			id = "text",
