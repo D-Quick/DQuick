@@ -1,5 +1,6 @@
 module dquick.item.scroll_view_item;
 
+import dquick.item.declarative_item;
 import dquick.item.mouse_area_item;
 import dquick.item.graphic_item;
 
@@ -15,10 +16,19 @@ class ScrollViewItem : MouseAreaItem
 public:
 	this()
 	{
-		onPressedChanged.connect(&onPressed);
 		onMouseXChanged.connect(&onMouseX);
 		onMouseYChanged.connect(&onMouseY);
+		onPressedChanged.connect(&onPressed);
 	}
+
+	override void	addChild(DeclarativeItem item)
+	{
+//		item.onPressedChanged.connect(&fixChildPosition);
+
+		DeclarativeItem.addChild(item);
+	}
+
+
 
 protected:
 	void	onPressed(bool pressed)
@@ -49,13 +59,19 @@ protected:
 
 	void	drag()
 	{
+		mPosition = mMousePosition - mMouseStart + mStartingPosition;
+
+		fixChildPosition();
+	}
+
+	void	fixChildPosition()
+	{
 		if (mChildren.length > 0)
 		{
 			GraphicItem	child = cast(GraphicItem)mChildren[0];
 
 			if (child)
 			{
-				Vector2f32	pos;
 				Vector2f32	size;
 
 				if (child.implicitWidth != float.nan && child.implicitHeight != float.nan)	// Normally always both have to be defined at the same time
@@ -63,23 +79,22 @@ protected:
 				else
 					size = Vector2f32(child.width, child.height);
 
-				pos = mMousePosition - mMouseStart + mStartingPosition;
+				if (mPosition.x < width - size.x)
+					mPosition.x  = width - size.x;
+				if (mPosition.x > 0.0f)
+					mPosition.x = 0.0f;
+				if (mPosition.y < height - size.y)
+					mPosition.y = height - size.y;
+				if (mPosition.y > 0.0f)
+					mPosition.y = 0.0f;
 
-				if (pos.x < width - size.x)
-					pos.x  = width - size.x;
-				if (pos.x > 0.0f)
-					pos.x = 0.0f;
-				if (pos.y < height - size.y)
-					pos.y = height - size.y;
-				if (pos.y > 0.0f)
-					pos.y = 0.0f;
-
-				child.x = pos.x;
-				child.y = pos.y;
+				child.x = mPosition.x;
+				child.y = mPosition.y;
 			}
 		}
 	}
 
 	Vector2f32	mMouseStart;
 	Vector2f32	mStartingPosition;
+	Vector2f32	mPosition;
 }

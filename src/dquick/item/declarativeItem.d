@@ -14,19 +14,16 @@ import std.stdio;
 class DeclarativeItem
 {
 public:
-	final
+	@property void		id(string id) {mId = id;}
+	@property string	id() {return mId;}
+
+	@property void				parent(DeclarativeItem parent) {mParent = parent;}
+	@property DeclarativeItem	parent() {return mParent;}
+
+	void	addChild(DeclarativeItem item)
 	{
-		@property void		id(string id) {mId = id;}
-		@property string	id() {return mId;}
-
-		@property void				parent(DeclarativeItem parent) {mParent = parent;}
-		@property DeclarativeItem	parent() {return mParent;}
-
-		void	addChild(DeclarativeItem item)
-		{
-			mChildren ~= item;
-			item.parent = this;
-		}
+		mChildren ~= item;
+		item.parent = this;
 	}
 
 	void	paint(bool transformationUpdated)
