@@ -141,7 +141,7 @@ private:
 	{
 		Vector2s32	result;
 
-		switch (mHorizontalTileMode)
+		final switch (mHorizontalTileMode)
 		{
 		case TileMode.Stretch:
 			result.x = 1;
@@ -152,12 +152,9 @@ private:
 		case TileMode.Round:
 			result.x = cast(int)floor(cast(float)(mSize.x - mLeftBorder - mRightBorder) / cast(float)(mMesh.texture().size().x  - mLeftBorder - mRightBorder));
 			break;
-		default:
-			assert(false);
-			result.x = 1;
 		}
 
-		switch (mVerticalTileMode)
+		final switch (mVerticalTileMode)
 		{
 		case TileMode.Stretch:
 			result.x = 1;
@@ -168,9 +165,6 @@ private:
 		case TileMode.Round:
 			result.y = cast(int)floor(cast(float)(mSize.y - mTopBorder - mBottomBorder) / cast(float)(mMesh.texture().size().y  - mTopBorder - mBottomBorder));
 			break;
-		default:
-			assert(false);
-			result.y = 1;
 		}
 
 		return result;
