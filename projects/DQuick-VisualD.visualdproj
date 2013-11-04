@@ -48,7 +48,7 @@
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
-  <fileImppath />
+  <fileImppath>..\src\dquick\renderer2D\openGL</fileImppath>
   <outdir>$(ConfigurationName)/../../data</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -142,7 +142,7 @@
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
-  <fileImppath />
+  <fileImppath>..\src\dquick\renderer2D\openGL</fileImppath>
   <outdir>$(ConfigurationName)/../../data</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -195,14 +195,6 @@
     <File path="..\data\dml\image.lua" />
     <File path="..\data\dml\text - constitution.lua" />
     <File path="..\data\dml\transformations.lua" />
-   </Folder>
-   <Folder name="dquick">
-    <Folder name="shaders">
-     <File path="..\data\dquick\shaders\borderRectangle.frag" />
-     <File path="..\data\dquick\shaders\borderRectangle.vert" />
-     <File path="..\data\dquick\shaders\rectangle.frag" />
-     <File path="..\data\dquick\shaders\rectangle.vert" />
-    </Folder>
    </Folder>
   </Folder>
   <Folder name="dquick">
@@ -321,9 +313,13 @@
    </Folder>
    <Folder name="renderer2D">
     <Folder name="openGL">
+     <File path="..\src\dquick\renderer2D\openGL\borderRectangle.frag" />
+     <File path="..\src\dquick\renderer2D\openGL\borderRectangle.vert" />
      <File path="..\src\dquick\renderer2D\openGL\borderRectangleShader.d" />
      <File path="..\src\dquick\renderer2D\openGL\borderRectangleVertices.d" />
      <File path="..\src\dquick\renderer2D\openGL\rectangle.d" />
+     <File path="..\src\dquick\renderer2D\openGL\rectangle.frag" />
+     <File path="..\src\dquick\renderer2D\openGL\rectangle.vert" />
     </Folder>
    </Folder>
    <Folder name="renderer3D">
