@@ -21,6 +21,7 @@
     <Externalconsole>True</Externalconsole>
     <Target>Executable</Target>
     <OutputName>../../../data/dquick-sample</OutputName>
+    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL</ExtraCompilerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -30,6 +31,7 @@
     <Externalconsole>True</Externalconsole>
     <Target>Executable</Target>
     <OutputName>../../../data/dquick-sample</OutputName>
+    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL</ExtraCompilerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -40,6 +42,7 @@
     <Externalconsole>True</Externalconsole>
     <Target>Executable</Target>
     <OutputName>../../../data/dquick-sample</OutputName>
+    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL</ExtraCompilerArguments>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\src\dquick\system\guiApplication.d">
@@ -287,6 +290,10 @@
     <Compile Include="..\src\dquick\system\win32\guiApplicationWin32.d" />
     <Compile Include="..\src\dquick\system\win32\openglContextWin32.d" />
     <Compile Include="..\src\dquick\maths\rect2s32.d" />
+    <Compile Include="..\src\dquick\item\scrollViewItem.d" />
+    <Compile Include="..\src\dquick\system\linux\fontconfig\fontconfig.d" />
+    <Compile Include="..\src\dquick\system\linux\fontconfig\functions.d" />
+    <Compile Include="..\src\dquick\system\linux\fontconfig\types.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dquick\" />
@@ -308,6 +315,7 @@
     <Folder Include="..\src\dquick\media\" />
     <Folder Include="..\src\dquick\algorithms\" />
     <Folder Include="..\src\dquick\system\win32\" />
+    <Folder Include="..\src\dquick\system\linux\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\dquick\system\dMain.def">
