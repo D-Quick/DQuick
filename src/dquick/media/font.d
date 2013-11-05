@@ -517,7 +517,7 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 	}
 	else
 	{
-		FcConfig*	config = FcInitLoadConfigAndFonts();
+/*		FcConfig*	config = FcInitLoadConfigAndFonts();
 
 		// configure the search pattern, 
 		// assume "name" is a std::string with the desired font name in it
@@ -538,7 +538,7 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 			FcPatternDestroy(font);
 		}		
 		FcPatternDestroy(pat);
-		return fontPath;
+		return fontPath;*/
 	}
 }
 
