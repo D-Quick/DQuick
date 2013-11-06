@@ -24,6 +24,7 @@ version(Windows)
 else version(linux)
 {
 	import dquick.system.linux.fontconfig.fontconfig;
+	import std.conv;
 }
 
 /**
@@ -515,30 +516,30 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 		}
 		return fontPath ~ fontFileName;
 	}
-	else
+	else version(linux)
 	{
-/*		FcConfig*	config = FcInitLoadConfigAndFonts();
+		FcConfig*	config = FcInitLoadConfigAndFonts();
 
 		// configure the search pattern, 
 		// assume "name" is a std::string with the desired font name in it
-		FcPattern* pat = FcNameParse((const FcChar8*)(name.c_str()));
-		FcConfigSubstitute(config, pat, FcMatchPattern);
+		FcPattern*	pat = FcNameParse(name.toStringz());
+		FcConfigSubstitute(config, pat, FcMatchKind.FcMatchPattern);
 		FcDefaultSubstitute(pat);
 
 		// find the font
-		FcPattern* font = FcFontMatch(config, pat, NULL);
+		FcPattern*	font = FcFontMatch(config, pat, null);
 		if (font)
 		{
-			FcChar8* file = NULL;
-			if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
+			FcChar8*	file = null;
+			if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.FcResultMatch)
 			{
 				// save the file to another std::string
-				fontPath = cast(char*)file;
+				fontPath = to!string(file);
 			}
 			FcPatternDestroy(font);
 		}		
 		FcPatternDestroy(pat);
-		return fontPath;*/
+		return fontPath;
 	}
 }
 

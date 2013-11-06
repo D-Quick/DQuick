@@ -25,10 +25,17 @@ class DerelictFontConfigLoader : SharedLibLoader
     {
         override void loadSymbols()
         {
-			bindFunc(cast(void**)&FcInit,		"FcInit");
-			bindFunc(cast(void**)&FcFini,		"FcFini");
-			bindFunc(cast(void**)&FcFontList,	"FcFontList");
-        }
+			bindFunc(cast(void**)&FcInit,					"FcInit");
+			bindFunc(cast(void**)&FcFini,					"FcFini");
+			bindFunc(cast(void**)&FcFontList,				"FcFontList");
+			bindFunc(cast(void**)&FcInitLoadConfigAndFonts,	"FcInitLoadConfigAndFonts");
+			bindFunc(cast(void**)&FcNameParse,				"FcNameParse");
+			bindFunc(cast(void**)&FcConfigSubstitute,		"FcConfigSubstitute");
+			bindFunc(cast(void**)&FcDefaultSubstitute,		"FcDefaultSubstitute");
+			bindFunc(cast(void**)&FcFontMatch,				"FcFontMatch");
+			bindFunc(cast(void**)&FcPatternGetString,		"FcPatternGetString");
+			bindFunc(cast(void**)&FcPatternDestroy,			"FcPatternDestroy");
+		}
     }
     public
     {
