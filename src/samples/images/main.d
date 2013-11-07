@@ -1,7 +1,7 @@
 module main;
 
-import dquick.system.gui_application;
-import dquick.item.image_item;
+import dquick.system.guiApplication;
+import dquick.item.imageItem;
 
 import std.file, std.stdio;
 import std.string;

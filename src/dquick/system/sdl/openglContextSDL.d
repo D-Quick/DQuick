@@ -1,4 +1,4 @@
-module dquick.system.sdl.opengl_context_sdl;
+module dquick.system.sdl.openglContextSdl;
 
 // TODO Import GL3 and migrate openGL demo code to a up to date code
 // Find a way to be restricted to openGL 2 (with upper opengl function declared)
@@ -13,7 +13,7 @@ import derelict.opengl3.gl;
 import derelict.opengl3.glx;
 import derelict.util.exception;
 
-import dquick.renderer_3d.opengl.renderer;
+import dquick.renderer3D.opengl.renderer;
 import dquick.maths.matrix4x4;
 import dquick.maths.vector2s32;
 

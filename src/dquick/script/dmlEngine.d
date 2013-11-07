@@ -1,14 +1,14 @@
-module dquick.script.dml_engine;
+module dquick.script.dmlEngine;
 
 import derelict.lua.lua;
 
-import dquick.item.declarative_item;
-import dquick.item.graphic_item;
-import dquick.item.image_item;
+import dquick.item.declarativeItem;
+import dquick.item.graphicItem;
+import dquick.item.imageItem;
 
 import dquick.system.window;
 
-import dquick.script.property_binding;
+import dquick.script.propertyBinding;
 import dquick.script.utils;
 
 import std.conv;
@@ -578,10 +578,10 @@ public:
 			throw new Exception(format("global \"%s\" is nil\n", name));
 
 		T	value;
-		static if (is(T : dquick.item.declarative_item.DeclarativeItem))
+		static if (is(T : dquick.item.declarativeItem.DeclarativeItem))
 		{
 			void*	itemBindingPtr;
-			itemBindingPtr = cast(void*)(dquick.script.utils.valueFromLua!(dquick.script.i_item_binding.IItemBinding)(mLuaState, -1));
+			itemBindingPtr = cast(void*)(dquick.script.utils.valueFromLua!(dquick.script.iItemBinding.IItemBinding)(mLuaState, -1));
 			if (itemBindingPtr is null)
 				return null;
 
@@ -601,7 +601,7 @@ public:
 
 	void	setLuaGlobal(T)(string name, T value)
 	{
-		static if (is(T : dquick.item.declarative_item.DeclarativeItem))
+		static if (is(T : dquick.item.declarativeItem.DeclarativeItem))
 		{
 			dquick.script.item_binding.ItemBinding!T itemBinding = registerItem!(T)(value);
 			dquick.script.utils.valueToLua!(dquick.script.item_binding.ItemBinding!T)(mLuaState, itemBinding);
@@ -661,7 +661,7 @@ private:
 		{
 			if (id in mIdToDeclarativeItems)
 				throw new Exception(format("an item with id \"%s\" already exist\n", id));
-			mIdToDeclarativeItems[id] = cast(dquick.script.i_item_binding.IItemBinding)itemBinding;
+			mIdToDeclarativeItems[id] = cast(dquick.script.iItemBinding.IItemBinding)itemBinding;
 		}
 
 		itemBinding.creating = false;
@@ -675,15 +675,15 @@ private:
 
 	struct ItemRefCounting
 	{
-		dquick.script.i_item_binding.IItemBinding	iItemBinding;
+		dquick.script.iItemBinding.IItemBinding	iItemBinding;
 		uint										count;
 	}
 	ItemRefCounting[DeclarativeItem]	mItemsToItemBindings;
-	dquick.script.i_item_binding.IItemBinding[void*]	mVoidToDeclarativeItems;
-	dquick.script.i_item_binding.IItemBinding[string]	mIdToDeclarativeItems;
+	dquick.script.iItemBinding.IItemBinding[void*]	mVoidToDeclarativeItems;
+	dquick.script.iItemBinding.IItemBinding[string]	mIdToDeclarativeItems;
 	lua_State*	mLuaState;
 	IWindow		mWindow;
-	package dquick.script.property_binding.PropertyBinding[]		currentlyExecutedBindingStack;
+	package dquick.script.propertyBinding.PropertyBinding[]		currentlyExecutedBindingStack;
 	string		itemTypeIds;
 	package alias TypeTuple!(int, float, string, bool, Object)	propertyTypes;
 	package bool	initializationPhase;
@@ -760,7 +760,7 @@ extern(C)
 						foreach (member; __traits(allMembers, typeof(itemBinding)))
 						{
 							//writefln("member = %s", member);
-							static if (is(typeof(__traits(getMember, itemBinding, member)) : dquick.script.property_binding.PropertyBinding))
+							static if (is(typeof(__traits(getMember, itemBinding, member)) : dquick.script.propertyBinding.PropertyBinding))
 							{
 								if (key == member)
 								{
@@ -896,7 +896,7 @@ extern(C)
 			// Search for property binding on the itemBinding
 			foreach (member; __traits(allMembers, typeof(itemBinding)))
 			{
-				static if (is(typeof(__traits(getMember, itemBinding, member)) : dquick.script.property_binding.PropertyBinding))
+				static if (is(typeof(__traits(getMember, itemBinding, member)) : dquick.script.propertyBinding.PropertyBinding))
 				{
 					if (propertyId == member)
 					{
@@ -987,7 +987,7 @@ extern(C)
 			bool	found = false;
 			foreach (member; __traits(allMembers, typeof(itemBinding)))
 			{
-				static if (is(typeof(__traits(getMember, itemBinding, member)) : dquick.script.property_binding.PropertyBinding))
+				static if (is(typeof(__traits(getMember, itemBinding, member)) : dquick.script.propertyBinding.PropertyBinding))
 				{
 					if (propertyId == member)
 					{

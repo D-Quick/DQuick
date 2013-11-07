@@ -1,6 +1,6 @@
 module dquick.item.window_item;
 
-import dquick.item.graphic_item;
+import dquick.item.graphicItem;
 
 /*class WindowItem : GraphicItem
 {

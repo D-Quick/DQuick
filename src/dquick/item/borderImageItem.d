@@ -1,9 +1,9 @@
-module dquick.item.border_image_item;
+module dquick.item.borderImageItem;
 
-import dquick.item.graphic_item;
+import dquick.item.graphicItem;
 
-import dquick.renderer_2d.opengl.border_rectangle_shader;
-import dquick.renderer_2d.opengl.border_rectangle_vertices;
+import dquick.renderer2D.opengl.borderRectangleShader;
+import dquick.renderer2D.opengl.borderRectangleVertices;
 
 import std.stdio;
 

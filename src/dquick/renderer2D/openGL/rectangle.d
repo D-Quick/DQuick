@@ -1,12 +1,12 @@
-module dquick.renderer_2d.opengl.rectangle;
+module dquick.renderer2D.opengl.rectangle;
 
-import dquick.renderer_3d.opengl.renderer;
-import dquick.renderer_3d.opengl.texture;
-import dquick.renderer_3d.opengl.shader;
-import dquick.renderer_3d.opengl.shader_program;
-import dquick.renderer_3d.opengl.vbo;
-import dquick.renderer_3d.opengl.util;
-import dquick.renderer_3d.opengl.mesh;
+import dquick.renderer3D.opengl.renderer;
+import dquick.renderer3D.opengl.texture;
+import dquick.renderer3D.opengl.shader;
+import dquick.renderer3D.opengl.shaderProgram;
+import dquick.renderer3D.opengl.vbo;
+import dquick.renderer3D.opengl.util;
+import dquick.renderer3D.opengl.mesh;
 
 import dquick.maths.color;
 import dquick.maths.vector2f32;
@@ -66,7 +66,7 @@ private:
 		Variant[] options;
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
-		mShader = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Shader("rectangle", options);
+		mShader = dquick.renderer3D.opengl.renderer.resourceManager.getResource!Shader("rectangle", options);
 		mShaderProgram.setProgram(mShader.getProgram());
 		mMesh.setShader(mShader);
 		mMesh.setShaderProgram(mShaderProgram);

@@ -1,6 +1,6 @@
-module dquick.item.declarative_item;
+module dquick.item.declarativeItem;
 
-public import dquick.events.mouse_event;
+public import dquick.events.mouseEvent;
 
 public import dquick.maths.matrix4x4;
 

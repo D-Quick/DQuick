@@ -8,8 +8,8 @@ import std.array;
 
 import derelict.lua.lua;
 
-import dquick.script.property_binding;
-import dquick.script.i_item_binding;
+import dquick.script.propertyBinding;
+import dquick.script.iItemBinding;
 
 class VirtualPropertyBinding : PropertyBinding
 {

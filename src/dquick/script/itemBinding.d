@@ -6,14 +6,14 @@ import std.string;
 import std.stdio;
 import std.signals;
 
-import dquick.item.declarative_item;
+import dquick.item.declarativeItem;
 import dquick.script.native_property_binding;
 import dquick.script.virtual_property_binding;
 import dquick.script.utils;
 
-class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
+class ItemBinding(T) : dquick.script.iItemBinding.IItemBinding {
 
-	this(dquick.script.dml_engine.DMLEngine dmlEngine, T item)
+	this(dquick.script.dmlEngine.DMLEngine dmlEngine, T item)
 	{
 		this.mDMLEngine = dmlEngine;
 		this.item = item;
@@ -21,7 +21,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 
 		foreach (member; __traits(allMembers, typeof(this)))
 		{
-			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding)) // Instantiate property binding
+			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding)) // Instantiate property binding
 			{
 				static if (__traits(hasMember, this, "____"~member~"ItemBinding")) // Instanciate subitem binding
 				{
@@ -64,7 +64,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 		}
 	}
 
-	this(dquick.script.dml_engine.DMLEngine dmlEngine)
+	this(dquick.script.dmlEngine.DMLEngine dmlEngine)
 	{
 		T item = new T;
 		this(dmlEngine, item);
@@ -74,7 +74,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 	{
 		foreach (member; __traits(allMembers, typeof(this)))
 		{
-			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding))
+			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 			{
 				assert(__traits(getMember, this, member) !is null);
 				.destroy(__traits(getMember, this, member));
@@ -84,13 +84,13 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 		.destroy(item);
 	}
 
-	override dquick.script.dml_engine.DMLEngine	dmlEngine() {return mDMLEngine;};
-	dquick.script.dml_engine.DMLEngine	mDMLEngine;
+	override dquick.script.dmlEngine.DMLEngine	dmlEngine() {return mDMLEngine;};
+	dquick.script.dmlEngine.DMLEngine	mDMLEngine;
 
 	T	item;
 	override DeclarativeItem	declarativeItem() {return item;}
 
-	//dquick.script.dml_engine.DMLEngine	dmlEngine()
+	//dquick.script.dmlEngine.DMLEngine	dmlEngine()
 	//{
 	//	return dmlEngine;
 	//}
@@ -99,7 +99,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 	{
 		foreach (member; __traits(allMembers, typeof(this)))
 		{
-			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding))
+			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 			{
 				assert(__traits(getMember, this, member) !is null);
 				__traits(getMember, this, member).executeBinding();
@@ -109,14 +109,14 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 			member.executeBinding();
 	}
 
-	static if (dquick.script.dml_engine.DMLEngine.showDebug)
+	static if (dquick.script.dmlEngine.DMLEngine.showDebug)
 	{
 		override string	displayDependents()
 		{
 			string	result;
 			foreach (member; __traits(allMembers, typeof(this)))
 			{
-				static if (is(typeof(__traits(getMember, this, member)) : dquick.script.property_binding.PropertyBinding))
+				static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 				{
 					assert(__traits(getMember, this, member) !is null);
 					result ~= format("%s\n", member);
@@ -246,7 +246,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 
 									//static if (member == "nativeSubItem")
 									//pragma(msg, member, " ", OriginalType!(ReturnType!(overload)));
-									static if (is(ReturnType!(overload) : dquick.item.declarative_item.DeclarativeItem))
+									static if (is(ReturnType!(overload) : dquick.item.declarativeItem.DeclarativeItem))
 									{
 										//pragma(msg, fullyQualifiedName!(dquick.script.item_binding.ItemBinding!(ReturnType!(overload))));
 
@@ -322,7 +322,7 @@ class ItemBinding(T) : dquick.script.i_item_binding.IItemBinding {
 
 		return result;
 	}
-	mixin(genProperties!(T, dquick.script.dml_engine.DMLEngine.propertyTypes));
+	mixin(genProperties!(T, dquick.script.dmlEngine.DMLEngine.propertyTypes));
 
 	VirtualPropertyBinding[string]	virtualProperties;
 }
