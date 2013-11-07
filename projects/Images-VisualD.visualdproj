@@ -197,7 +197,6 @@
     <File path="..\data\dml\transformations.lua" />
    </Folder>
   </Folder>
-  <File path="..\src\dquick\dquick.d" />
   <File path="..\src\samples\images\main.d" />
  </Folder>
 </DProject>

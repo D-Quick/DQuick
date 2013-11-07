@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Images", "projects\Images-VisualD.visualdproj", "{A02DE709-944A-4DC4-9964-E8A551410AAC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB} = {5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}
+	EndProjectSection
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "DQuick", "projects\DQuick-VisualD.visualdproj", "{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}"
 EndProject
