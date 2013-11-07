@@ -42,42 +42,9 @@ else version(linux)
 // TODO check kerning computation it doesn't seems working fine
 // TODO check glyph rendering quality
 
-shared static this()
-{
-	version(linux)
-	{
-		DerelictFontConfig.load();
-	}
-}
-
-shared static ~this()
-{
-	version(linux)
-	{
-		DerelictFontConfig.unload();
-	}
-}
-
 class FontManager
 {
 public:
-	static this()
-	{
-		version(linux)
-		{
-			if (FcInit() == FcFalse)
-				throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
-		}
-	}
-
-	static ~this()
-	{
-		version(linux)
-		{
-			FcFini();
-		}
-	}
-
 	ref Font	getFont(in string name, in Font.Family family, in int size)
 	{
 		string	fontKey;
@@ -449,14 +416,25 @@ struct Glyph
 
 shared static this()
 {
-	fontManager = new FontManager;
-
+	version(linux)
+	{
+		DerelictFontConfig.load();
+		if (FcInit() == FcFalse)
+			throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
+	}
 	DerelictFT.load();
+
+	fontManager = new FontManager;
 }
 
 shared static ~this()
 {
 	DerelictFT.unload();
+	version(linux)
+	{
+		FcFini();
+		DerelictFontConfig.unload();
+	}
 }
 
 /// Return the default font folder with an ending /
@@ -527,7 +505,8 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 		FcDefaultSubstitute(pat);
 
 		// find the font
-		FcPattern*	font = FcFontMatch(config, pat, null);
+		FcResult	result;
+		FcPattern*	font = FcFontMatch(config, pat, &result);
 		if (font)
 		{
 			FcChar8*	file = null;
