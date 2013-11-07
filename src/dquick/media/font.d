@@ -42,6 +42,8 @@ else version(linux)
 // TODO check kerning computation it doesn't seems working fine
 // TODO check glyph rendering quality
 
+// TODO test font config under Windows : http://www.gtk.org/download/win32.php
+
 class FontManager
 {
 public:
