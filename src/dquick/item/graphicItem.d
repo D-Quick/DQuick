@@ -5,7 +5,7 @@ public import dquick.maths.vector2f32;
 public import dquick.maths.vector4f32;
 public import dquick.maths.transformation;
 
-public import dquick.renderer3D.opengl.renderer;
+public import dquick.renderer3D.openGL.renderer;
 
 public import std.signals;
 import std.stdio;

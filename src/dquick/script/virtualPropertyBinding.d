@@ -1,4 +1,4 @@
-module dquick.script.virtual_property_binding;
+module dquick.script.virtualPropertyBinding;
 
 import std.variant;
 import std.conv;

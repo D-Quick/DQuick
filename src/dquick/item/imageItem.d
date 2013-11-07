@@ -2,7 +2,7 @@ module dquick.item.imageItem;
 
 import dquick.item.graphicItem;
 
-import dquick.renderer2D.opengl.rectangle;
+import dquick.renderer2D.openGL.rectangle;
 
 import std.stdio;
 

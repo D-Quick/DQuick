@@ -1,12 +1,12 @@
-module dquick.renderer3D.opengl.mesh;
+module dquick.renderer3D.openGL.mesh;
 
-import dquick.renderer3D.opengl.renderer;
-import dquick.renderer3D.opengl.texture;
-import dquick.renderer3D.opengl.shader;
-import dquick.renderer3D.opengl.shaderProgram;
-import dquick.renderer3D.opengl.vbo;
-import dquick.renderer3D.opengl.util;
-import dquick.renderer3D.opengl.renderer;
+import dquick.renderer3D.openGL.renderer;
+import dquick.renderer3D.openGL.texture;
+import dquick.renderer3D.openGL.shader;
+import dquick.renderer3D.openGL.shaderProgram;
+import dquick.renderer3D.openGL.VBO;
+import dquick.renderer3D.openGL.util;
+import dquick.renderer3D.openGL.renderer;
 
 import dquick.maths.color;
 
@@ -37,14 +37,14 @@ public:
 
 	bool	setTexture(string filePath)
 	{
-		mTexture = dquick.renderer3D.opengl.renderer.resourceManager.getResource!Texture(filePath);
+		mTexture = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Texture(filePath);
 		return true;
 	}
 	bool	setTexture(Image image)
 	{
 		Variant[] options;
 		options ~= Variant(image);
-		mTexture = dquick.renderer3D.opengl.renderer.resourceManager.getResource!Texture(image.filePath(), options);
+		mTexture = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Texture(image.filePath(), options);
 		return true;
 	}
 	bool	setTexture(Texture texture)
@@ -124,14 +124,14 @@ private:
 
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
-		mShader = dquick.renderer3D.opengl.renderer.resourceManager.getResource!Shader("rectangle", options);
+		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
 
 		mMDVInvertedMatrixUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_modelViewProjectionInvertedMatrix"));*/
 	}
 
 	void	destroy()
 	{
-		dquick.renderer3D.opengl.renderer.resourceManager.releaseResource(mTexture);
+		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
 		clear(indexes);
 		clear(vertices);

@@ -1,4 +1,4 @@
-module dquick.script.native_property_binding;
+module dquick.script.nativePropertyBinding;
 
 import std.stdio;
 import std.conv;
@@ -9,7 +9,7 @@ import derelict.lua.lua;
 
 import dquick.script.propertyBinding;
 import dquick.script.iItemBinding;
-import dquick.script.item_binding;
+import dquick.script.itemBinding;
 import dquick.script.utils;
 
 class NativePropertyBinding(ValueType, ItemType, string PropertyName) : PropertyBinding

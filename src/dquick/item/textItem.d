@@ -3,10 +3,10 @@ module dquick.item.textItem;
 import dquick.item.graphicItem;
 import dquick.media.font;
 import dquick.media.image;
-import dquick.renderer3D.opengl.mesh;
-import dquick.renderer3D.opengl.texture;
-import dquick.renderer3D.opengl.shader;
-import dquick.renderer3D.opengl.shaderProgram;
+import dquick.renderer3D.openGL.mesh;
+import dquick.renderer3D.openGL.texture;
+import dquick.renderer3D.openGL.shader;
+import dquick.renderer3D.openGL.shaderProgram;
 import dquick.maths.vector2s32;
 import dquick.maths.color;
 
@@ -47,7 +47,7 @@ public:
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
 		mShaderProgram = new ShaderProgram();
-		mShader = dquick.renderer3D.opengl.renderer.resourceManager.getResource!Shader("rectangle", options);
+		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
 		mShaderProgram.setProgram(mShader.getProgram());
 	}
 

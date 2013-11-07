@@ -8,7 +8,7 @@ import dquick.system.window;
 import dquick.maths.vector2s32;
 import dquick.maths.vector2f32;
 import dquick.system.sdl.openglContextSdl;
-import dquick.renderer3D.opengl.renderer;
+import dquick.renderer3D.openGL.renderer;
 import dquick.events.mouseEvent;
 import dquick.item.imageItem;
 import dquick.item.textItem;

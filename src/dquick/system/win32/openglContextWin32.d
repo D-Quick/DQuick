@@ -18,7 +18,7 @@ version (Windows)
 	import derelict.opengl3.wgl;
 	import derelict.opengl3.gl;
 
-	import dquick.renderer3D.opengl.renderer;
+	import dquick.renderer3D.openGL.renderer;
 	import dquick.maths.matrix4x4;
 	import dquick.maths.vector2s32;
 

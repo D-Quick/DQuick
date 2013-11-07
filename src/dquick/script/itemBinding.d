@@ -1,4 +1,4 @@
-module dquick.script.item_binding;
+module dquick.script.itemBinding;
 
 import std.traits;
 import std.typetuple;
@@ -7,8 +7,8 @@ import std.stdio;
 import std.signals;
 
 import dquick.item.declarativeItem;
-import dquick.script.native_property_binding;
-import dquick.script.virtual_property_binding;
+import dquick.script.nativePropertyBinding;
+import dquick.script.virtualPropertyBinding;
 import dquick.script.utils;
 
 class ItemBinding(T) : dquick.script.iItemBinding.IItemBinding {
@@ -248,7 +248,7 @@ class ItemBinding(T) : dquick.script.iItemBinding.IItemBinding {
 									//pragma(msg, member, " ", OriginalType!(ReturnType!(overload)));
 									static if (is(ReturnType!(overload) : dquick.item.declarativeItem.DeclarativeItem))
 									{
-										//pragma(msg, fullyQualifiedName!(dquick.script.item_binding.ItemBinding!(ReturnType!(overload))));
+										//pragma(msg, fullyQualifiedName!(dquick.script.itemBinding.ItemBinding!(ReturnType!(overload))));
 
 										result ~= format("void															__%s(%s value) {
 																if (!(value is null && ____%sItemBinding is null) && !(____%sItemBinding && value is ____%sItemBinding.item))
@@ -271,13 +271,13 @@ class ItemBinding(T) : dquick.script.iItemBinding.IItemBinding {
 														 member,
 														 getSignalNameFromPropertyName(member~"ItemBinding"), member);	// Item Signal
 
-										result ~= format("dquick.script.item_binding.ItemBinding!(%s)					____%sItemBinding;\n", fullyQualifiedName2!(ReturnType!(overload)), member); // ItemBinding
-										result ~= format("dquick.script.item_binding.ItemBinding!(%s)					__%sItemBinding() {
+										result ~= format("dquick.script.itemBinding.ItemBinding!(%s)					____%sItemBinding;\n", fullyQualifiedName2!(ReturnType!(overload)), member); // ItemBinding
+										result ~= format("dquick.script.itemBinding.ItemBinding!(%s)					__%sItemBinding() {
 																return ____%sItemBinding;
 														 }",
 														 fullyQualifiedName2!(ReturnType!(overload)), member,
 														 member); // ItemBinding Getter
-										result ~= format("void															__%sItemBinding(dquick.script.item_binding.ItemBinding!(%s) value) {
+										result ~= format("void															__%sItemBinding(dquick.script.itemBinding.ItemBinding!(%s) value) {
 																if (value != ____%sItemBinding)
 																{
 																	if (____%sItemBinding !is null)
@@ -305,12 +305,12 @@ class ItemBinding(T) : dquick.script.iItemBinding.IItemBinding {
 															member,
 															member,
 															getSignalNameFromPropertyName(member~"ItemBinding"));	// ItemBinding Setter
-										result ~= format("mixin Signal!(dquick.script.item_binding.ItemBinding!(%s))	__%s;", fullyQualifiedName2!(ReturnType!(overload)), getSignalNameFromPropertyName(member~"ItemBinding"));
+										result ~= format("mixin Signal!(dquick.script.itemBinding.ItemBinding!(%s))	__%s;", fullyQualifiedName2!(ReturnType!(overload)), getSignalNameFromPropertyName(member~"ItemBinding"));
 
-										result ~= format("dquick.script.native_property_binding.NativePropertyBinding!(dquick.script.item_binding.ItemBinding!(%s), dquick.script.item_binding.ItemBinding!T, \"__%sItemBinding\")	%s;\n", fullyQualifiedName2!(ReturnType!(overload)), member, member);
+										result ~= format("dquick.script.nativePropertyBinding.NativePropertyBinding!(dquick.script.itemBinding.ItemBinding!(%s), dquick.script.itemBinding.ItemBinding!T, \"__%sItemBinding\")	%s;\n", fullyQualifiedName2!(ReturnType!(overload)), member, member);
 									}
 									else
-										result ~= format("dquick.script.native_property_binding.NativePropertyBinding!(%s, T, \"%s\")\t%s;\n", fullyQualifiedName2!(ReturnType!(overload)), member, member);
+										result ~= format("dquick.script.nativePropertyBinding.NativePropertyBinding!(%s, T, \"%s\")\t%s;\n", fullyQualifiedName2!(ReturnType!(overload)), member, member);
 								}
 							}
 						}

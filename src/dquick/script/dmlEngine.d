@@ -429,7 +429,7 @@ public:
 			{
 				// Call metamethod to instanciate type
 				lua_pushstring(mLuaState, "__call");
-				lua_pushcfunction(mLuaState, cast(lua_CFunction)&createLuaBind!(dquick.script.item_binding.ItemBinding!(type)));
+				lua_pushcfunction(mLuaState, cast(lua_CFunction)&createLuaBind!(dquick.script.itemBinding.ItemBinding!(type)));
 				lua_settable(mLuaState, -3);
 			}
 			lua_setmetatable(mLuaState, -2);
@@ -452,7 +452,7 @@ public:
 		static if (is(T : DeclarativeItem))
 			object.id = luaName;
 
-		dquick.script.item_binding.ItemBinding!T	itemBinding = registerItem!T(object);
+		dquick.script.itemBinding.ItemBinding!T	itemBinding = registerItem!T(object);
 		setLuaGlobal(luaName, object);
 	}
 
@@ -603,8 +603,8 @@ public:
 	{
 		static if (is(T : dquick.item.declarativeItem.DeclarativeItem))
 		{
-			dquick.script.item_binding.ItemBinding!T itemBinding = registerItem!(T)(value);
-			dquick.script.utils.valueToLua!(dquick.script.item_binding.ItemBinding!T)(mLuaState, itemBinding);
+			dquick.script.itemBinding.ItemBinding!T itemBinding = registerItem!(T)(value);
+			dquick.script.utils.valueToLua!(dquick.script.itemBinding.ItemBinding!T)(mLuaState, itemBinding);
 		}
 		else
 		{
@@ -617,19 +617,19 @@ public:
 	static immutable bool showDebug = 0;
 private:
 
-	dquick.script.item_binding.ItemBinding!T	registerItem(T)(T item)
+	dquick.script.itemBinding.ItemBinding!T	registerItem(T)(T item)
 	{
 		auto	refCountPtr = item in mItemsToItemBindings;
 		if (refCountPtr !is null)
 		{
 			refCountPtr.count++;
-			return cast(dquick.script.item_binding.ItemBinding!T)refCountPtr.iItemBinding;
+			return cast(dquick.script.itemBinding.ItemBinding!T)refCountPtr.iItemBinding;
 		}
 
-		dquick.script.item_binding.ItemBinding!T	itemBinding = new dquick.script.item_binding.ItemBinding!T(this, item);
+		dquick.script.itemBinding.ItemBinding!T	itemBinding = new dquick.script.itemBinding.ItemBinding!T(this, item);
 		//static if (is(T : DeclarativeItem))
 		//	itemBinding.item.id = luaName;
-		addObjectBinding!(dquick.script.item_binding.ItemBinding!T)(itemBinding, "");
+		addObjectBinding!(dquick.script.itemBinding.ItemBinding!T)(itemBinding, "");
 
 		ItemRefCounting	newRefCount;
 		newRefCount.count = 1;
@@ -793,11 +793,11 @@ extern(C)
 
 								if (lua_isfunction(L, -1))
 								{
-									dquick.script.virtual_property_binding.VirtualPropertyBinding virtualProperty;
+									dquick.script.virtualPropertyBinding.VirtualPropertyBinding virtualProperty;
 									auto virtualPropertyPtr = (propertyName in itemBinding.virtualProperties);
 									if (!virtualPropertyPtr)
 									{
-										virtualProperty = new dquick.script.virtual_property_binding.VirtualPropertyBinding(itemBinding, propertyName);
+										virtualProperty = new dquick.script.virtualPropertyBinding.VirtualPropertyBinding(itemBinding, propertyName);
 										itemBinding.virtualProperties[propertyName] = virtualProperty;
 									}
 									else
@@ -812,11 +812,11 @@ extern(C)
 							}
 							else
 							{
-								dquick.script.virtual_property_binding.VirtualPropertyBinding virtualProperty;
+								dquick.script.virtualPropertyBinding.VirtualPropertyBinding virtualProperty;
 								auto virtualPropertyPtr = (key in itemBinding.virtualProperties);
 								if (!virtualPropertyPtr)
 								{
-									virtualProperty = new dquick.script.virtual_property_binding.VirtualPropertyBinding(itemBinding, key);
+									virtualProperty = new dquick.script.virtualPropertyBinding.VirtualPropertyBinding(itemBinding, key);
 									itemBinding.virtualProperties[key] = virtualProperty;
 								}
 								else
@@ -1063,7 +1063,7 @@ extern(C)
 
 			auto	iItemBinding = itemBindingPtr in dmlEngine.mVoidToDeclarativeItems;
 			assert(iItemBinding !is null);
-			dquick.script.item_binding.ItemBinding!T	itemBinding = cast(dquick.script.item_binding.ItemBinding!T)(*iItemBinding);
+			dquick.script.itemBinding.ItemBinding!T	itemBinding = cast(dquick.script.itemBinding.ItemBinding!T)(*iItemBinding);
 
 			int test = lua_gettop(L);
 			luaCallThisD!(methodName, T)(itemBinding.item, L, 1);

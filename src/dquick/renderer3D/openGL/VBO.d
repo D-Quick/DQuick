@@ -1,6 +1,6 @@
-module dquick.renderer3D.opengl.vbo;
+module dquick.renderer3D.openGL.VBO;
 
-import dquick.renderer3D.opengl.util;
+import dquick.renderer3D.openGL.util;
 import dquick.utils.resourceManager;
 
 import derelict.opengl3.gl;

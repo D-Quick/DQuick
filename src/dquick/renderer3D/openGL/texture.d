@@ -1,6 +1,6 @@
-module dquick.renderer3D.opengl.texture;
+module dquick.renderer3D.openGL.texture;
 
-import dquick.renderer3D.opengl.util;
+import dquick.renderer3D.openGL.util;
 import dquick.media.image;
 import dquick.maths.vector2s32;
 import dquick.utils.resourceManager;

@@ -1,8 +1,8 @@
-module dquick.renderer3D.opengl.renderer;
+module dquick.renderer3D.openGL.renderer;
 
 public import derelict.opengl3.gl;
 
-import dquick.renderer3D.opengl.util;
+import dquick.renderer3D.openGL.util;
 import dquick.maths.matrix4x4;
 import dquick.maths.vector2s32;
 import dquick.utils.resourceManager;

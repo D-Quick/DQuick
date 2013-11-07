@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-module dquick.renderer3D.opengl.util;
+module dquick.renderer3D.openGL.util;
 
 private {
     import derelict.opengl3.gl;
