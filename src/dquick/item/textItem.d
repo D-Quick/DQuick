@@ -42,8 +42,12 @@ public:
 
 	this()
 	{
+		Variant[] options;
+
+		options ~= Variant(import("rectangle.vert"));
+		options ~= Variant(import("rectangle.frag"));
 		mShaderProgram = new ShaderProgram();
-		mShader = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Shader("dquick/shaders/rectangle");
+		mShader = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Shader("rectangle", options);
 		mShaderProgram.setProgram(mShader.getProgram());
 	}
 
@@ -259,9 +263,8 @@ private:
 								pos.x = pos.x + font.kerning(prevCharCode, charCode).x;
 						}
 
-						switch (mWrapMode)
+						final switch (mWrapMode)
 						{
-							default:					// Default == NoWrap
 							case WrapMode.NoWrap:		// (default) No wrapping will be performed. If the text contains insufficient newlines, then contentWidth will exceed a set width.
 								break;
 							case WrapMode.Wrap:			// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
@@ -272,7 +275,7 @@ private:
 									if (advance > mSize.x && lines[$ - 1].size.x + pos.x + glyph.advance.x > mSize.x)	// word is longuer than item width, so we cut it (works if a word need to be written on multiple line)
 										startNewLine(wordIndex);
 								}
-								//break;	// At this point we are compatible with the WordWrap mode (that why break isn't necessary)
+								goto case WrapMode.WordWrap;	// At this point we are compatible with the WordWrap mode (that why break isn't necessary)
 							case WrapMode.WordWrap:		// Wrapping is done on word boundaries only. If a word is too long, contentWidth will exceed a set width.
 								if (wordIndex != previousWordIndex)
 								{

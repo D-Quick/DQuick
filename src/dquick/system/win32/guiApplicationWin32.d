@@ -432,21 +432,25 @@ version (Windows)
 				case WM_LBUTTONDOWN:
 					mouseEvent.pressed = true;
 					mouseEvent.buttons = MouseEvent.Buttons.Left;
+					SetCapture(hWnd);
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_LBUTTONUP:
 					mouseEvent.released = true;
 					mouseEvent.buttons = MouseEvent.Buttons.Left;
+					ReleaseCapture();
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONDOWN:
 					mouseEvent.pressed = true;
 					mouseEvent.buttons = MouseEvent.Buttons.Right;
+					SetCapture(hWnd);
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONUP:
 					mouseEvent.released = true;
 					mouseEvent.buttons = MouseEvent.Buttons.Right;
+					ReleaseCapture();
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 
@@ -469,6 +473,8 @@ version (Windows)
 		HWND	GetDesktopWindow();
 		LONG	ChangeDisplaySettingsA(DEVMODE *lpDevMode, DWORD dwflags);
 		BOOL	MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
+		HWND	SetCapture(HWND hWnd);
+		BOOL	ReleaseCapture();
 
 		int	GET_X_LPARAM(LPARAM lParam) { return cast(int)(cast(short)LOWORD(lParam)); }
 		int	GET_Y_LPARAM(LPARAM lParam) { return cast(int)(cast(short)HIWORD(lParam)); }

@@ -221,10 +221,10 @@ unittest
 			imageAtlas.fill(color, Vector2s32(region.x, region.y), Vector2s32(region.width, region.height));
 
 			// Uncomment it to generate the code of the result Image
-/*			writeln(format("\texpectedResult.fill(Color(%0.1f, %0.1f, %0.1f), Vector2s32(%3d, %3d), Vector2s32(%3d, %3d));",
+/*			writefln("\texpectedResult.fill(Color(%0.1f, %0.1f, %0.1f), Vector2s32(%3d, %3d), Vector2s32(%3d, %3d));",
 						   color.x, color.y, color.z,
 						   region.x, region.y,
-						   size.x, size.y));*/
+						   size.x, size.y);*/
 		}
 	}
 

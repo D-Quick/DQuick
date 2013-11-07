@@ -114,10 +114,13 @@ private:
 		if (mMesh)
 			return;
 
+		Variant[] options;
+
+		options ~= Variant(import("rectangle.vert"));
+		options ~= Variant(import("rectangle.frag"));
 		mMesh = new Mesh();
 		mShaderProgram = new ShaderProgram();
-
-		mShader = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Shader("dquick/shaders/rectangle");
+		mShader = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Shader("rectangle", options);
 		mShaderProgram.setProgram(mShader.getProgram());
 		mMesh.setShader(mShader);
 		mMesh.setShaderProgram(mShaderProgram);
@@ -141,7 +144,7 @@ private:
 	{
 		Vector2s32	result;
 
-		switch (mHorizontalTileMode)
+		final switch (mHorizontalTileMode)
 		{
 		case TileMode.Stretch:
 			result.x = 1;
@@ -152,12 +155,9 @@ private:
 		case TileMode.Round:
 			result.x = cast(int)floor(cast(float)(mSize.x - mLeftBorder - mRightBorder) / cast(float)(mMesh.texture().size().x  - mLeftBorder - mRightBorder));
 			break;
-		default:
-			assert(false);
-			result.x = 1;
 		}
 
-		switch (mVerticalTileMode)
+		final switch (mVerticalTileMode)
 		{
 		case TileMode.Stretch:
 			result.x = 1;
@@ -168,9 +168,6 @@ private:
 		case TileMode.Round:
 			result.y = cast(int)floor(cast(float)(mSize.y - mTopBorder - mBottomBorder) / cast(float)(mMesh.texture().size().y  - mTopBorder - mBottomBorder));
 			break;
-		default:
-			assert(false);
-			result.y = 1;
 		}
 
 		return result;

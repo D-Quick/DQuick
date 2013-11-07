@@ -42,7 +42,7 @@ public:
 		// TODO see how to limit the number of types and doing something smarter
 		foreach (parameter; mParameters)
 		{
-			switch (parameter.type)
+			final switch (parameter.type)
 			{
 				case ParameterType.Int:
 					glUniform1i(parameter.id, *(cast(int*)parameter.values));
@@ -55,9 +55,6 @@ public:
 					break;
 				case ParameterType.Matrix4f:
 					glUniformMatrix4fv(parameter.id, 1, false, cast(float*)parameter.values);
-					break;
-				default:
-					assert(false);
 					break;
 			}
 		}
