@@ -1,11 +1,11 @@
-module dquick.item.graphic_item;
+module dquick.item.graphicItem;
 
-public import dquick.item.declarative_item;
+public import dquick.item.declarativeItem;
 public import dquick.maths.vector2f32;
 public import dquick.maths.vector4f32;
 public import dquick.maths.transformation;
 
-public import dquick.renderer_3d.opengl.renderer;
+public import dquick.renderer3D.openGL.renderer;
 
 public import std.signals;
 import std.stdio;

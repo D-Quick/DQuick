@@ -1,7 +1,7 @@
-module dquick.script.i_item_binding;
+module dquick.script.iItemBinding;
 
-import dquick.item.declarative_item;
-import dquick.script.dml_engine;
+import dquick.item.declarativeItem;
+import dquick.script.dmlEngine;
 
 class IItemBinding {
 
@@ -9,7 +9,7 @@ class IItemBinding {
 	{
 		creating = true;
 	}
-	dquick.script.dml_engine.DMLEngine	dmlEngine() {return null;}
+	dquick.script.dmlEngine.DMLEngine	dmlEngine() {return null;}
 	DeclarativeItem	declarativeItem() {return null;}
 	void	executeBindings() {};
 	string	displayDependents() {return "";};

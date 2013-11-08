@@ -1,4 +1,4 @@
-module dquick.utils.resource_manager;
+module dquick.utils.resourceManager;
 
 import std.string;
 import std.stdio;

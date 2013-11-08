@@ -1,12 +1,18 @@
 module main;
 
-import dquick.system.gui_application;
-import dquick.item.image_item;
+import dquick.system.guiApplication;
+import dquick.item.imageItem;
 
 import std.file, std.stdio;
 import std.string;
 import std.path;
 import std.exception;
+
+version(Posix)
+{
+	// TODO remove that, it's normally linked with DQuick
+	pragma(lib, "dl");	// dl functions aren't linked by default with dmd
+}
 
 int main(string[] args)
 {

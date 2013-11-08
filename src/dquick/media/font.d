@@ -503,12 +503,17 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 		// configure the search pattern, 
 		// assume "name" is a std::string with the desired font name in it
 		FcPattern*	pat = FcNameParse(name.toStringz());
+
+		scope(exit) FcPatternDestroy(pat);
+
 		FcConfigSubstitute(config, pat, FcMatchKind.FcMatchPattern);
 		FcDefaultSubstitute(pat);
 
 		// find the font
 		FcResult	result;
 		FcPattern*	font = FcFontMatch(config, pat, &result);
+
+		scope(exit) FcPatternDestroy(font);
 		if (font)
 		{
 			FcChar8*	file = null;
@@ -517,9 +522,7 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 				// save the file to another std::string
 				fontPath = to!string(file);
 			}
-			FcPatternDestroy(font);
 		}		
-		FcPatternDestroy(pat);
 		return fontPath;
 	}
 }

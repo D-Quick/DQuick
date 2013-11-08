@@ -1,4 +1,4 @@
-module dquick.script.property_binding;
+module dquick.script.propertyBinding;
 
 import std.algorithm;
 import std.file, std.stdio;
@@ -8,8 +8,8 @@ import std.array;
 
 import derelict.lua.lua;
 
-import dquick.script.dml_engine;
-import dquick.script.i_item_binding;
+import dquick.script.dmlEngine;
+import dquick.script.iItemBinding;
 
 class PropertyBinding
 {
@@ -42,7 +42,7 @@ class PropertyBinding
 
 	byte	dirty;
 
-	dquick.script.i_item_binding.IItemBinding itemBinding;
+	dquick.script.iItemBinding.IItemBinding itemBinding;
 
 	string	propertyName;
 	this(IItemBinding itemBinding, string propertyName)
@@ -91,7 +91,7 @@ class PropertyBinding
 				return;
 			}
 
-			static if (dquick.script.dml_engine.DMLEngine.showDebug)
+			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
 			{
 				writefln("%s%s.%s.executeBinding {", replicate("|\t", itemBinding.dmlEngine.lvl++), itemBinding.declarativeItem.id, propertyName);
 				scope(exit)
@@ -136,7 +136,7 @@ class PropertyBinding
 			}
 			scope(exit) lua_pop(itemBinding.dmlEngine.luaState(), lua_gettop(itemBinding.dmlEngine.luaState()) - top);
 
-			static if (dquick.script.dml_engine.DMLEngine.showDebug)
+			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
 			{
 				foreach (dependency; dependencies)
 					writefln("%s dependent of %s.%s", replicate("|\t", itemBinding.dmlEngine.lvl), itemBinding.declarativeItem.id, dependency.propertyName);
@@ -162,7 +162,7 @@ class PropertyBinding
 			itemBinding.dmlEngine.execute(slotLuaReference);
 		if (itemBinding.dmlEngine.initializationPhase == false)
 		{
-			static if (dquick.script.dml_engine.DMLEngine.showDebug)
+			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
 			{
 				writefln("%s%s.%s.onChanged {", replicate("|\t", itemBinding.dmlEngine.lvl++), itemBinding.declarativeItem.id, propertyName);
 				scope(exit)
