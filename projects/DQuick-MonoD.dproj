@@ -22,7 +22,7 @@
     <OutputPath>bin\Debug</OutputPath>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <UnittestMode>false</UnittestMode>
-    <OutputName>libDQuick-MonoD</OutputName>
+    <OutputName>libDQuick</OutputName>
     <Target>StaticLibrary</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
@@ -33,24 +33,35 @@
     <OutputPath>bin\Release</OutputPath>
     <Externalconsole>true</Externalconsole>
     <Target>StaticLibrary</Target>
-    <OutputName>libDQuick-MonoD</OutputName>
+    <OutputName>libDQuick</OutputName>
     <UnittestMode>false</UnittestMode>
     <ObjectsDirectory>obj/Release</ObjectsDirectory>
     <DebugLevel>0</DebugLevel>
     <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL
 </ExtraCompilerArguments>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Unittest|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Unittest</OutputPath>
-    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
-    <UnittestMode>true</UnittestMode>
-    <OutputName>libDQuick-MonoD</OutputName>
-    <Target>StaticLibrary</Target>
-    <Externalconsole>true</Externalconsole>
-    <DebugLevel>0</DebugLevel>
+    <OutputPath>bin\Debug</OutputPath>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL
 </ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>DQuick</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Unittest|AnyCPU' ">
+    <OutputPath>bin\Release</OutputPath>
+    <ObjectsDirectory>obj/Release</ObjectsDirectory>
+    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL
+</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>DQuick</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="..\src\dquick\maths\" />
@@ -531,6 +542,9 @@
     </Compile>
     <Compile Include="..\src\dquick\utils\resourceManager.d">
       <Link>dquick\utils\resourceManager.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\main.d">
+      <Link>dquick\main.d</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

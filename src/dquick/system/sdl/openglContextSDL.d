@@ -17,11 +17,6 @@ import dquick.renderer3D.openGL.renderer;
 import dquick.maths.matrix4x4;
 import dquick.maths.vector2s32;
 
-version(Posix)
-{
-	pragma (lib, "dl");	// Here we do some dynamic libraries loading with derliect and dl function aren't linked by default
-}
-
 import derelict.sdl2.sdl;
 
 class OpenGLContextSDL

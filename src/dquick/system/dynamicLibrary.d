@@ -11,7 +11,7 @@ version (Windows)
 else
 {
 	private import std.c.linux.linux;
-	pragma (lib, "dl");	// dl functions aren't linked by default with dmd
+	pragma(lib, "dl");	// dl functions aren't linked by default with dmd
 }
 
 class DynamicLibrary

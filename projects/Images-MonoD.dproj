@@ -43,16 +43,6 @@
     <Target>Executable</Target>
     <OutputName>../../../data/dquick-sample</OutputName>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <OutputPath>bin\Unittest</OutputPath>
-    <UnittestMode>True</UnittestMode>
-    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
-    <DebugLevel>0</DebugLevel>
-    <Externalconsole>True</Externalconsole>
-    <Target>Executable</Target>
-    <OutputName>../../../data/dquick-sample</OutputName>
-  </PropertyGroup>
   <ItemGroup>
     <Folder Include="..\src\images\" />
   </ItemGroup>
