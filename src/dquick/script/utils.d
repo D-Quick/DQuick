@@ -118,7 +118,7 @@ T	valueFromLua(T)(lua_State* L, int index)
 			throw new Exception(format("Lua value at index %d is a \"%s\", a string was expected\n", index, getLuaTypeName(L, index)));
 		value = to!(string)(lua_tostring(L, index));
 	}
-	else static if (is(T : dquick.script.i_item_binding.IItemBinding))
+	else static if (is(T : dquick.script.iItemBinding.IItemBinding))
 	{
 		if (lua_isnil(L, index))
 			value = null;
@@ -160,7 +160,7 @@ void	valueToLua(T)(lua_State* L, T value)
 		lua_pushstring(L, value.toStringz());
 	else static if (is(T == bool))
 		lua_pushboolean(L, value);
-	else static if (is(T : dquick.script.i_item_binding.IItemBinding))
+	else static if (is(T : dquick.script.iItemBinding.IItemBinding))
 	{
 		// Create a userdata that contains instance ptr and make it a global for user access
 		// It also contains a metatable for the member read and write acces
@@ -171,10 +171,10 @@ void	valueToLua(T)(lua_State* L, T value)
 		lua_newtable(L);
 
 		lua_pushstring(L, "__index");
-		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dml_engine.indexLuaBind!T);
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngine.indexLuaBind!T);
 		lua_settable(L, -3);
 		lua_pushstring(L, "__newindex");
-		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dml_engine.newindexLuaBind!T);
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngine.newindexLuaBind!T);
 		lua_settable(L, -3);
 
 		lua_setmetatable(L, -2);

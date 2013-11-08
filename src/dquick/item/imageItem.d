@@ -1,8 +1,8 @@
-module dquick.item.image_item;
+module dquick.item.imageItem;
 
-import dquick.item.graphic_item;
+import dquick.item.graphicItem;
 
-import dquick.renderer_2d.opengl.rectangle;
+import dquick.renderer2D.openGL.rectangle;
 
 import std.stdio;
 

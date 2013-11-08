@@ -1,8 +1,8 @@
-module dquick.item.scroll_view_item;
+module dquick.item.scrollViewItem;
 
-import dquick.item.declarative_item;
-import dquick.item.mouse_area_item;
-import dquick.item.graphic_item;
+import dquick.item.declarativeItem;
+import dquick.item.mouseAreaItem;
+import dquick.item.graphicItem;
 
 import dquick.maths.vector2f32;
 

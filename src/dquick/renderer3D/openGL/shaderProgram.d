@@ -1,6 +1,6 @@
-module dquick.renderer_3d.opengl.shader_program;
+module dquick.renderer3D.openGL.shaderProgram;
 
-import dquick.renderer_3d.opengl.util;
+import dquick.renderer3D.openGL.util;
 
 import derelict.opengl3.gl;
 

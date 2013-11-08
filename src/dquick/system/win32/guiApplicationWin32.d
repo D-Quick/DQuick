@@ -1,18 +1,18 @@
-module dquick.system.win32.gui_application;
+module dquick.system.win32.guiApplicationWin32;
 
 version (Windows)
 {
-	import dquick.system.gui_application;
-	import dquick.item.declarative_item;
-	import dquick.item.graphic_item;
+	import dquick.system.guiApplication;
+	import dquick.item.declarativeItem;
+	import dquick.item.graphicItem;
 	import dquick.system.window;
 	import dquick.maths.vector2s32;
-	import dquick.item.image_item;
-	import dquick.item.text_item;
-	import dquick.item.border_image_item;
-	import dquick.item.mouse_area_item;
-	import dquick.item.scroll_view_item;
-	import dquick.script.dml_engine;
+	import dquick.item.imageItem;
+	import dquick.item.textItem;
+	import dquick.item.borderImageItem;
+	import dquick.item.mouseAreaItem;
+	import dquick.item.scrollViewItem;
+	import dquick.script.dmlEngine;
 
 	import std.stdio;
 	import std.c.stdlib;
@@ -24,7 +24,27 @@ version (Windows)
 	import std.c.windows.windows;
 	pragma(lib, "gdi32.lib");
 
-	import dquick.system.win32.opengl_context;
+	import dquick.system.win32.openglContextWin32;
+
+	import derelict.sdl2.sdl;
+	import derelict.sdl2.image;
+	import derelict.lua.lua;
+
+	shared static this()
+	{
+		DerelictSDL2.load();
+		DerelictSDL2Image.load();
+		DerelictGL.load();
+		DerelictLua.load();
+	}
+
+	shared static ~this()
+	{
+		DerelictLua.unload();
+		DerelictGL.unload();
+		DerelictSDL2Image.unload();
+		DerelictSDL2.unload();
+	}
 
 	class GuiApplication : IGuiApplication
 	{

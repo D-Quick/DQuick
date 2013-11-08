@@ -1,12 +1,12 @@
-module dquick.renderer_3d.opengl.mesh;
+module dquick.renderer3D.openGL.mesh;
 
-import dquick.renderer_3d.opengl.renderer;
-import dquick.renderer_3d.opengl.texture;
-import dquick.renderer_3d.opengl.shader;
-import dquick.renderer_3d.opengl.shader_program;
-import dquick.renderer_3d.opengl.vbo;
-import dquick.renderer_3d.opengl.util;
-import dquick.renderer_3d.opengl.renderer;
+import dquick.renderer3D.openGL.renderer;
+import dquick.renderer3D.openGL.texture;
+import dquick.renderer3D.openGL.shader;
+import dquick.renderer3D.openGL.shaderProgram;
+import dquick.renderer3D.openGL.VBO;
+import dquick.renderer3D.openGL.util;
+import dquick.renderer3D.openGL.renderer;
 
 import dquick.maths.color;
 
@@ -37,14 +37,14 @@ public:
 
 	bool	setTexture(string filePath)
 	{
-		mTexture = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Texture(filePath);
+		mTexture = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Texture(filePath);
 		return true;
 	}
 	bool	setTexture(Image image)
 	{
 		Variant[] options;
 		options ~= Variant(image);
-		mTexture = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Texture(image.filePath(), options);
+		mTexture = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Texture(image.filePath(), options);
 		return true;
 	}
 	bool	setTexture(Texture texture)
@@ -124,14 +124,14 @@ private:
 
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
-		mShader = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Shader("rectangle", options);
+		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
 
 		mMDVInvertedMatrixUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_modelViewProjectionInvertedMatrix"));*/
 	}
 
 	void	destroy()
 	{
-		dquick.renderer_3d.opengl.renderer.resourceManager.releaseResource(mTexture);
+		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
 		clear(indexes);
 		clear(vertices);

@@ -1,4 +1,4 @@
-module dquick.system.win32.opengl_context;
+module dquick.system.win32.openglContextWin32;
 
 // TODO Import GL3 and migrate openGL demo code to a up to date code
 // Find a way to be restricted to openGL 2 (with upper opengl function declared)
@@ -18,7 +18,7 @@ version (Windows)
 	import derelict.opengl3.wgl;
 	import derelict.opengl3.gl;
 
-	import dquick.renderer_3d.opengl.renderer;
+	import dquick.renderer3D.openGL.renderer;
 	import dquick.maths.matrix4x4;
 	import dquick.maths.vector2s32;
 
