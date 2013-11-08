@@ -20,7 +20,7 @@ import std.traits;
 import std.typetuple;
 import std.c.string;
 
-version(unittest)
+version (unittest)
 {
 	class SubItem : DeclarativeItem
 	{

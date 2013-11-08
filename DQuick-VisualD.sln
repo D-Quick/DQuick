@@ -10,16 +10,24 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "DQuick", "projects\DQuick-V
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug Unittest|Win32 = Debug Unittest|Win32
 		Debug|Win32 = Debug|Win32
+		Release Unittest|Win32 = Release Unittest|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A02DE709-944A-4DC4-9964-E8A551410AAC}.Debug Unittest|Win32.ActiveCfg = Debug Unittest|Win32
 		{A02DE709-944A-4DC4-9964-E8A551410AAC}.Debug|Win32.ActiveCfg = Debug|Win32
 		{A02DE709-944A-4DC4-9964-E8A551410AAC}.Debug|Win32.Build.0 = Debug|Win32
+		{A02DE709-944A-4DC4-9964-E8A551410AAC}.Release Unittest|Win32.ActiveCfg = Release Unittest|Win32
 		{A02DE709-944A-4DC4-9964-E8A551410AAC}.Release|Win32.ActiveCfg = Release|Win32
 		{A02DE709-944A-4DC4-9964-E8A551410AAC}.Release|Win32.Build.0 = Release|Win32
+		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Debug Unittest|Win32.ActiveCfg = Debug Unittest|Win32
+		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Debug Unittest|Win32.Build.0 = Debug Unittest|Win32
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Debug|Win32.ActiveCfg = Debug|Win32
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Debug|Win32.Build.0 = Debug|Win32
+		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Release Unittest|Win32.ActiveCfg = Release Unittest|Win32
+		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Release Unittest|Win32.Build.0 = Release Unittest|Win32
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Release|Win32.ActiveCfg = Release|Win32
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
