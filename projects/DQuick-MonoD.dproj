@@ -5,303 +5,54 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{5E97499B-7F52-4782-A472-814AC4A1DBD5}</ProjectGuid>
-    <UseDefaultCompiler>True</UseDefaultCompiler>
-    <IncrementalLinking>True</IncrementalLinking>
-    <PreferOneStepBuild>True</PreferOneStepBuild>
+    <ProjectGuid>{99F08BF3-3D40-437A-A878-F0330413FA87}</ProjectGuid>
+    <UseDefaultCompiler>true</UseDefaultCompiler>
+    <PreferOneStepBuild>true</PreferOneStepBuild>
     <Compiler>DMD2</Compiler>
-    <BaseDirectory>..\src</BaseDirectory>
+    <IncrementalLinking>true</IncrementalLinking>
+    <Includes>
+      <Includes>
+        <Path>../src/dquick/etc/derelict/import</Path>
+        <Path>../src/dquick/etc/gl3n</Path>
+      </Includes>
+    </Includes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
+    <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug</OutputPath>
-    <UnittestMode>False</UnittestMode>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libDQuick-MonoD</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <Externalconsole>True</Externalconsole>
-    <Target>Executable</Target>
-    <OutputName>../../../data/dquick-sample</OutputName>
-    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL
+</ExtraCompilerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
-    <UnittestMode>False</UnittestMode>
+    <Externalconsole>true</Externalconsole>
+    <Target>StaticLibrary</Target>
+    <OutputName>libDQuick-MonoD</OutputName>
+    <UnittestMode>false</UnittestMode>
     <ObjectsDirectory>obj/Release</ObjectsDirectory>
     <DebugLevel>0</DebugLevel>
-    <Externalconsole>True</Externalconsole>
-    <Target>Executable</Target>
-    <OutputName>../../../data/dquick-sample</OutputName>
-    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL
+</ExtraCompilerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
+    <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Unittest</OutputPath>
-    <UnittestMode>True</UnittestMode>
     <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
+    <UnittestMode>true</UnittestMode>
+    <OutputName>libDQuick-MonoD</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <Externalconsole>True</Externalconsole>
-    <Target>Executable</Target>
-    <OutputName>../../../data/dquick-sample</OutputName>
-    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL
+</ExtraCompilerArguments>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\src\dquick\system\guiApplication.d">
-      <Link>dquick\system\guiApplication.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\system\window.d">
-      <Link>dquick\system\window.d</Link>
-    </Compile>
-    <Compile Include="..\src\samples\images\main.d">
-      <Link>samples\images\main.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freetype\ft.d">
-      <Link>dquick\etc\derelict\freetype\ft.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freetype\functions.d">
-      <Link>dquick\etc\derelict\freetype\functions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freetype\types.d">
-      <Link>dquick\etc\derelict\freetype\types.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\lua\functions.d">
-      <Link>dquick\etc\derelict\lua\functions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\lua\lua.d">
-      <Link>dquick\etc\derelict\lua\lua.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\lua\macros.d">
-      <Link>dquick\etc\derelict\lua\macros.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\lua\types.d">
-      <Link>dquick\etc\derelict\lua\types.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\ogg.d">
-      <Link>dquick\etc\derelict\ogg\ogg.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\oggfunctions.d">
-      <Link>dquick\etc\derelict\ogg\oggfunctions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\oggtypes.d">
-      <Link>dquick\etc\derelict\ogg\oggtypes.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbis.d">
-      <Link>dquick\etc\derelict\ogg\vorbis.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisenc.d">
-      <Link>dquick\etc\derelict\ogg\vorbisenc.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisencfunctions.d">
-      <Link>dquick\etc\derelict\ogg\vorbisencfunctions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisenctypes.d">
-      <Link>dquick\etc\derelict\ogg\vorbisenctypes.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfile.d">
-      <Link>dquick\etc\derelict\ogg\vorbisfile.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfilefunctions.d">
-      <Link>dquick\etc\derelict\ogg\vorbisfilefunctions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfiletypes.d">
-      <Link>dquick\etc\derelict\ogg\vorbisfiletypes.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfunctions.d">
-      <Link>dquick\etc\derelict\ogg\vorbisfunctions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbistypes.d">
-      <Link>dquick\etc\derelict\ogg\vorbistypes.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\openal\al.d">
-      <Link>dquick\etc\derelict\openal\al.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\openal\functions.d">
-      <Link>dquick\etc\derelict\openal\functions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\openal\types.d">
-      <Link>dquick\etc\derelict\openal\types.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\arb.d">
-      <Link>dquick\etc\derelict\opengl3\arb.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\cgl.d">
-      <Link>dquick\etc\derelict\opengl3\cgl.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\constants.d">
-      <Link>dquick\etc\derelict\opengl3\constants.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\deprecatedConstants.d">
-      <Link>dquick\etc\derelict\opengl3\deprecatedConstants.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\deprecatedFunctions.d">
-      <Link>dquick\etc\derelict\opengl3\deprecatedFunctions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\ext.d">
-      <Link>dquick\etc\derelict\opengl3\ext.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\functions.d">
-      <Link>dquick\etc\derelict\opengl3\functions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\gl.d">
-      <Link>dquick\etc\derelict\opengl3\gl.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\gl3.d">
-      <Link>dquick\etc\derelict\opengl3\gl3.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\glx.d">
-      <Link>dquick\etc\derelict\opengl3\glx.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\internal.d">
-      <Link>dquick\etc\derelict\opengl3\internal.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\types.d">
-      <Link>dquick\etc\derelict\opengl3\types.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\wgl.d">
-      <Link>dquick\etc\derelict\opengl3\wgl.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\exception.d">
-      <Link>dquick\etc\derelict\util\exception.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\loader.d">
-      <Link>dquick\etc\derelict\util\loader.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\sharedlib.d">
-      <Link>dquick\etc\derelict\util\sharedlib.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\system.d">
-      <Link>dquick\etc\derelict\util\system.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\wintypes.d">
-      <Link>dquick\etc\derelict\util\wintypes.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\xtypes.d">
-      <Link>dquick\etc\derelict\util\xtypes.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\functions.d">
-      <Link>dquick\etc\derelict\sdl2\functions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\image.d">
-      <Link>dquick\etc\derelict\sdl2\image.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\mixer.d">
-      <Link>dquick\etc\derelict\sdl2\mixer.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\sdl.d">
-      <Link>dquick\etc\derelict\sdl2\sdl.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\ttf.d">
-      <Link>dquick\etc\derelict\sdl2\ttf.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\types.d">
-      <Link>dquick\etc\derelict\sdl2\types.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\media\image.d">
-      <Link>dquick\media\image.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\system\dynamicLibrary.d">
-      <Link>dquick\system\dynamicLibrary.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\system\sdl\guiApplicationSDL.d">
-      <Link>dquick\system\sdl\guiApplicationSDL.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\system\sdl\openglContextSDL.d">
-      <Link>dquick\system\sdl\openglContextSDL.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\maths\color.d">
-      <Link>dquick\maths\color.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\maths\vector2f32.d">
-      <Link>dquick\maths\vector2f32.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\maths\vector3f32.d">
-      <Link>dquick\maths\vector3f32.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\gl3n\gl3n\aabb.d">
-      <Link>dquick\etc\gl3n\aabb.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\gl3n\gl3n\frustum.d">
-      <Link>dquick\etc\gl3n\frustum.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\gl3n\gl3n\interpolate.d">
-      <Link>dquick\etc\gl3n\interpolate.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\gl3n\gl3n\linalg.d">
-      <Link>dquick\etc\gl3n\linalg.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\gl3n\gl3n\math.d">
-      <Link>dquick\etc\gl3n\math.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\gl3n\gl3n\plane.d">
-      <Link>dquick\etc\gl3n\plane.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\gl3n\gl3n\util.d">
-      <Link>dquick\etc\gl3n\util.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\gl3n\gl3n\color\hsv.d">
-      <Link>dquick\etc\gl3n\color\hsv.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\etc\gl3n\gl3n\ext\matrixstack.d">
-      <Link>dquick\etc\gl3n\ext\matrixstack.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\maths\vector2s32.d">
-      <Link>dquick\maths\vector2s32.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\maths\transformation.d" />
-    <Compile Include="..\src\dquick\maths\matrix4x4.d" />
-    <Compile Include="..\src\dquick\maths\quaternion.d" />
-    <Compile Include="..\src\dquick\events\mouseEvent.d" />
-    <Compile Include="..\src\dquick\maths\vector4f32.d" />
-    <Compile Include="..\src\dquick\utils\resourceManager.d" />
-    <Compile Include="..\src\dquick\renderer3D\openGL\VBO.d" />
-    <Compile Include="..\src\dquick\renderer3D\openGL\material.d" />
-    <Compile Include="..\src\dquick\renderer3D\openGL\mesh.d" />
-    <Compile Include="..\src\dquick\renderer3D\openGL\renderer.d" />
-    <Compile Include="..\src\dquick\renderer3D\openGL\shader.d" />
-    <Compile Include="..\src\dquick\renderer3D\openGL\shaderProgram.d" />
-    <Compile Include="..\src\dquick\renderer3D\openGL\texture.d" />
-    <Compile Include="..\src\dquick\renderer3D\openGL\util.d" />
-    <Compile Include="..\src\dquick\item\boderImageItem.d" />
-    <Compile Include="..\src\dquick\item\declarativeItem.d" />
-    <Compile Include="..\src\dquick\item\graphicItem.d" />
-    <Compile Include="..\src\dquick\item\imageItem.d" />
-    <Compile Include="..\src\dquick\item\mouseAreaItem.d" />
-    <Compile Include="..\src\dquick\item\windowItem.d" />
-    <Compile Include="..\src\dquick\renderer2D\openGL\borderRectangleShader.d">
-      <Link>dquick\renderer2D\renderer2D\openGL\borderRectangleShader.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\renderer2D\openGL\borderRectangleVertices.d">
-      <Link>dquick\renderer2D\renderer2D\openGL\borderRectangleVertices.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\renderer2D\openGL\rectangle.d">
-      <Link>dquick\renderer2D\renderer2D\openGL\rectangle.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\script\dmlEngine.d" />
-    <Compile Include="..\src\dquick\script\iItemBinding.d" />
-    <Compile Include="..\src\dquick\script\itemBinding.d" />
-    <Compile Include="..\src\dquick\script\nativePropertyBinding.d" />
-    <Compile Include="..\src\dquick\script\propertyBinding.d" />
-    <Compile Include="..\src\dquick\script\utils.d" />
-    <Compile Include="..\src\dquick\script\virtualPropertyBinding.d" />
-    <Compile Include="..\src\dquick\media\font.d" />
-    <Compile Include="..\src\dquick\media\geometry.d" />
-    <Compile Include="..\src\dquick\algorithms\atlas.d" />
-    <Compile Include="..\src\dquick\algorithms\textToGeometry.d" />
-    <Compile Include="..\src\dquick\item\textItem.d" />
-    <Compile Include="..\src\dquick\system\win32\guiApplicationWin32.d" />
-    <Compile Include="..\src\dquick\system\win32\openglContextWin32.d" />
-    <Compile Include="..\src\dquick\maths\rect2s32.d" />
-    <Compile Include="..\src\dquick\item\scrollViewItem.d" />
-    <Compile Include="..\src\dquick\system\linux\fontconfig\fontconfig.d" />
-    <Compile Include="..\src\dquick\system\linux\fontconfig\functions.d" />
-    <Compile Include="..\src\dquick\system\linux\fontconfig\types.d" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="dquick\" />
-    <Folder Include="samples\" />
-    <Folder Include="dquick\etc\derelict\" />
-    <Folder Include="dquick\etc\derelict\sdl2\" />
-    <Folder Include="media\" />
-    <Folder Include="dquick\system\sdl\" />
     <Folder Include="..\src\dquick\maths\" />
     <Folder Include="..\src\dquick\etc\gl3n\" />
     <Folder Include="..\src\dquick\script\" />
@@ -316,28 +67,676 @@
     <Folder Include="..\src\dquick\algorithms\" />
     <Folder Include="..\src\dquick\system\win32\" />
     <Folder Include="..\src\dquick\system\linux\" />
+    <Folder Include="dquick\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\src\dquick\algorithms\atlas.d">
+      <Link>dquick\algorithms\atlas.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\algorithms\textToGeometry.d">
+      <Link>dquick\algorithms\textToGeometry.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\alure\alure.d">
+      <Link>dquick\etc\derelict\import\derelict\alure\alure.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\alure\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\alure\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\alure\types.d">
+      <Link>dquick\etc\derelict\import\derelict\alure\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\assimp\assimp.d">
+      <Link>dquick\etc\derelict\import\derelict\assimp\assimp.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\assimp\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\assimp\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\assimp\types.d">
+      <Link>dquick\etc\derelict\import\derelict\assimp\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\devil\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\devil\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\devil\il.d">
+      <Link>dquick\etc\derelict\import\derelict\devil\il.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\devil\ilu.d">
+      <Link>dquick\etc\derelict\import\derelict\devil\ilu.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\devil\ilut.d">
+      <Link>dquick\etc\derelict\import\derelict\devil\ilut.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\devil\types.d">
+      <Link>dquick\etc\derelict\import\derelict\devil\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freeglut\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\freeglut\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freeglut\glut.d">
+      <Link>dquick\etc\derelict\import\derelict\freeglut\glut.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freeglut\types.d">
+      <Link>dquick\etc\derelict\import\derelict\freeglut\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freeimage\freeimage.d">
+      <Link>dquick\etc\derelict\import\derelict\freeimage\freeimage.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freeimage\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\freeimage\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freeimage\types.d">
+      <Link>dquick\etc\derelict\import\derelict\freeimage\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freetype\ft.d">
+      <Link>dquick\etc\derelict\import\derelict\freetype\ft.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freetype\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\freetype\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\freetype\types.d">
+      <Link>dquick\etc\derelict\import\derelict\freetype\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\glfw3\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\glfw3\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\glfw3\glfw3.d">
+      <Link>dquick\etc\derelict\import\derelict\glfw3\glfw3.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\glfw3\types.d">
+      <Link>dquick\etc\derelict\import\derelict\glfw3\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\lua\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\lua\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\lua\lua.d">
+      <Link>dquick\etc\derelict\import\derelict\lua\lua.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\lua\macros.d">
+      <Link>dquick\etc\derelict\import\derelict\lua\macros.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\lua\types.d">
+      <Link>dquick\etc\derelict\import\derelict\lua\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ode\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\ode\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ode\ode.d">
+      <Link>dquick\etc\derelict\import\derelict\ode\ode.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ode\types.d">
+      <Link>dquick\etc\derelict\import\derelict\ode\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\ogg.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\ogg.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\oggfunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\oggfunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\oggtypes.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\oggtypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbis.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\vorbis.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisenc.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\vorbisenc.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisencfunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\vorbisencfunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisenctypes.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\vorbisenctypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfile.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\vorbisfile.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfilefunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\vorbisfilefunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfiletypes.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\vorbisfiletypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbisfunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\vorbisfunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\ogg\vorbistypes.d">
+      <Link>dquick\etc\derelict\import\derelict\ogg\vorbistypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\openal\al.d">
+      <Link>dquick\etc\derelict\import\derelict\openal\al.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\openal\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\openal\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\openal\types.d">
+      <Link>dquick\etc\derelict\import\derelict\openal\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\arb.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\arb.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\cgl.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\cgl.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\constants.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\constants.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\deprecatedConstants.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\deprecatedConstants.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\deprecatedFunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\deprecatedFunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\ext.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\ext.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\gl.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\gl.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\gl3.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\gl3.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\glx.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\glx.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\internal.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\internal.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\types.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\opengl3\wgl.d">
+      <Link>dquick\etc\derelict\import\derelict\opengl3\wgl.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\pq\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\pq\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\pq\pq.d">
+      <Link>dquick\etc\derelict\import\derelict\pq\pq.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\pq\types.d">
+      <Link>dquick\etc\derelict\import\derelict\pq\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\sdl2\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\image.d">
+      <Link>dquick\etc\derelict\import\derelict\sdl2\image.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\mixer.d">
+      <Link>dquick\etc\derelict\import\derelict\sdl2\mixer.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\sdl.d">
+      <Link>dquick\etc\derelict\import\derelict\sdl2\sdl.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\ttf.d">
+      <Link>dquick\etc\derelict\import\derelict\sdl2\ttf.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sdl2\types.d">
+      <Link>dquick\etc\derelict\import\derelict\sdl2\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\audio.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\audio.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\audiofunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\audiofunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\audiotypes.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\audiotypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\graphics.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\graphics.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\graphicsfunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\graphicsfunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\graphicstypes.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\graphicstypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\network.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\network.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\networkfunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\networkfunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\networktypes.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\networktypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\system.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\system.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\systemfunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\systemfunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\systemtypes.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\systemtypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\window.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\window.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\windowfunctions.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\windowfunctions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\sfml2\windowtypes.d">
+      <Link>dquick\etc\derelict\import\derelict\sfml2\windowtypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\tcod\functions.d">
+      <Link>dquick\etc\derelict\import\derelict\tcod\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\tcod\libtcod.d">
+      <Link>dquick\etc\derelict\import\derelict\tcod\libtcod.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\tcod\types.d">
+      <Link>dquick\etc\derelict\import\derelict\tcod\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\exception.d">
+      <Link>dquick\etc\derelict\import\derelict\util\exception.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\loader.d">
+      <Link>dquick\etc\derelict\import\derelict\util\loader.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\sharedlib.d">
+      <Link>dquick\etc\derelict\import\derelict\util\sharedlib.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\system.d">
+      <Link>dquick\etc\derelict\import\derelict\util\system.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\wintypes.d">
+      <Link>dquick\etc\derelict\import\derelict\util\wintypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\derelict\import\derelict\util\xtypes.d">
+      <Link>dquick\etc\derelict\import\derelict\util\xtypes.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\bootDoc\generate.d">
+      <Link>dquick\etc\gl3n\bootDoc\generate.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\bootDoc\example\example.d">
+      <Link>dquick\etc\gl3n\bootDoc\example\example.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\gl3n\aabb.d">
+      <Link>dquick\etc\gl3n\gl3n\aabb.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\gl3n\frustum.d">
+      <Link>dquick\etc\gl3n\gl3n\frustum.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\gl3n\interpolate.d">
+      <Link>dquick\etc\gl3n\gl3n\interpolate.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\gl3n\linalg.d">
+      <Link>dquick\etc\gl3n\gl3n\linalg.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\gl3n\math.d">
+      <Link>dquick\etc\gl3n\gl3n\math.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\gl3n\plane.d">
+      <Link>dquick\etc\gl3n\gl3n\plane.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\gl3n\util.d">
+      <Link>dquick\etc\gl3n\gl3n\util.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\gl3n\color\hsv.d">
+      <Link>dquick\etc\gl3n\gl3n\color\hsv.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\etc\gl3n\gl3n\ext\matrixstack.d">
+      <Link>dquick\etc\gl3n\gl3n\ext\matrixstack.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\events\mouseEvent.d">
+      <Link>dquick\events\mouseEvent.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\item\borderImageItem.d">
+      <Link>dquick\item\borderImageItem.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\item\declarativeItem.d">
+      <Link>dquick\item\declarativeItem.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\item\graphicItem.d">
+      <Link>dquick\item\graphicItem.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\item\imageItem.d">
+      <Link>dquick\item\imageItem.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\item\mouseAreaItem.d">
+      <Link>dquick\item\mouseAreaItem.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\item\scrollViewItem.d">
+      <Link>dquick\item\scrollViewItem.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\item\textItem.d">
+      <Link>dquick\item\textItem.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\item\windowItem.d">
+      <Link>dquick\item\windowItem.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\maths\color.d">
+      <Link>dquick\maths\color.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\maths\matrix4x4.d">
+      <Link>dquick\maths\matrix4x4.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\maths\quaternion.d">
+      <Link>dquick\maths\quaternion.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\maths\rect2s32.d">
+      <Link>dquick\maths\rect2s32.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\maths\transformation.d">
+      <Link>dquick\maths\transformation.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\maths\vector2f32.d">
+      <Link>dquick\maths\vector2f32.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\maths\vector2s32.d">
+      <Link>dquick\maths\vector2s32.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\maths\vector3f32.d">
+      <Link>dquick\maths\vector3f32.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\maths\vector4f32.d">
+      <Link>dquick\maths\vector4f32.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\media\font.d">
+      <Link>dquick\media\font.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\media\geometry.d">
+      <Link>dquick\media\geometry.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\media\image.d">
+      <Link>dquick\media\image.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer2D\openGL\borderRectangleShader.d">
+      <Link>dquick\renderer2D\openGL\borderRectangleShader.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer2D\openGL\borderRectangleVertices.d">
+      <Link>dquick\renderer2D\openGL\borderRectangleVertices.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer2D\openGL\rectangle.d">
+      <Link>dquick\renderer2D\openGL\rectangle.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer3D\openGL\VBO.d">
+      <Link>dquick\renderer3D\openGL\VBO.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer3D\openGL\material.d">
+      <Link>dquick\renderer3D\openGL\material.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer3D\openGL\mesh.d">
+      <Link>dquick\renderer3D\openGL\mesh.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer3D\openGL\renderer.d">
+      <Link>dquick\renderer3D\openGL\renderer.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer3D\openGL\shader.d">
+      <Link>dquick\renderer3D\openGL\shader.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer3D\openGL\shaderProgram.d">
+      <Link>dquick\renderer3D\openGL\shaderProgram.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer3D\openGL\texture.d">
+      <Link>dquick\renderer3D\openGL\texture.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\renderer3D\openGL\util.d">
+      <Link>dquick\renderer3D\openGL\util.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\script\dmlEngine.d">
+      <Link>dquick\script\dmlEngine.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\script\iItemBinding.d">
+      <Link>dquick\script\iItemBinding.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\script\itemBinding.d">
+      <Link>dquick\script\itemBinding.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\script\nativePropertyBinding.d">
+      <Link>dquick\script\nativePropertyBinding.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\script\propertyBinding.d">
+      <Link>dquick\script\propertyBinding.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\script\utils.d">
+      <Link>dquick\script\utils.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\script\virtualPropertyBinding.d">
+      <Link>dquick\script\virtualPropertyBinding.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\dynamicLibrary.d">
+      <Link>dquick\system\dynamicLibrary.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\guiApplication.d">
+      <Link>dquick\system\guiApplication.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\window.d">
+      <Link>dquick\system\window.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\linux\fontconfig\fontconfig.d">
+      <Link>dquick\system\linux\fontconfig\fontconfig.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\linux\fontconfig\functions.d">
+      <Link>dquick\system\linux\fontconfig\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\linux\fontconfig\types.d">
+      <Link>dquick\system\linux\fontconfig\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\sdl\guiApplicationSDL.d">
+      <Link>dquick\system\sdl\guiApplicationSDL.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\sdl\openglContextSDL.d">
+      <Link>dquick\system\sdl\openglContextSDL.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\win32\guiApplicationWin32.d">
+      <Link>dquick\system\win32\guiApplicationWin32.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\win32\openglContextWin32.d">
+      <Link>dquick\system\win32\openglContextWin32.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\utils\resourceManager.d">
+      <Link>dquick\utils\resourceManager.d</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\.git">
+      <Link>dquick\etc\gl3n\bootDoc\.git</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\.gitignore">
+      <Link>dquick\etc\gl3n\bootDoc\.gitignore</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\LICENSE.txt">
+      <Link>dquick\etc\gl3n\bootDoc\LICENSE.txt</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\README.markdown">
+      <Link>dquick\etc\gl3n\bootDoc\README.markdown</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\bootdoc.css">
+      <Link>dquick\etc\gl3n\bootDoc\bootdoc.css</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\bootdoc.ddoc">
+      <Link>dquick\etc\gl3n\bootDoc\bootdoc.ddoc</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\bootdoc.js">
+      <Link>dquick\etc\gl3n\bootDoc\bootdoc.js</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\modules.ddoc">
+      <Link>dquick\etc\gl3n\bootDoc\modules.ddoc</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\settings.ddoc">
+      <Link>dquick\etc\gl3n\bootDoc\settings.ddoc</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\css\bootstrap-responsive.css">
+      <Link>dquick\etc\gl3n\bootDoc\assets\css\bootstrap-responsive.css</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\css\bootstrap.css">
+      <Link>dquick\etc\gl3n\bootDoc\assets\css\bootstrap.css</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\css\docs.css">
+      <Link>dquick\etc\gl3n\bootDoc\assets\css\docs.css</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\ico\apple-touch-icon-114-precomposed.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\ico\apple-touch-icon-114-precomposed.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\ico\apple-touch-icon-57-precomposed.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\ico\apple-touch-icon-57-precomposed.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\ico\apple-touch-icon-72-precomposed.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\ico\apple-touch-icon-72-precomposed.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\ico\favicon.ico">
+      <Link>dquick\etc\gl3n\bootDoc\assets\ico\favicon.ico</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\bird.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\bird.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\bootstrap-mdo-sfmoma-01.jpg">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\bootstrap-mdo-sfmoma-01.jpg</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\bootstrap-mdo-sfmoma-02.jpg">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\bootstrap-mdo-sfmoma-02.jpg</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\bootstrap-mdo-sfmoma-03.jpg">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\bootstrap-mdo-sfmoma-03.jpg</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\browsers.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\browsers.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\github-16px.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\github-16px.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons-halflings-white.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons-halflings-white.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons-halflings.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons-halflings.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\grid-18px-masked.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\grid-18px-masked.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\icon-css3.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\icon-css3.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\icon-github.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\icon-github.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\icon-html5.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\icon-html5.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\icon-twitter.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\icon-twitter.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\less-logo-large.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\less-logo-large.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\less-small.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\less-small.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\responsive-illustrations.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\responsive-illustrations.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\example-sites\fleetio.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\example-sites\fleetio.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\example-sites\jshint.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\example-sites\jshint.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\example-sites\kippt.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\example-sites\kippt.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\example-sites\soundready.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\example-sites\soundready.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\examples\bootstrap-example-fluid.jpg">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\examples\bootstrap-example-fluid.jpg</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\examples\bootstrap-example-hero.jpg">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\examples\bootstrap-example-hero.jpg</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\examples\bootstrap-example-starter.jpg">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\examples\bootstrap-example-starter.jpg</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_009_magic.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_009_magic.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_042_group.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_042_group.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_079_podium.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_079_podium.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_082_roundabout.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_082_roundabout.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_155_show_thumbnails.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_155_show_thumbnails.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_163_iphone.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_163_iphone.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_214_resize_small.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_214_resize_small.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_266_book_open.png">
+      <Link>dquick\etc\gl3n\bootDoc\assets\img\glyphicons\glyphicons_266_book_open.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\js\README.md">
+      <Link>dquick\etc\gl3n\bootDoc\assets\js\README.md</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\js\application.js">
+      <Link>dquick\etc\gl3n\bootDoc\assets\js\application.js</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\js\bootstrap.js">
+      <Link>dquick\etc\gl3n\bootDoc\assets\js\bootstrap.js</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\js\bootstrap.min.js">
+      <Link>dquick\etc\gl3n\bootDoc\assets\js\bootstrap.min.js</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\js\jquery.js">
+      <Link>dquick\etc\gl3n\bootDoc\assets\js\jquery.js</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\js\jquery.min.js">
+      <Link>dquick\etc\gl3n\bootDoc\assets\js\jquery.min.js</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\js\google-code-prettify\prettify.css">
+      <Link>dquick\etc\gl3n\bootDoc\assets\js\google-code-prettify\prettify.css</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\assets\js\google-code-prettify\prettify.js">
+      <Link>dquick\etc\gl3n\bootDoc\assets\js\google-code-prettify\prettify.js</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\ddoc-icons\alias.png">
+      <Link>dquick\etc\gl3n\bootDoc\ddoc-icons\alias.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\ddoc-icons\class.png">
+      <Link>dquick\etc\gl3n\bootDoc\ddoc-icons\class.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\ddoc-icons\enum.png">
+      <Link>dquick\etc\gl3n\bootDoc\ddoc-icons\enum.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\ddoc-icons\func.png">
+      <Link>dquick\etc\gl3n\bootDoc\ddoc-icons\func.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\ddoc-icons\property.png">
+      <Link>dquick\etc\gl3n\bootDoc\ddoc-icons\property.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\ddoc-icons\struct.png">
+      <Link>dquick\etc\gl3n\bootDoc\ddoc-icons\struct.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\ddoc-icons\template.png">
+      <Link>dquick\etc\gl3n\bootDoc\ddoc-icons\template.png</Link>
+    </None>
+    <None Include="..\src\dquick\etc\gl3n\bootDoc\ddoc-icons\var.png">
+      <Link>dquick\etc\gl3n\bootDoc\ddoc-icons\var.png</Link>
+    </None>
+    <None Include="..\src\dquick\renderer2D\openGL\borderRectangle.frag">
+      <Link>dquick\renderer2D\openGL\borderRectangle.frag</Link>
+    </None>
+    <None Include="..\src\dquick\renderer2D\openGL\borderRectangle.vert">
+      <Link>dquick\renderer2D\openGL\borderRectangle.vert</Link>
+    </None>
+    <None Include="..\src\dquick\renderer2D\openGL\rectangle.frag">
+      <Link>dquick\renderer2D\openGL\rectangle.frag</Link>
+    </None>
+    <None Include="..\src\dquick\renderer2D\openGL\rectangle.vert">
+      <Link>dquick\renderer2D\openGL\rectangle.vert</Link>
+    </None>
     <None Include="..\src\dquick\system\dMain.def">
       <Link>dquick\system\dMain.def</Link>
-    </None>
-    <None Include="..\data\dquick\shaders\rectangle.vert">
-      <Link>resources\dquick\shaders\rectangle.vert</Link>
-    </None>
-    <None Include="..\data\dquick\shaders\rectangle.frag">
-      <Link>resources\dquick\shaders\rectangle.frag</Link>
-    </None>
-    <None Include="..\data\dml\button.lua">
-      <Link>samples\dml\button.lua</Link>
-    </None>
-    <None Include="..\data\dml\image.lua">
-      <Link>samples\dml\image.lua</Link>
-    </None>
-    <None Include="..\data\dml\items.lua">
-      <Link>samples\dml\items.lua</Link>
-    </None>
-    <None Include="..\data\dml\transformations.lua">
-      <Link>samples\dml\transformations.lua</Link>
     </None>
   </ItemGroup>
 </Project>

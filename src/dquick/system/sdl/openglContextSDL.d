@@ -1,4 +1,4 @@
-module dquick.system.sdl.openglContextSdl;
+module dquick.system.sdl.openglContextSDL;
 
 // TODO Import GL3 and migrate openGL demo code to a up to date code
 // Find a way to be restricted to openGL 2 (with upper opengl function declared)
