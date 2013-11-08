@@ -8,6 +8,12 @@ import std.string;
 import std.path;
 import std.exception;
 
+version(Posix)
+{
+	// TODO remove that, it's normally linked with DQuick
+	pragma(lib, "dl");	// dl functions aren't linked by default with dmd
+}
+
 int main(string[] args)
 {
 	try
