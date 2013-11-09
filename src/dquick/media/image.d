@@ -6,8 +6,7 @@ import std.conv;
 import std.path;
 import std.c.string;
 
-import dquick.media.imageLoader;
-import dquick.media.imageWriter;
+import dquick.media.imageData;
 import dquick.maths.color;
 import dquick.maths.vector2s32;
 import dquick.utils.resourceManager;
@@ -149,7 +148,7 @@ public:
 				
 				ix = x + sourcePosition.x;
 				iy = y + sourcePosition.y;
-				si = iy*sourceImage.mData.width*srcFmt + ix*srcFmt;
+				si = (iy*sourceImage.mData.width + ix)*srcFmt;
 				blendFn(dstPixel, sourceImage.mData.pixels[si..si + srcFmt]);
 			}
 		}
@@ -272,19 +271,19 @@ private
 			},
 			// src.length == 1
 			function void(ref ubyte[] dst, in ubyte[] src){
-				blender!(2, false, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0]);
+				blender!(3, false, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0]);
 			},
 			// src.length == 2
 			function void(ref ubyte[] dst, in ubyte[] src){
-				blender!(2, false, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0], src[1]);
+				blender!(3, false, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0], src[1]);
 			},
 			// src.length == 3
 			function void(ref ubyte[] dst, in ubyte[] src){
-				blender!(2, false, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[1], src[2]);
+				blender!(3, false, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[1], src[2]);
 			},
 			// src.length == 4
 			function void(ref ubyte[] dst, in ubyte[] src){
-				blender!(2, false, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[1], src[2], src[3]);
+				blender!(3, false, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[1], src[2], src[3]);
 			}
 		],
 		
@@ -296,19 +295,19 @@ private
 			},
 			// src.length == 1
 			function void(ref ubyte[] dst, in ubyte[] src){
-				blender!(2, true, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0]);
+				blender!(4, true, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0]);
 			},
 			// src.length == 2
 			function void(ref ubyte[] dst, in ubyte[] src){
-				blender!(2, true, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0], src[1]);
+				blender!(4, true, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0], src[1]);
 			},
 			// src.length == 3
 			function void(ref ubyte[] dst, in ubyte[] src){
-				blender!(2, true, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[3], src[2]);
+				blender!(4, true, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[3], src[2]);
 			},
 			// src.length == 4
 			function void(ref ubyte[] dst, in ubyte[] src){
-				blender!(2, true, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[1], src[2], src[3]);
+				blender!(4, true, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[1], src[2], src[3]);
 			}
 		]
 	];
@@ -322,18 +321,18 @@ private
 				uint tmp;
 				float sa = (cast(float)src[$-1])/255.0f;
 				float da = 1.0f - sa;
-				foreach(i, s; src)
-				{
-					tmp = cast(uint)(dst[i] * da + s * sa);
-					(*dst++) = cast(ubyte)min(tmp, 255u);
-				}
+				mixin(repeat!(0, numCh-1, "i", q{
+					tmp = cast(uint)(dst[i] * da + src[i] * sa);
+					dst[i] = cast(ubyte)min(tmp, 255u);
+				}));
+				dst[numCh-1] = cast(ubyte)min(cast(uint)(src[$-1]*sa + dst[numCh-1]*dst[numCh-1]/255.0f), 255u);
 			}
 			else static if(dstAlpha)
 			{
 				mixin(repeat!(0, numCh-1, "i", q{
-					(*dst++) = src[i];
+					dst[i] = src[i];
 				}));
-				(*dst) = 255;
+				dst[numCh-1] = 255;
 			}
 			else static if(srcAlpha)
 			{
@@ -342,7 +341,7 @@ private
 				float da = 1.0f - sa;
 				mixin(repeat!(0, numCh, "i", q{
 					tmp = cast(uint)(dst[i] * da + src[i] * sa);
-					(*dst++) = cast(ubyte)min(tmp, 255u);
+					dst[i] = cast(ubyte)min(tmp, 255u);
 				}));
 			}
 			else

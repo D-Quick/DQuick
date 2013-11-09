@@ -101,7 +101,7 @@ public:
 					case SDL_MOUSEMOTION:
 						mouseEvent.moved = true;
 						mouseEvent.position = Vector2s32(event.motion.x, event.motion.y);
-						GuiApplication.mWindows[event.window.windowID].onMouseEvent(mouseEvent);
+						sendEvent(event.window.windowID, mouseEvent);
 						break;
 					case SDL_MOUSEBUTTONDOWN:
 						mouseEvent.pressed = true;
@@ -115,7 +115,7 @@ public:
 							mouseEvent.buttons = MouseEvent.Buttons.X1;
 						else if (event.button.button == SDL_BUTTON_X2)
 							mouseEvent.buttons = MouseEvent.Buttons.X2;
-						GuiApplication.mWindows[event.window.windowID].onMouseEvent(mouseEvent);
+						sendEvent(event.window.windowID, mouseEvent);
 						break;
 					case SDL_MOUSEBUTTONUP:
 						mouseEvent.released = true;
@@ -129,7 +129,7 @@ public:
 							mouseEvent.buttons = MouseEvent.Buttons.X1;
 						else if (event.button.button == SDL_BUTTON_X2)
 							mouseEvent.buttons = MouseEvent.Buttons.X2;
-						GuiApplication.mWindows[event.window.windowID].onMouseEvent(mouseEvent);
+						sendEvent(event.window.windowID, mouseEvent);
 						break;
 					case SDL_MOUSEWHEEL:
 						break;
@@ -214,6 +214,13 @@ private:
 	static void	registerWindow(Window window, Uint32 windowId)
 	{
 		mWindows[windowId] = window;
+	}
+	
+	static void sendEvent(Uint32 winId, MouseEvent event)
+	{
+		auto window = winId in mWindows;
+		if(window)
+			window.onMouseEvent(event);
 	}
 
 	static GuiApplication	mInstance;

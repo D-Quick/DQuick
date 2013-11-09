@@ -1,6 +1,6 @@
 module dquick.media.libpng.pngImageLoader;
 
-import dquick.media.imageLoader;
+import dquick.media.imageData;
 import dquick.media.libpng.png;
 import std.stdio;
 import std.string;
@@ -49,12 +49,10 @@ class PngImageLoader : ImageLoader
 				if(strcmp(libpngVer, PNG_LIBPNG_VER_STRING) != 0)
 					writeln("[Warning] Compiled with libpng ", PNG_LIBPNG_VER_STRING, ", using ", cstr(png_get_libpng_ver(null)));
 			}
-			png = png_create_read_struct(libpngVer, null, null, null);
+			png = png_create_read_struct(libpngVer, null, &loader_errorFn, &loader_warningFn);
 			if(!png) return false;
 			info = png_create_info_struct(png);
 			if(!info) return false;
-			
-			png_set_error_fn(png, null, &errorFn, &warningFn);
 			
 			png_init_io(png, m_file);
 			png_set_sig_bytes(png, SigLength);
@@ -85,13 +83,13 @@ class PngImageLoader : ImageLoader
 	private FILE* m_file;
 }
 
-private extern(C) void warningFn(png_struct* png, const(char)* msg)
+private extern(C) void loader_warningFn(png_struct* png, const(char)* msg)
 {
 	ulong len = strlen(msg);
 	writeln(msg[0..len]);
 }
 
-private extern(C) void errorFn(png_struct* png, const(char)* msg)
+private extern(C) void loader_errorFn(png_struct* png, const(char)* msg)
 {
 	writeln(msg[0..msg.strlen]);
 	throw new Exception("libpng error");

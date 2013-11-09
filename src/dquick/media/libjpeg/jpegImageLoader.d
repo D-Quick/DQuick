@@ -1,6 +1,6 @@
 module dquick.media.libjpeg.jpegImageLoader;
 
-import dquick.media.imageLoader;
+import dquick.media.imageData;
 import dquick.media.libjpeg.jpeglib;
 import std.string;
 import std.path;
