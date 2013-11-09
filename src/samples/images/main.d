@@ -32,8 +32,9 @@ int main(string[] args)
 		
 		Image result = new Image();
 		result.create("test.png", 800, 600, 4);
+		result.blit(imgA, Vector2s32(0, 0), imgA.size, Vector2s32(150, 0));
 		result.blit(imgB, Vector2s32(0, 0), imgB.size, Vector2s32(0, 0));
-		result.blit(imgA, Vector2s32(0, 0), imgA.size, Vector2s32(0, 0));
+		result.blit(imgA, Vector2s32(0, 0), Vector2s32(128, 128), Vector2s32(200, 50));
 		result.save("test.png");
 
 		Window	mainWindow = new Window();

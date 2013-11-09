@@ -81,11 +81,6 @@ public:
 	}
 
 	void	fill(Color color, Vector2s32 position, Vector2s32 size)
-	in
-	{
-		// TODO
-	}
-	body
 	{		
 		scope ubyte[] pixel = new ubyte[mData.format];
 		final switch(mData.format)
@@ -125,8 +120,10 @@ public:
 	void	blit(Image sourceImage, Vector2s32 sourcePosition, Vector2s32 sourceSize, Vector2s32 destPosition)
 	in
 	{
-		// TODO
 		assert(mData.format != ImageData.Format.Invalid);
+		assert(sourcePosition.x >= 0 && sourcePosition.y >= 0);
+		assert(sourceSize.x >= 0 && sourceSize.y >= 0);
+		assert(destPosition.x >= 0 && destPosition.y >= 0);
 	}
 	body
 	{
@@ -190,9 +187,6 @@ public:
 	{
 		return cast(ubyte)mData.format;
 	}
-
-	// TODO find why ImageAtlas that derived Image can't acces mSurface member directly (check method setRegion and parameter subImage)
-	//SDL_Surface*	getSurface() {return mSurface;}
 
 protected:
 	ImageData mData;

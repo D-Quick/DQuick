@@ -23,7 +23,7 @@ version(Windows)
 }
 else version(linux)
 {
-	import dquick.system.linux.fontconfig.fontconfig;
+	import dquick.system.linux.fontconfig;
 	import std.conv;
 }
 
@@ -420,7 +420,7 @@ shared static this()
 {
 	version(linux)
 	{
-		DerelictFontConfig.load();
+		//DerelictFontConfig.load();
 		if (FcInit() == FcFalse)
 			throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
 	}
@@ -435,7 +435,7 @@ shared static ~this()
 	version(linux)
 	{
 		FcFini();
-		DerelictFontConfig.unload();
+		//DerelictFontConfig.unload();
 	}
 }
 
@@ -499,14 +499,18 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 	else version(linux)
 	{
 		FcConfig*	config = FcInitLoadConfigAndFonts();
+		//scope(exit) FcConfigDestroy(config);
 
 		// configure the search pattern, 
 		// assume "name" is a std::string with the desired font name in it
-		FcPattern*	pat = FcNameParse(name.toStringz());
+		FcPattern*	pat = FcPatternCreate();
+		FcPatternAddString(pat, FC_FAMILY, name.toStringz);
+		FcPatternAddInteger(pat, FC_WEIGHT, (family & Font.Family.Bold) ? FC_WEIGHT_BOLD : FC_WEIGHT_REGULAR);
+		FcPatternAddInteger(pat, FC_SLANT, (family & Font.Family.Italic) ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
 		scope(exit) FcPatternDestroy(pat);
 
-		FcConfigSubstitute(config, pat, FcMatchKind.FcMatchPattern);
+		FcConfigSubstitute(config, pat, FcMatchKind.Pattern);
 		FcDefaultSubstitute(pat);
 
 		// find the font
@@ -517,7 +521,7 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 		if (font)
 		{
 			FcChar8*	file = null;
-			if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.FcResultMatch)
+			if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.Match)
 			{
 				// save the file to another std::string
 				fontPath = to!string(file);
