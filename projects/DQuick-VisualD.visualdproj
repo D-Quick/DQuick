@@ -516,6 +516,7 @@
    </Folder>
    <Folder name="script">
     <File path="..\src\dquick\script\dmlEngine.d" />
+    <File path="..\src\dquick\script\dmlEngineCore.d" />
     <File path="..\src\dquick\script\iItemBinding.d" />
     <File path="..\src\dquick\script\itemBinding.d" />
     <File path="..\src\dquick\script\nativePropertyBinding.d" />
