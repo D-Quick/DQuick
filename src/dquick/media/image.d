@@ -51,7 +51,7 @@ public:
 			}
 		}
 		
-		throw new Exception("Unable to load an image from '" ~ filePath ~ "': unsupported file format!");
+		throw new Exception("Unable to load an image from '" ~ filePath ~ "': file does not exist, or format is unsupported!");
 	}
 
 	void	save(string filePath)

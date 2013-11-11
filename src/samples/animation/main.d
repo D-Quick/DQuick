@@ -62,7 +62,7 @@ int main()
 		ImageItem btt = new ImageItem(wnd);
 		btt.y = 16;
 		btt.source = "images/Qt/toolbutton.png";
-		
+			
 		ParallelAnimation bttSizeAnim = new ParallelAnimation();
 		bttSizeAnim.duration = dur!"msecs"(1500);
 		

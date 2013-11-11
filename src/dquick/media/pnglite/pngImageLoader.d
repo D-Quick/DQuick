@@ -23,14 +23,10 @@ class PngImageLoader : ImageLoader
 			mFile.open(fileName, "rb");
 			mFile.rawRead(sig);
 			if(sig != sigRef)
-			{
-				png_close_file(&mPng);
 				return false;
-			}
 		}
 		catch(Exception exc)
 		{
-			png_close_file(&mPng);
 			return false;
 		}
 		
