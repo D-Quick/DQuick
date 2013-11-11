@@ -1,7 +1,7 @@
-module dquick.renderer_3d.opengl.shader;
+module dquick.renderer3D.openGL.shader;
 
-import dquick.renderer_3d.opengl.util;
-import dquick.utils.resource_manager;
+import dquick.renderer3D.openGL.util;
+import dquick.utils.resourceManager;
 
 import derelict.opengl3.gl;
 
@@ -27,11 +27,25 @@ public:
 	/// Shader will be compiled and linked
 	void	load(string filePath, Variant[] options)
 	{
-		assert(options == null);
 		cleanup();
 
-		mVertexShaderFilePath = filePath ~ ".vert";
-		mFragmentShaderFilePath = filePath ~ ".frag";
+		if (options == null)
+		{
+			mVertexShaderSource = cast(string)read(filePath ~ ".vert");
+			mFragmentShaderSource = cast(string)read(filePath ~ ".frag");
+
+/*			if (mVertexShaderSource.length == 0 || mFragmentShaderSource.length == 0)
+				throw new Exception(format("Can't find shader files : %s or %s", filePath ~ ".vert", filePath ~ ".frag"));*/
+		}
+		else
+		{
+			assert(options.length == 2);
+			assert(options[0].type() == typeid(string));
+			assert(options[1].type() == typeid(string));
+
+			mVertexShaderSource = options[0].get!string;
+			mFragmentShaderSource = options[1].get!string;
+		}
 
 		compileAndLink();
 
@@ -64,12 +78,10 @@ private:
 		}
 	}
 	
-	uint	loadAndCompileShaderFile(GLenum type, string filePath)
+	uint	loadAndCompileShader(GLenum type, string source)
 	{
-		string	source;
 		GLint	length;
 
-		source = cast(string)read(filePath);
 		length = cast(GLint)source.length;
 
 		GLuint shader = checkgl!glCreateShader(type);
@@ -108,13 +120,13 @@ private:
 
 		mShaderProgram = checkgl!glCreateProgram();
 
-		mVertexShader = loadAndCompileShaderFile(GL_VERTEX_SHADER, mVertexShaderFilePath);
+		mVertexShader = loadAndCompileShader(GL_VERTEX_SHADER, mVertexShaderSource);
 		if (mVertexShader == 0)
 		{
 			throw new Exception("Error while compiling vertex shader");
 		}		
 
-		mFragmentShader = loadAndCompileShaderFile(GL_FRAGMENT_SHADER, mFragmentShaderFilePath);
+		mFragmentShader = loadAndCompileShader(GL_FRAGMENT_SHADER, mFragmentShaderSource);
 		if (mFragmentShader == 0)
 		{
 			throw new Exception("Error while compiling fragment shader");
@@ -158,6 +170,6 @@ private:
 	GLuint	mVertexShader = mBadId;
 	GLuint	mShaderProgram = mBadId;
 	
-	string	mFragmentShaderFilePath;
-	string	mVertexShaderFilePath;
+	string	mFragmentShaderSource;
+	string	mVertexShaderSource;
 };

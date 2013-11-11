@@ -1,10 +1,11 @@
-module dquick.renderer_3d.opengl.renderer;
+module dquick.renderer3D.openGL.renderer;
 
 public import derelict.opengl3.gl;
 
-import dquick.renderer_3d.opengl.util;
+import dquick.renderer3D.openGL.util;
 import dquick.maths.matrix4x4;
-import dquick.utils.resource_manager;
+import dquick.maths.vector2s32;
+import dquick.utils.resourceManager;
 
 import std.math;
 import std.stdio;
@@ -53,6 +54,17 @@ class Renderer
 		checkgl!glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Screen And Depth Buffer
 	}
 
+	static void	setViewportSize(in Vector2s32 size)
+	{
+		mViewportSize = size;
+		glViewport(0, 0, mViewportSize.x, mViewportSize.y);
+	}
+
+	static Vector2s32	viewportSize()
+	{
+		return mViewportSize;
+	}
+
 	static void currentMDVMatrix(Matrix4x4 matrix)
 	{
 		mCurrentMDV = matrix;
@@ -77,4 +89,5 @@ private:
 	static bool			mInitialized;
 	static Matrix4x4	mCurrentMDV;
 	static Matrix4x4	mCurrentCamera;
+	static Vector2s32	mViewportSize;
 }

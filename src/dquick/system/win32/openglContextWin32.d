@@ -1,4 +1,4 @@
-module dquick.system.win32.opengl_context;
+module dquick.system.win32.openglContextWin32;
 
 // TODO Import GL3 and migrate openGL demo code to a up to date code
 // Find a way to be restricted to openGL 2 (with upper opengl function declared)
@@ -18,8 +18,9 @@ version (Windows)
 	import derelict.opengl3.wgl;
 	import derelict.opengl3.gl;
 
-	import dquick.renderer_3d.opengl.renderer;
+	import dquick.renderer3D.openGL.renderer;
 	import dquick.maths.matrix4x4;
+	import dquick.maths.vector2s32;
 
 	class OpenGLContext
 	{
@@ -146,7 +147,8 @@ version (Windows)
 				height=1;										// Making Height Equal One
 			}
 
-			glViewport(0, 0, width, height);						// Reset The Current Viewport
+
+			Renderer.setViewportSize(Vector2s32(width, height));						// Reset The Current Viewport
 
 			Matrix4x4	camera;
 			camera = Matrix4x4.orthographic(0.0, width, height, 0.0, -100.0, 100.0);

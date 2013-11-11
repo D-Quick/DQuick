@@ -1,17 +1,18 @@
-module dquick.system.win32.gui_application;
+module dquick.system.win32.guiApplicationWin32;
 
 version (Windows)
 {
-	import dquick.system.gui_application;
-	import dquick.item.declarative_item;
-	import dquick.item.graphic_item;
+	import dquick.system.guiApplication;
+	import dquick.item.declarativeItem;
+	import dquick.item.graphicItem;
 	import dquick.system.window;
 	import dquick.maths.vector2s32;
-	import dquick.item.image_item;
-	import dquick.item.text_item;
-	import dquick.item.border_image_item;
-	import dquick.item.mouse_area_item;
-	import dquick.script.dml_engine;
+	import dquick.item.imageItem;
+	import dquick.item.textItem;
+	import dquick.item.borderImageItem;
+	import dquick.item.mouseAreaItem;
+	import dquick.item.scrollViewItem;
+	import dquick.script.dmlEngine;
 
 	import std.stdio;
 	import std.c.stdlib;
@@ -23,7 +24,27 @@ version (Windows)
 	import std.c.windows.windows;
 	pragma(lib, "gdi32.lib");
 
-	import dquick.system.win32.opengl_context;
+	import dquick.system.win32.openglContextWin32;
+
+	import derelict.sdl2.sdl;
+	import derelict.sdl2.image;
+	import derelict.lua.lua;
+
+	shared static this()
+	{
+		DerelictSDL2.load();
+		DerelictSDL2Image.load();
+		DerelictGL.load();
+		DerelictLua.load();
+	}
+
+	shared static ~this()
+	{
+		DerelictLua.unload();
+		DerelictGL.unload();
+		DerelictSDL2Image.unload();
+		DerelictSDL2.unload();
+	}
 
 	class GuiApplication : IGuiApplication
 	{
@@ -109,6 +130,7 @@ version (Windows)
 			mScriptContext.addItemType!(TextItem, "Text")();
 			mScriptContext.addItemType!(BorderImageItem, "BorderImage")();
 			mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
+			mScriptContext.addItemType!(ScrollViewItem, "ScrollView")();
 		}
 
 		~this()
@@ -430,21 +452,25 @@ version (Windows)
 				case WM_LBUTTONDOWN:
 					mouseEvent.pressed = true;
 					mouseEvent.buttons = MouseEvent.Buttons.Left;
+					SetCapture(hWnd);
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_LBUTTONUP:
 					mouseEvent.released = true;
 					mouseEvent.buttons = MouseEvent.Buttons.Left;
+					ReleaseCapture();
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONDOWN:
 					mouseEvent.pressed = true;
 					mouseEvent.buttons = MouseEvent.Buttons.Right;
+					SetCapture(hWnd);
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONUP:
 					mouseEvent.released = true;
 					mouseEvent.buttons = MouseEvent.Buttons.Right;
+					ReleaseCapture();
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 
@@ -467,6 +493,8 @@ version (Windows)
 		HWND	GetDesktopWindow();
 		LONG	ChangeDisplaySettingsA(DEVMODE *lpDevMode, DWORD dwflags);
 		BOOL	MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
+		HWND	SetCapture(HWND hWnd);
+		BOOL	ReleaseCapture();
 
 		int	GET_X_LPARAM(LPARAM lParam) { return cast(int)(cast(short)LOWORD(lParam)); }
 		int	GET_Y_LPARAM(LPARAM lParam) { return cast(int)(cast(short)HIWORD(lParam)); }

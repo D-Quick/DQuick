@@ -1,4 +1,4 @@
-module dquick.events.mouse_event;
+module dquick.events.mouseEvent;
 
 public import dquick.maths.vector2s32;
 

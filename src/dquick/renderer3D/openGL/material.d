@@ -1,10 +1,10 @@
-module dquick.renderer_3d.opengl.material;
+module dquick.renderer3D.openGL.material;
 
-import dquick.renderer_3d.opengl.renderer;
-import dquick.renderer_3d.opengl.texture;
-import dquick.renderer_3d.opengl.shader;
-import dquick.renderer_3d.opengl.util;
-import dquick.renderer_3d.opengl.renderer;
+import dquick.renderer3D.openGL.renderer;
+import dquick.renderer3D.openGL.texture;
+import dquick.renderer3D.openGL.shader;
+import dquick.renderer3D.openGL.util;
+import dquick.renderer3D.openGL.renderer;
 
 import dquick.maths.color;
 
@@ -24,14 +24,14 @@ public:
 
 	bool	setTexture(string filePath)
 	{
-		mTexture = dquick.renderer_3d.opengl.renderer.resourceManager.getResource!Texture(filePath);
+		mTexture = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Texture(filePath);
 		return true;
 	}
 
 private:
 	void	destroy()
 	{
-		dquick.renderer_3d.opengl.renderer.resourceManager.releaseResource(mTexture);
+		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
 		.destroy(mShader);
 	}

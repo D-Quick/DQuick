@@ -14,6 +14,24 @@
 <dd>Have to be called only on rootItem by window<br><br>
 
 </dd>
+<dt><big><a name="GraphicItem.implicitWidth"></a>@property float <u>implicitWidth</u>();
+</big></dt>
+<dd>Return the natural width of the GraphicItem
+ The default implicit width for most items is float.nan, however some items have an inherent implicit width which cannot be overridden, e.g. Image, Text.<br><br>
+
+</dd>
+<dt><big><a name="GraphicItem.implicitHeight"></a>@property float <u>implicitHeight</u>();
+</big></dt>
+<dd>Return the natural height of the GraphicItem
+ The default implicit height for most items is float.nan, however some items have an inherent implicit height which cannot be overridden, e.g. Image, Text.<br><br>
+
+</dd>
+<dt><big><a name="GraphicItem.clip"></a>@property void <u>clip</u>(bool <i>flag</i>);
+</big></dt>
+<dd>Put it to <b>true</b> to <u>clip</u> parts of item that are out of his rectangle (determined by his size)
+ It's implemented with a scissor, so don't use it with rotations<br><br>
+
+</dd>
 <dt><big><a name="GraphicItem.scale"></a>@property void <u>scale</u>(float <i>value</i>);
 </big></dt>
 <dd>Change the <u>scale</u> factor, tranformation origin is the center of item<br><br>

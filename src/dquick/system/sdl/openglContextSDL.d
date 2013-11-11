@@ -1,4 +1,4 @@
-module dquick.system.sdl.opengl_context_sdl;
+module dquick.system.sdl.openglContextSDL;
 
 // TODO Import GL3 and migrate openGL demo code to a up to date code
 // Find a way to be restricted to openGL 2 (with upper opengl function declared)
@@ -13,13 +13,9 @@ import derelict.opengl3.gl;
 import derelict.opengl3.glx;
 import derelict.util.exception;
 
-import dquick.renderer_3d.opengl.renderer;
+import dquick.renderer3D.openGL.renderer;
 import dquick.maths.matrix4x4;
-
-version(Posix)
-{
-	pragma (lib, "dl");	// Here we do some dynamic libraries loading with derliect and dl function aren't linked by default
-}
+import dquick.maths.vector2s32;
 
 import derelict.sdl2.sdl;
 
@@ -82,7 +78,7 @@ public:
 			height=1;										// Making Height Equal One
 		}
 
-		glViewport(0, 0, width, height);						// Reset The Current Viewport
+		Renderer.setViewportSize(Vector2s32(width, height));						// Reset The Current Viewport
 
 		Matrix4x4	camera;
 		camera = Matrix4x4.orthographic(0.0, width, height, 0.0, -100.0, 100.0);

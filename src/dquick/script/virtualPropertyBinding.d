@@ -1,4 +1,4 @@
-module dquick.script.virtual_property_binding;
+module dquick.script.virtualPropertyBinding;
 
 import std.variant;
 import std.conv;
@@ -8,8 +8,8 @@ import std.array;
 
 import derelict.lua.lua;
 
-import dquick.script.property_binding;
-import dquick.script.i_item_binding;
+import dquick.script.propertyBinding;
+import dquick.script.iItemBinding;
 
 class VirtualPropertyBinding : PropertyBinding
 {

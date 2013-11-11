@@ -12,7 +12,7 @@ import dquick.maths.vector2s32;
 
 //import dquick.system.dynamic_library;
 
-import dquick.utils.resource_manager;
+import dquick.utils.resourceManager;
 
 ResourceManager	resourceManager;
 

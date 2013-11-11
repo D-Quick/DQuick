@@ -21,9 +21,14 @@ version(Windows)
 	import std.windows.registry;
 	import std.c.windows.windows;
 }
+else version(linux)
+{
+	import dquick.system.linux.fontconfig.fontconfig;
+	import std.conv;
+}
 
 /**
-* One Font per size
+* One Font per size and family
 * kerning requested at runtime
 **/
 
@@ -35,6 +40,9 @@ version(Windows)
 
 // TODO migrate FT_Library to FontManager (if it share memory)
 // TODO check kerning computation it doesn't seems working fine
+// TODO check glyph rendering quality
+
+// TODO test font config under Windows : http://www.gtk.org/download/win32.php
 
 class FontManager
 {
@@ -264,6 +272,17 @@ public:
 		return mFilePath;
 	}
 
+	/// it's a negative value
+	float	underLinePosition()
+	{
+		return mUnderlinePosition;
+	}
+
+	float	underLineThickness()
+	{
+		return mUnderlineThickness;
+	}
+
 	string	name()
 	{
 		return mName;
@@ -399,35 +418,61 @@ struct Glyph
 
 shared static this()
 {
-	fontManager = new FontManager;
-
+	version(linux)
+	{
+		DerelictFontConfig.load();
+		if (FcInit() == FcFalse)
+			throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
+	}
 	DerelictFT.load();
+
+	fontManager = new FontManager;
 }
 
 shared static ~this()
 {
 	DerelictFT.unload();
+	version(linux)
+	{
+		FcFini();
+		DerelictFontConfig.unload();
+	}
 }
 
-string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
+/// Return the default font folder with an ending /
+version(Windows)
 {
-	version(Windows)
+	string	getFontFolder()
 	{
-		string	fontPath = "C:/Windows/Fonts/";
-		string	fontFileName;
+		string	fontPath;
+
 		Key		key;
 
 		// http://msdn.microsoft.com/en-us/library/windows/desktop/bb762188%28v=vs.85%29.aspx
-/*		PWSTR	fontPathBuffer;
+		/*		PWSTR	fontPathBuffer;
 		scope(exit) CoTaskMemFree(fontPathBuffer);
 		if (SHGetKnownFolderPath(FOLDERID_Fonts, 0, NULL, &fontPathBuffer) != S_OK)
-			throw new Exception("Unable to determine the font folder.");
+		throw new Exception("Unable to determine the font folder.");
 		fontPath = ;
 		*/
 
 		// TODO use SHGetKnownFolderPath with FOLDERID_Fonts in place of direct registry access
 		key = Registry.currentUser().getKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
-		fontPath = key.getValue("Fonts").value_EXPAND_SZ() ~ "\\";
+		fontPath = key.getValue("Fonts").value_EXPAND_SZ() ~ "/";
+		return fontPath;
+	}
+}
+
+string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
+{
+	string	fontPath;
+	string	fontFileName;
+
+	version(Windows)
+	{
+		Key		key;
+
+		fontPath = getFontFolder();
 
 		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
 
@@ -451,15 +496,111 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 		}
 		return fontPath ~ fontFileName;
 	}
+	else version(linux)
+	{
+		FcConfig*	config = FcInitLoadConfigAndFonts();
+
+		// configure the search pattern, 
+		// assume "name" is a std::string with the desired font name in it
+		FcPattern*	pat = FcNameParse(name.toStringz());
+
+		scope(exit) FcPatternDestroy(pat);
+
+		FcConfigSubstitute(config, pat, FcMatchKind.FcMatchPattern);
+		FcDefaultSubstitute(pat);
+
+		// find the font
+		FcResult	result;
+		FcPattern*	font = FcFontMatch(config, pat, &result);
+
+		scope(exit) FcPatternDestroy(font);
+		if (font)
+		{
+			FcChar8*	file = null;
+			if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.FcResultMatch)
+			{
+				// save the file to another std::string
+				fontPath = to!string(file);
+			}
+		}		
+		return fontPath;
+	}
 }
 
-/*unittest
+// TODO improve rules, this method contains few erronous results
+string[]	getSystemFonts()
 {
-	assert(fontPathFromName("Arial") == "C:\\Windows\\Fonts\\arial.ttf");
-	assert(fontPathFromName("arial") == "C:\\Windows\\Fonts\\arial.ttf");	// Test with wrong case
-	assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:\\Windows\\Fonts\\arialbi.ttf");
-	assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:\\Windows\\Fonts\\andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
-}*/
+	string[]	fontNames;
+
+	version(Windows)
+	{
+		string	fontFileName;
+		Key		key;
+
+		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
+
+		string[]	families = [
+			" Regular",
+			" Condensed",
+			" Bold",
+			" Italic",
+			" Normal",
+			" Sans",
+			" Sherif",
+			" Monospace"
+		];
+
+		foreach (Value v; key.values())
+		{
+			string	name = remove(v.name(), "(TrueType)");
+
+			bool	flag = true;
+			for (size_t i = 0; flag && i < families.length; i++)
+				flag = name.indexOf(families[i]) == -1;
+			if (flag)
+				fontNames ~= name;
+		}
+		// Some fonts are only in Bold or Italic families (ex : "Arial Rounded MT Bold")
+		foreach (Value v; key.values())
+		{
+			string	name = remove(v.name(), "(TrueType)");
+			string	shortName = name;
+
+			for (size_t i = 0; i < families.length; i++)
+				shortName = remove(shortName, families[i]);
+
+			if (std.algorithm.find(fontNames, shortName).length == 0)
+				fontNames ~= shortName;
+		}
+		// Meiryo Bold & Meiryo Bold Italic & Meiryo UI Bold & Meiryo UI Bold Italic (TrueType)
+	}
+	else
+	{
+		assert(false);
+	}
+	return fontNames;
+}
+
+private string	remove(in string source, in string str)
+{
+	ptrdiff_t	pos;
+	if ((pos = source.indexOf(str)) != -1)
+		return strip(source[0..pos] ~ source[pos + str.length..$]);
+	return source;
+}
+
+unittest
+{
+	version(Windows)
+	{
+		assert(fontPathFromName("Arial") == "C:\\Windows\\Fonts/arial.ttf");
+		assert(fontPathFromName("arial") == "C:\\Windows\\Fonts/arial.ttf");	// Test with wrong case
+		assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:\\Windows\\Fonts/arialbi.ttf");
+		assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:\\Windows\\Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
+	}
+	//writeln(getSystemFonts());
+	//writeln(getSystemFonts().length);
+}
 
 // TODO make unnittest using resource manager to share image atlas between us and applications (throw TextItem)
 // it's certainly better than the call of fontManager.clear()

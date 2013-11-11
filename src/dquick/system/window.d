@@ -1,6 +1,6 @@
 module dquick.system.window;
 
-import dquick.item.graphic_item;
+import dquick.item.graphicItem;
 import dquick.maths.vector2s32;
 
 interface IWindow

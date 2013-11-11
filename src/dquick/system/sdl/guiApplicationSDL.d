@@ -1,20 +1,21 @@
-module dquick.system.sdl.gui_application;
+module dquick.system.sdl.guiApplicationSDL;
 
 // TODO voir comment partager plus de code avec la version windows, notamment le comptage des fenetres,...
-import dquick.system.gui_application;
-import dquick.item.declarative_item;
-import dquick.item.graphic_item;
+import dquick.system.guiApplication;
+import dquick.item.declarativeItem;
+import dquick.item.graphicItem;
 import dquick.system.window;
 import dquick.maths.vector2s32;
 import dquick.maths.vector2f32;
-import dquick.system.sdl.opengl_context_sdl;
-import dquick.renderer_3d.opengl.renderer;
-import dquick.events.mouse_event;
-import dquick.item.image_item;
-import dquick.item.text_item;
-import dquick.item.border_image_item;
-import dquick.item.mouse_area_item;
-import dquick.script.dml_engine;
+import dquick.system.sdl.openglContextSDL;
+import dquick.renderer3D.openGL.renderer;
+import dquick.events.mouseEvent;
+import dquick.item.imageItem;
+import dquick.item.textItem;
+import dquick.item.borderImageItem;
+import dquick.item.mouseAreaItem;
+import dquick.item.scrollViewItem;
+import dquick.script.dmlEngine;
 
 import std.string;
 import std.exception;
@@ -240,6 +241,7 @@ class Window : IWindow
 		mScriptContext.addItemType!(TextItem, "Text")();
 		mScriptContext.addItemType!(BorderImageItem, "BorderImage")();
 		mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
+		mScriptContext.addItemType!(ScrollViewItem, "ScrollView")();
 	}
 
 	~this()

@@ -1,6 +1,6 @@
-module dquick.item.mouse_area_item;
+module dquick.item.mouseAreaItem;
 
-import dquick.item.graphic_item;
+import dquick.item.graphicItem;
 
 import dquick.maths.vector2s32;
 import dquick.maths.vector3f32;
@@ -102,7 +102,7 @@ public:
 		GraphicItem.mouseEvent(event);
 	}
 
-private:
+protected:
 	bool	isIn(Vector3f32 transformedPoint)
 	{
 		return (transformedPoint.x >= 0.0f && transformedPoint.x < width &&

@@ -1,4 +1,4 @@
-module dquick.system.gui_application;
+module dquick.system.guiApplication;
 
 interface IGuiApplication
 {
@@ -13,9 +13,9 @@ interface IGuiApplication
 
 version (Windows)
 {
-	public import dquick.system.win32.gui_application;
+	public import dquick.system.win32.guiApplicationWin32;
 }
 version (Posix)
 {
-	public import dquick.system.sdl.gui_application;
+	public import dquick.system.sdl.guiApplicationSDL;
 }

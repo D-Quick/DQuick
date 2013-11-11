@@ -1,4 +1,4 @@
-module dquick.script.native_property_binding;
+module dquick.script.nativePropertyBinding;
 
 import std.stdio;
 import std.conv;
@@ -7,9 +7,9 @@ import std.array;
 
 import derelict.lua.lua;
 
-import dquick.script.property_binding;
-import dquick.script.i_item_binding;
-import dquick.script.item_binding;
+import dquick.script.propertyBinding;
+import dquick.script.iItemBinding;
+import dquick.script.itemBinding;
 import dquick.script.utils;
 
 class NativePropertyBinding(ValueType, ItemType, string PropertyName) : PropertyBinding
@@ -34,7 +34,7 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 		static if (__traits(compiles, __traits(getMember, cast(ItemType)(itemBinding.declarativeItem), PropertyName)(value)))
 			__traits(getMember, item, PropertyName)(value);
 		else
-			throw new Exception(format("Property \"%s\" is not writeable\n", PropertyName));			
+			throw new Exception(format("Property \"%s\" is not writeable\n", PropertyName));
 	}
 
 	override void	valueToLua(lua_State* L)
