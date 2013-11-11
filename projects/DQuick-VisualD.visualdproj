@@ -524,6 +524,12 @@
     <File path="..\src\dquick\script\virtualPropertyBinding.d" />
    </Folder>
    <Folder name="system">
+    <Folder name="fontconfig">
+     <File path="..\src\dquick\system\fontconfig\fontconfig.d" />
+     <File path="..\src\dquick\system\fontconfig\functions.d" />
+     <File path="..\src\dquick\system\fontconfig\types.d" />
+    </Folder>
+    <Folder name="linux" />
     <Folder name="sdl">
      <File path="..\src\dquick\system\sdl\guiApplicationSDL.d" />
      <File path="..\src\dquick\system\sdl\openglContextSDL.d" />

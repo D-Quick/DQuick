@@ -1,9 +1,9 @@
-module dquick.system.linux.fontconfig.fontconfig;
+module dquick.system.fontconfig.fontconfig;
 
 public
 {
-	import dquick.system.linux.fontconfig.types;
-	import dquick.system.linux.fontconfig.functions;
+	import dquick.system.fontconfig.types;
+	import dquick.system.fontconfig.functions;
 }
 
 private

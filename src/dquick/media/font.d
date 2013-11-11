@@ -16,16 +16,8 @@ import std.typecons;
 import std.c.string;	// for memcpy
 import std.math;
 
-version(Windows)
-{
-	import std.windows.registry;
-	import std.c.windows.windows;
-}
-else version(linux)
-{
-	import dquick.system.linux.fontconfig.fontconfig;
-	import std.conv;
-}
+import dquick.system.fontconfig.fontconfig;
+import std.conv;
 
 /**
 * One Font per size and family
@@ -418,12 +410,17 @@ struct Glyph
 
 shared static this()
 {
-	version(linux)
+	version (Windows)	// Set environment variables FONTCONFIG_FILE and FONTCONFIG_PATH, without fontconfig won't be able to locate default configuration
 	{
-		DerelictFontConfig.load();
-		if (FcInit() == FcFalse)
-			throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
+		import std.process;
+
+		environment["FONTCONFIG_FILE"] = "dquick/fontconfig/fonts.conf";
+		environment["FONTCONFIG_PATH"] = "dquick/fontconfig";
 	}
+
+	DerelictFontConfig.load();
+	if (FcInit() == FcFalse)
+		throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
 	DerelictFT.load();
 
 	fontManager = new FontManager;
@@ -432,35 +429,8 @@ shared static this()
 shared static ~this()
 {
 	DerelictFT.unload();
-	version(linux)
-	{
-		FcFini();
-		DerelictFontConfig.unload();
-	}
-}
-
-/// Return the default font folder with an ending /
-version(Windows)
-{
-	string	getFontFolder()
-	{
-		string	fontPath;
-
-		Key		key;
-
-		// http://msdn.microsoft.com/en-us/library/windows/desktop/bb762188%28v=vs.85%29.aspx
-		/*		PWSTR	fontPathBuffer;
-		scope(exit) CoTaskMemFree(fontPathBuffer);
-		if (SHGetKnownFolderPath(FOLDERID_Fonts, 0, NULL, &fontPathBuffer) != S_OK)
-		throw new Exception("Unable to determine the font folder.");
-		fontPath = ;
-		*/
-
-		// TODO use SHGetKnownFolderPath with FOLDERID_Fonts in place of direct registry access
-		key = Registry.currentUser().getKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
-		fontPath = key.getValue("Fonts").value_EXPAND_SZ() ~ "/";
-		return fontPath;
-	}
+	FcFini();
+	DerelictFontConfig.unload();
 }
 
 string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
@@ -468,63 +438,32 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 	string	fontPath;
 	string	fontFileName;
 
-	version(Windows)
+	FcConfig*	config = FcInitLoadConfigAndFonts();
+
+	// configure the search pattern, 
+	// assume "name" is a std::string with the desired font name in it
+	FcPattern*	pat = FcNameParse(name.toStringz());
+
+	scope(exit) FcPatternDestroy(pat);
+
+	FcConfigSubstitute(config, pat, FcMatchKind.FcMatchPattern);
+	FcDefaultSubstitute(pat);
+
+	// find the font
+	FcResult	result;
+	FcPattern*	font = FcFontMatch(config, pat, &result);
+
+	scope(exit) FcPatternDestroy(font);
+	if (font)
 	{
-		Key		key;
-
-		fontPath = getFontFolder();
-
-		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
-
-		try
+		FcChar8*	file = null;
+		if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.FcResultMatch)
 		{
-			if (family == Font.Family.Regular)
-				fontFileName = key.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
-			else if (family == Font.Family.Bold)
-				fontFileName = key.getValue(name ~ " Bold (TrueType)").value_EXPAND_SZ();
-			else if (family == Font.Family.Italic)
-				fontFileName = key.getValue(name ~ " Italic (TrueType)").value_EXPAND_SZ();
-			else if (family == (Font.Family.Bold | Font.Family.Italic))
-				fontFileName = key.getValue(name ~ " Bold Italic (TrueType)").value_EXPAND_SZ();
-			else
-				throw new Exception(format("Unsupported family combination : %X", family));
+			// save the file to another std::string
+			fontPath = to!string(file);
 		}
-		catch (RegistryException e)
-		{
-			fontFileName = key.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
-			// TODO catch exception and return a FontException with a "font not found" message
-		}
-		return fontPath ~ fontFileName;
-	}
-	else version(linux)
-	{
-		FcConfig*	config = FcInitLoadConfigAndFonts();
-
-		// configure the search pattern, 
-		// assume "name" is a std::string with the desired font name in it
-		FcPattern*	pat = FcNameParse(name.toStringz());
-
-		scope(exit) FcPatternDestroy(pat);
-
-		FcConfigSubstitute(config, pat, FcMatchKind.FcMatchPattern);
-		FcDefaultSubstitute(pat);
-
-		// find the font
-		FcResult	result;
-		FcPattern*	font = FcFontMatch(config, pat, &result);
-
-		scope(exit) FcPatternDestroy(font);
-		if (font)
-		{
-			FcChar8*	file = null;
-			if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.FcResultMatch)
-			{
-				// save the file to another std::string
-				fontPath = to!string(file);
-			}
-		}		
-		return fontPath;
-	}
+	}		
+	return fontPath;
 }
 
 // TODO improve rules, this method contains few erronous results
@@ -532,52 +471,8 @@ string[]	getSystemFonts()
 {
 	string[]	fontNames;
 
-	version(Windows)
-	{
-		string	fontFileName;
-		Key		key;
+	// TODO implement it using fontconfig
 
-		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
-
-		string[]	families = [
-			" Regular",
-			" Condensed",
-			" Bold",
-			" Italic",
-			" Normal",
-			" Sans",
-			" Sherif",
-			" Monospace"
-		];
-
-		foreach (Value v; key.values())
-		{
-			string	name = remove(v.name(), "(TrueType)");
-
-			bool	flag = true;
-			for (size_t i = 0; flag && i < families.length; i++)
-				flag = name.indexOf(families[i]) == -1;
-			if (flag)
-				fontNames ~= name;
-		}
-		// Some fonts are only in Bold or Italic families (ex : "Arial Rounded MT Bold")
-		foreach (Value v; key.values())
-		{
-			string	name = remove(v.name(), "(TrueType)");
-			string	shortName = name;
-
-			for (size_t i = 0; i < families.length; i++)
-				shortName = remove(shortName, families[i]);
-
-			if (std.algorithm.find(fontNames, shortName).length == 0)
-				fontNames ~= shortName;
-		}
-		// Meiryo Bold & Meiryo Bold Italic & Meiryo UI Bold & Meiryo UI Bold Italic (TrueType)
-	}
-	else
-	{
-		assert(false);
-	}
 	return fontNames;
 }
 
@@ -668,19 +563,3 @@ unittest
 
 	fontManager.clear();
 }
-
-/*
-extern (Windows)
-{
-	HRESULT SHGetKnownFolderPath(REFKNOWNFOLDERID rfid, DWORD dwFlags, HANDLE hToken, PWSTR *ppszPath);
-	alias GUID KNOWNFOLDERID;
-	alias KNOWNFOLDERID* REFKNOWNFOLDERID;
-
-	struct GUID {
-		ulong  Data1;
-		ushort Data2;
-		ushort Data3;
-		ubyte  Data4[ 8 ];
-	};
-}
-*/
