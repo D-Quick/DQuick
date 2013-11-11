@@ -17,8 +17,9 @@ import std.math;
 class GraphicItem : DeclarativeItem
 {
 public:
-	this()
+	this(DeclarativeItem parent = null)
 	{
+		super(parent);
 		mSize = Vector2f32(0, 0);
 		mTransformationUpdated = true;
 	}

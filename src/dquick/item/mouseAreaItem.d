@@ -16,6 +16,11 @@ class MouseAreaItem : GraphicItem
 {
 public:
 	alias MouseEvent.Buttons	Buttons;
+	
+	this(DeclarativeItem parent = null)
+	{
+		super(parent);
+	}
 
 	@property bool			containsMouse() {return mContainsMouse;}
 	mixin Signal!(bool)		onContainsMouseChanged;

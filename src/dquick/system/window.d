@@ -7,6 +7,8 @@ interface IWindow
 {
 	bool		create();
 	void		destroy();	/// If call on main Window (first instancied) the application will exit
+	
+	bool		wasCreated() const;
 
 	void			setMainItem(GraphicItem item);
 	void			setMainItem(string filePath);

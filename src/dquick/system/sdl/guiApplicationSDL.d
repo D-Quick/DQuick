@@ -16,6 +16,7 @@ import dquick.item.borderImageItem;
 import dquick.item.mouseAreaItem;
 import dquick.item.scrollViewItem;
 import dquick.script.dmlEngine;
+import dquick.animation.scheduler;
 
 import std.string;
 import std.exception;
@@ -45,14 +46,14 @@ shared static ~this()
 class GuiApplication : IGuiApplication
 {
 public:
-	static this()
+	shared static this()
 	{
 		if (SDL_Init(SDL_INIT_VIDEO) < 0)
 			throwError();
 		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 	}
 
-	static ~this()
+	shared static ~this()
 	{
 		destroy(resourceManager);	// Release latest resources because application is exiting
 		destroy(mInstance);
@@ -199,6 +200,8 @@ public:
 				foreach (Window window; mWindows)
 					window.onPaint();
 		}
+		
+		Scheduler.terminateAll();		
 		return 0;
 	}
 
@@ -277,6 +280,11 @@ class Window : IWindow
 
 		GuiApplication.registerWindow(this, SDL_GetWindowID(mWindow));	// Call it just after window creation validation
 		return true;
+	}
+
+	bool	wasCreated() const
+	{
+		return (mWindow !is null);
 	}
 
 	void	show()

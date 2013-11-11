@@ -122,23 +122,23 @@ interface IResource
 {
 	void	load(string filePath, Variant[] options);	/// First parameter will always be a string containing the FilePath (added by the ResourceManager), because it have to be registered. You have to throw an Exception if load failed.
 
-	@property string	filePath();
-	@property int		weight();
+	@property string	filePath() const;
+	@property int		weight() const;
 	void				incrementCounter();
 	void				decrementCounter();
-	@property size_t	counter();
+	@property size_t	counter() const;
 }
 
 mixin template ResourceBase()
 {
 public:
-	string	filePath() {return mFilePath;}
-	int		weight() {return mWeight;}
+	string	filePath() const {return mFilePath;}
+	int		weight() const {return mWeight;}
 
 //protected:
 	void				incrementCounter() {mCounter++;}
 	void				decrementCounter() {mCounter--;}
-	@property size_t	counter() {return mCounter;}
+	@property size_t	counter() const {return mCounter;}
 
 protected:
 	string	mFilePath;
