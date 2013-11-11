@@ -1,17 +1,13 @@
 module dquick.script.iItemBinding;
 
 import dquick.item.declarativeItem;
-import dquick.script.dmlEngine;
+import dquick.script.dmlEngineCore;
 
-class IItemBinding {
-
-	this()
-	{
-		creating = true;
-	}
-	dquick.script.dmlEngine.DMLEngine	dmlEngine() {return null;}
-	DeclarativeItem	declarativeItem() {return null;}
-	void	executeBindings() {};
-	string	displayDependents() {return "";};
-	bool	creating;
+interface IItemBinding {
+	dquick.script.dmlEngineCore.DMLEngineCore	dmlEngine();
+	void										dmlEngine(dquick.script.dmlEngineCore.DMLEngineCore);
+	void	executeBindings();
+	static if (dquick.script.dmlEngine.DMLEngine.showDebug)
+		string	displayDependents();
+	bool	creating();
 }

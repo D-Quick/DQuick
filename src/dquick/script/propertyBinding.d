@@ -54,8 +54,10 @@ class PropertyBinding
 	string	displayDependents()
 	{
 		string	result;
-		foreach (dependent; dependents)
-			result ~= format("%s.%s\n", itemBinding.declarativeItem().id, dependent.propertyName);
+		/*foreach (dependent; dependents)
+		{
+			result ~= format("%s.%s\n", itemBinding.id, dependent.propertyName);
+		}*/
 		return result;
 	}
 
@@ -73,7 +75,7 @@ class PropertyBinding
 				int	loopCount = 0;
 				for (int index = cast(int)(itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1);  index >= 0; index--)
 				{
-					bindingLoopCallStack ~= itemBinding.dmlEngine.currentlyExecutedBindingStack[index].itemBinding.declarativeItem.id;
+					//bindingLoopCallStack ~= itemBinding.dmlEngine.currentlyExecutedBindingStack[index].itemBinding.declarativeItem.id;
 					bindingLoopCallStack ~= ".";
 					bindingLoopCallStack ~= itemBinding.dmlEngine.currentlyExecutedBindingStack[index].propertyName;
 					bindingLoopCallStack ~= "\n";
@@ -160,7 +162,7 @@ class PropertyBinding
 		dirty = false;
 		if (itemBinding.creating == false && slotLuaReference != -1)
 			itemBinding.dmlEngine.execute(slotLuaReference);
-		if (itemBinding.dmlEngine.initializationPhase == false)
+		if (itemBinding.dmlEngine && itemBinding.dmlEngine.initializationPhase == false)
 		{
 			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
 			{

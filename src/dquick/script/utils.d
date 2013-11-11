@@ -8,6 +8,9 @@ import std.variant;
 import std.traits;
 import core.memory;
 import std.c.string;
+import std.algorithm;
+import std.stdio;
+import dquick.item.declarativeItem;
 
 string	repeat(string s, int count)
 {
@@ -39,6 +42,13 @@ string	toUpperCamelCase(string text)
 string	getSignalNameFromPropertyName(string propertyName)
 {
 	return "on" ~ toUpperCamelCase(propertyName) ~ "Changed";
+}
+
+string	getPropertyNameFromPropertyDeclaration(string declaration)
+{
+	if (endsWith(declaration, "Property"))
+		return declaration[0 .. declaration.length - "Property".length];
+	return "";
 }
 
 string	getPropertyNameFromSignalName(string signalName)
@@ -82,6 +92,8 @@ string	getLuaTypeName(lua_State* L, int index)
 
 T	valueFromLua(T)(lua_State* L, int index)
 {
+	assert(isPointer!T == false);
+
 	T	value;
 	static if (is(T == Variant))
 	{
@@ -126,19 +138,21 @@ T	valueFromLua(T)(lua_State* L, int index)
 		{
 			if (!lua_isuserdata(L, index))
 				throw new Exception(format("Lua value at index %d is a \"%s\", a userdata or nil was expected\n", index, getLuaTypeName(L, index)));
-			void*	itemBindingPtr = *(cast(void**)lua_touserdata(L, index));
+
+			void*	itemBindingVoidPtr = *(cast(void**)lua_touserdata(L, index));
+			dquick.script.iItemBinding.IItemBinding	itemBindingPtr = cast(dquick.script.iItemBinding.IItemBinding)(itemBindingVoidPtr);
 			value = cast(T)(itemBindingPtr);
 		}
 	}
 	else
-	{
 		throw new Exception(format("Lua value at index %d is a \"%s\", a number, boolean or string was expected\n", index, getLuaTypeName(L, index)));
-	}
 	return value;
 }
 
 void	valueToLua(T)(lua_State* L, T value)
 {
+	assert(isPointer!T == false);
+
 	static if (is(T == Variant))
 	{
 		if (value.type == typeid(double))
@@ -164,17 +178,18 @@ void	valueToLua(T)(lua_State* L, T value)
 	{
 		// Create a userdata that contains instance ptr and make it a global for user access
 		// It also contains a metatable for the member read and write acces
-		void*	itemBindingPtr = cast(void*)(value);
-		void*	userData = lua_newuserdata(L, itemBindingPtr.sizeof);
-		memcpy(userData, &itemBindingPtr, itemBindingPtr.sizeof);
+		dquick.script.iItemBinding.IItemBinding	iItemBinding = cast(dquick.script.iItemBinding.IItemBinding)value;
+		void*	iItemBindingVoidPtr = cast(void*)(iItemBinding);
+		void*	userData = lua_newuserdata(L, iItemBindingVoidPtr.sizeof);
+		memcpy(userData, &iItemBindingVoidPtr, iItemBindingVoidPtr.sizeof);
 
 		lua_newtable(L);
 
 		lua_pushstring(L, "__index");
-		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngine.indexLuaBind!T);
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.indexLuaBind!T);
 		lua_settable(L, -3);
 		lua_pushstring(L, "__newindex");
-		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngine.newindexLuaBind!T);
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.newindexLuaBind!T);
 		lua_settable(L, -3);
 
 		lua_setmetatable(L, -2);
@@ -247,6 +262,11 @@ unittest
 
 	assert(getPropertyNameFromSignalName("onMouseXChanged") == "mouseX");
 	assert(getPropertyNameFromSignalName("onXChanged") == "x");
+
+	assert(getPropertyNameFromPropertyDeclaration("mouseXProperty") == "mouseX");
+	assert(getPropertyNameFromPropertyDeclaration("XProperty") == "X");
+	assert(getPropertyNameFromPropertyDeclaration("xProperty") == "x");
+	assert(getPropertyNameFromPropertyDeclaration("xProp") == "");
 }
 
 

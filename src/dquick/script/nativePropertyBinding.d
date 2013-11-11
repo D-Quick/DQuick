@@ -31,16 +31,18 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 		ValueType	value = dquick.script.utils.valueFromLua!ValueType(L, index);
 		if (popFromStack)
 			lua_remove(L, index);
-		static if (__traits(compiles, __traits(getMember, cast(ItemType)(itemBinding.declarativeItem), PropertyName)(value)))
+		static if (__traits(compiles, __traits(getMember, cast(ItemType)(item), PropertyName)(value)))
 			__traits(getMember, item, PropertyName)(value);
 		else
-			throw new Exception(format("Property \"%s\" is not writeable\n", PropertyName));
+			throw new Exception(format("Property \"%s\" is not writeable\n", PropertyName));			
 	}
 
 	override void	valueToLua(lua_State* L)
 	{
 		super.valueToLua(L);
 		ValueType	value = __traits(getMember, cast(ItemType)(item), PropertyName);
+		static if (is(ValueType : dquick.script.iItemBinding.IItemBinding))
+			itemBinding.dmlEngine.addObjectBinding(value);
 		dquick.script.utils.valueToLua!ValueType(L, value);
 	}
 
