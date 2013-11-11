@@ -1,6 +1,6 @@
-module dquick.animation.scheduler;
+module dquick.algorithms.scheduler;
 
-import dquick.animation.weak;
+import dquick.algorithms.weak;
 import std.container;
 import core.thread;
 import core.time;

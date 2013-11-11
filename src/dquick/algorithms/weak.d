@@ -1,4 +1,4 @@
-module dquick.animation.weak;
+module dquick.algorithms.weak;
 
 import core.atomic;
 

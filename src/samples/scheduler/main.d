@@ -1,4 +1,4 @@
-import dquick.animation.scheduler;
+import dquick.algorithms.scheduler;
 import std.stdio;
 import core.time;
 

@@ -1,6 +1,6 @@
 module dquick.animation.animation;
 
-import dquick.animation.scheduler;
+import dquick.algorithms.scheduler;
 import core.time;
 
 interface IAnimation
@@ -428,21 +428,24 @@ class LoopedAnimation : IAnimationGroup
 	}
 }
 
-private shared Duration animationUpdateDelta = dur!"msecs"(1000/60);
-
-// adapter to use IAnimation classes with Scheduler.
-// call destroy() to remove AnimTask from Scheduler (weak references).
-private class AnimTask
+private
 {
-	this(IAnimation animation)
+	shared Duration animationUpdateDelta = dur!"msecs"(1000/60);
+
+	// adapter to use IAnimation classes with Scheduler.
+	// call destroy() to remove AnimTask from Scheduler (weak references).
+	class AnimTask
 	{
-		mAnimation = animation;
+		this(IAnimation animation)
+		{
+			mAnimation = animation;
+		}
+		
+		void execute(Duration time, Duration step, ulong iteration)
+		{
+			mAnimation.update(time);
+		}
+		
+		private IAnimation mAnimation;
 	}
-	
-	void execute(Duration time, Duration step, ulong iteration)
-	{
-		mAnimation.update(time);
-	}
-	
-	private IAnimation mAnimation;
 }

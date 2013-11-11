@@ -16,7 +16,7 @@ import dquick.item.borderImageItem;
 import dquick.item.mouseAreaItem;
 import dquick.item.scrollViewItem;
 import dquick.script.dmlEngine;
-import dquick.animation.scheduler;
+import dquick.algorithms.scheduler;
 
 import std.string;
 import std.exception;
