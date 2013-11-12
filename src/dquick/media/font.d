@@ -34,7 +34,7 @@ import std.conv;
 // TODO check kerning computation it doesn't seems working fine
 // TODO check glyph rendering quality
 
-// TODO test font config under Windows : http://www.gtk.org/download/win32.php
+// It can be good to chech how gtk manage fontconfig under windows to do something more reliable
 
 class FontManager
 {
@@ -408,19 +408,30 @@ struct Glyph
 	Image		image;
 }
 
+private FcConfig*	config;
+
 shared static this()
 {
-	version (Windows)	// Set environment variables FONTCONFIG_FILE and FONTCONFIG_PATH, without fontconfig won't be able to locate default configuration
-	{
+/*	version (Windows)	// Set environment variables FONTCONFIG_FILE and FONTCONFIG_PATH, without fontconfig won't be able to locate default configuration
+	{	// Doesn't work
 		import std.process;
 
 		environment["FONTCONFIG_FILE"] = "dquick/fontconfig/fonts.conf";
 		environment["FONTCONFIG_PATH"] = "dquick/fontconfig";
-	}
+	}*/
 
 	DerelictFontConfig.load();
 	if (FcInit() == FcFalse)
 		throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
+	version (Windows)
+	{
+		//FcConfigParseAndLoad(config, "dquick/fontconfig/fonts.conf", FcTrue);	// TODO See why it doesn't work (an absolute path doesn't help)
+		if (FcConfigAppFontAddDir(null, getFontFolder().toStringz()) == FcFalse)
+			throw new Exception("[FontManager] Fontconfig failed to scan fonts directory.");
+	}
+	else
+		config = FcInitLoadConfigAndFonts();
+
 	DerelictFT.load();
 
 	fontManager = new FontManager;
@@ -433,12 +444,36 @@ shared static ~this()
 	DerelictFontConfig.unload();
 }
 
+/// Return the default font folder
+version(Windows)
+{
+	import std.windows.registry;
+
+	string	getFontFolder()
+	{
+		string	fontPath;
+
+		Key		key;
+
+		// http://msdn.microsoft.com/en-us/library/windows/desktop/bb762188%28v=vs.85%29.aspx
+		/*		PWSTR	fontPathBuffer;
+		scope(exit) CoTaskMemFree(fontPathBuffer);
+		if (SHGetKnownFolderPath(FOLDERID_Fonts, 0, NULL, &fontPathBuffer) != S_OK)
+		throw new Exception("Unable to determine the font folder.");
+		fontPath = ;
+		*/
+
+		// TODO use SHGetKnownFolderPath with FOLDERID_Fonts in place of direct registry access
+		key = Registry.currentUser().getKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
+		fontPath = key.getValue("Fonts").value_EXPAND_SZ();
+		return fontPath;
+	}
+}
+
 string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
 {
 	string	fontPath;
 	string	fontFileName;
-
-	FcConfig*	config = FcInitLoadConfigAndFonts();
 
 	// configure the search pattern, 
 	// assume "name" is a std::string with the desired font name in it
@@ -462,7 +497,7 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 			// save the file to another std::string
 			fontPath = to!string(file);
 		}
-	}		
+	}
 	return fontPath;
 }
 
