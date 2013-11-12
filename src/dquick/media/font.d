@@ -36,6 +36,8 @@ import std.conv;
 
 // It can be good to chech how gtk manage fontconfig under windows to do something more reliable
 
+// http://www.freedesktop.org/software/fontconfig/fontconfig-user.html
+
 class FontManager
 {
 public:
@@ -474,10 +476,17 @@ string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regu
 {
 	string	fontPath;
 	string	fontFileName;
+	string	pattern;
+
+	pattern = name;
+	if (family & Font.Family.Bold)
+		pattern ~= ":bold";
+	if (family & Font.Family.Italic)
+		pattern ~= ":italic";
 
 	// configure the search pattern, 
 	// assume "name" is a std::string with the desired font name in it
-	FcPattern*	pat = FcNameParse(name.toStringz());
+	FcPattern*	pat = FcNameParse(pattern.toStringz());
 
 	scope(exit) FcPatternDestroy(pat);
 
@@ -523,10 +532,10 @@ unittest
 {
 	version(Windows)
 	{
-		assert(fontPathFromName("Arial") == "C:\\Windows\\Fonts/arial.ttf");
-		assert(fontPathFromName("arial") == "C:\\Windows\\Fonts/arial.ttf");	// Test with wrong case
-		assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:\\Windows\\Fonts/arialbi.ttf");
-		assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:\\Windows\\Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
+		assert(fontPathFromName("Arial") == "C:/Windows/Fonts/arial.ttf");
+		assert(fontPathFromName("arial") == "C:/Windows/Fonts/arial.ttf");	// Test with wrong case
+		assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:/Windows/Fonts/arialbi.ttf");
+		assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:/Windows/Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
 	}
 	//writeln(getSystemFonts());
 	//writeln(getSystemFonts().length);
