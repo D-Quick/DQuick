@@ -79,6 +79,7 @@
     <Folder Include="..\src\dquick\system\win32\" />
     <Folder Include="..\src\dquick\system\linux\" />
     <Folder Include="dquick\" />
+    <Folder Include="dquick\system\fontconfig\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\src\dquick\algorithms\atlas.d">
@@ -519,15 +520,6 @@
     <Compile Include="..\src\dquick\system\window.d">
       <Link>dquick\system\window.d</Link>
     </Compile>
-    <Compile Include="..\src\dquick\system\linux\fontconfig\fontconfig.d">
-      <Link>dquick\system\linux\fontconfig\fontconfig.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\system\linux\fontconfig\functions.d">
-      <Link>dquick\system\linux\fontconfig\functions.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\system\linux\fontconfig\types.d">
-      <Link>dquick\system\linux\fontconfig\types.d</Link>
-    </Compile>
     <Compile Include="..\src\dquick\system\sdl\guiApplicationSDL.d">
       <Link>dquick\system\sdl\guiApplicationSDL.d</Link>
     </Compile>
@@ -545,6 +537,15 @@
     </Compile>
     <Compile Include="..\src\dquick\main.d">
       <Link>dquick\main.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\fontconfig\fontconfig.d">
+      <Link>dquick\system\fontconfig\fontconfig.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\fontconfig\functions.d">
+      <Link>dquick\system\fontconfig\functions.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\system\fontconfig\types.d">
+      <Link>dquick\system\fontconfig\types.d</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

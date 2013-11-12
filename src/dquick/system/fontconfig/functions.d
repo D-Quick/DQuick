@@ -1,8 +1,8 @@
-module dquick.system.linux.fontconfig.functions;
+module dquick.system.fontconfig.functions;
 
 private
 {
-	import dquick.system.linux.fontconfig.types;
+	import dquick.system.fontconfig.types;
 
 	const int FC_CHARSET_MAP_SIZE =	256 / 32;
 	const int FC_CHARSET_DONE =		cast(FcChar32) -1;

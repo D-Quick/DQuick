@@ -1,4 +1,4 @@
-module dquick.system.linux.fontconfig.types;
+module dquick.system.fontconfig.types;
 
 // Based on fontconfig.h version 2.10.2
 
