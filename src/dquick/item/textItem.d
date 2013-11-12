@@ -40,8 +40,10 @@ public:
 		Wrap			/// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
 	}
 
-	this()
+	this(DeclarativeItem parent = null)
 	{
+		super(parent);
+		
 		Variant[] options;
 
 		options ~= Variant(import("rectangle.vert"));

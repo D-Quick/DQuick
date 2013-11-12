@@ -1,0 +1,113 @@
+module dquick.media.imageData;
+
+struct ImageData
+{
+	enum Format
+	{
+		Invalid,
+		Gr,
+		GrA,
+		RGB,
+		RGBA
+	}
+		
+	Format format;
+	uint width, height;
+	ubyte[] pixels;
+	
+	static Format formatFromChannels(uint numChannels)
+	{
+		static const Format[] formats =
+		[
+			Format.Invalid,
+			Format.Gr,
+			Format.GrA,
+			Format.RGB,
+			Format.RGBA
+		];
+		
+		if(numChannels >= formats.length)
+			return Format.Invalid;
+		return formats[numChannels];
+	}
+}
+
+interface ImageLoader
+{
+	@property
+	string name() const;
+	bool checkFormat(in string fileName);
+	bool load(in string fileName, ref ImageData data);
+	
+	static
+	{
+		int opApply(int delegate(ImageLoader) dlg)
+		{
+			int result;
+			for(ulong i = 0; i < msLoaders.length; ++i)
+			{
+				result = dlg(msLoaders[i]);
+				if(result)
+					break;
+			}
+			return result;
+		}
+		
+		void addLoader(ImageLoader loader)
+		{
+			msLoaders ~= loader;
+		}
+		
+		private ImageLoader[] msLoaders;
+	}
+}
+
+interface ImageWriter
+{
+	@property
+	string name() const;
+	bool handlesFormat(in string formatExtension) const;
+	void write(in string filePath, in ImageData data);
+	
+	static
+	{
+		void addWriter(ImageWriter writer)
+		{
+			msWriters ~= writer;
+		}
+		
+		int opApply(int delegate(ImageWriter) dlg)
+		{
+			int result;
+			for(uint i = 0; i < msWriters.length; ++i)
+			{
+				result = dlg(msWriters[i]);
+				if(result)
+					break;
+			}
+			return result;
+		}
+		
+		private ImageWriter[] msWriters;
+	}
+}
+
+private
+{
+	shared static this()
+	{
+		import std.stdio;
+		
+		import dquick.media.pnglite.pngImageLoader;
+		try
+		{
+			ImageLoader.addLoader(new PngImageLoader());
+		} catch(Exception exc){ writeln(exc.msg); }
+		
+		import dquick.media.pnglite.pngImageWriter;		
+		try
+		{
+			ImageWriter.addWriter(new PngImageWriter());
+		} catch(Exception exc){ writeln(exc.msg); }
+	}
+}
