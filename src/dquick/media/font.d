@@ -16,19 +16,11 @@ import std.typecons;
 import std.c.string;	// for memcpy
 import std.math;
 
-version(Windows)
-{
-	import std.windows.registry;
-	import std.c.windows.windows;
-}
-else version(linux)
-{
-	import dquick.system.linux.fontconfig.fontconfig;
-	import std.conv;
-}
+import dquick.system.fontconfig.fontconfig;
+import std.conv;
 
 /**
-* One Font per size and family
+* One Font per size and style
 * kerning requested at runtime
 **/
 
@@ -42,24 +34,26 @@ else version(linux)
 // TODO check kerning computation it doesn't seems working fine
 // TODO check glyph rendering quality
 
-// TODO test font config under Windows : http://www.gtk.org/download/win32.php
+// It can be good to chech how gtk manage fontconfig under windows to do something more reliable
+
+// http://www.freedesktop.org/software/fontconfig/fontconfig-user.html
 
 class FontManager
 {
 public:
-	ref Font	getFont(in string name, in Font.Family family, in int size)
+	ref Font	getFont(in string family, in Font.Style style, in int size)
 	{
 		string	fontKey;
 		Font*	font;
 
-		fontKey = format("%s-%d", name, size);
+		fontKey = format("%s-%d", family, size);
 		font = (fontKey in mFonts);
 		if (font !is null)
 			return *font;
 
 		Font	newFont = new Font;
 
-		newFont.load(fontPathFromName(name, family), family, size);
+		newFont.load(fontPathFromFamily(family, style), style, size);
 		mFonts[fontKey] = newFont;
 		return *(fontKey in mFonts);
 	}
@@ -119,9 +113,9 @@ FontManager	fontManager;
 class Font
 {
 public:
-	enum Family
+	enum Style
 	{
-		Regular = 0x00,	// 0 because Regular is the implicit family and couldn't be combined with others
+		Regular = 0x00,	// 0 because Regular is the implicit style and couldn't be combined with others
 		Bold = 0x01,
 		Italic = 0x02
 	}
@@ -283,9 +277,9 @@ public:
 		return mUnderlineThickness;
 	}
 
-	string	name()
+	string	family()
 	{
-		return mName;
+		return mFamily;
 	}
 
 	Vector2f32	kerning(uint previousCharacter, uint currentCharacter)
@@ -303,7 +297,7 @@ public:
 	}
 
 private:
-	void	load(in string filePath, in Font.Family family, in int size)
+	void	load(in string filePath, in Font.Style style, in int size)
 	{
 		mFilePath = filePath;
 		mSize = size;
@@ -386,7 +380,7 @@ private:
 	FT_Face			mFace;
 
     string	mFilePath;
-	string	mName;	// TODO Set it
+	string	mFamily;	// TODO Set it
 
     float	mSize;
     int		mHinting;
@@ -416,14 +410,30 @@ struct Glyph
 	Image		image;
 }
 
+private FcConfig*	config;
+
 shared static this()
 {
-	version(linux)
+/*	version (Windows)	// Set environment variables FONTCONFIG_FILE and FONTCONFIG_PATH, without fontconfig won't be able to locate default configuration
+	{	// Doesn't work
+		import std.process;
+
+		environment["FONTCONFIG_FILE"] = "dquick/fontconfig/fonts.conf";
+		environment["FONTCONFIG_PATH"] = "dquick/fontconfig";
+	}*/
+
+	DerelictFontConfig.load();
+	if (FcInit() == FcFalse)
+		throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
+	version (Windows)
 	{
-		DerelictFontConfig.load();
-		if (FcInit() == FcFalse)
-			throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
+		//FcConfigParseAndLoad(config, "dquick/fontconfig/fonts.conf", FcTrue);	// TODO See why it doesn't work (an absolute path doesn't help)
+		if (FcConfigAppFontAddDir(null, getFontFolder().toStringz()) == FcFalse)
+			throw new Exception("[FontManager] Fontconfig failed to scan fonts directory.");
 	}
+	else
+		config = FcInitLoadConfigAndFonts();
+
 	DerelictFT.load();
 
 	fontManager = new FontManager;
@@ -432,16 +442,15 @@ shared static this()
 shared static ~this()
 {
 	DerelictFT.unload();
-	version(linux)
-	{
-		FcFini();
-		DerelictFontConfig.unload();
-	}
+	FcFini();
+	DerelictFontConfig.unload();
 }
 
-/// Return the default font folder with an ending /
+/// Return the default font folder
 version(Windows)
 {
+	import std.windows.registry;
+
 	string	getFontFolder()
 	{
 		string	fontPath;
@@ -458,127 +467,76 @@ version(Windows)
 
 		// TODO use SHGetKnownFolderPath with FOLDERID_Fonts in place of direct registry access
 		key = Registry.currentUser().getKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
-		fontPath = key.getValue("Fonts").value_EXPAND_SZ() ~ "/";
+		fontPath = key.getValue("Fonts").value_EXPAND_SZ();
 		return fontPath;
 	}
 }
 
-string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
+string	fontPathFromFamily(in string family, in Font.Style style = Font.Style.Regular)
 {
 	string	fontPath;
 	string	fontFileName;
+	string	pattern;
 
-	version(Windows)
+	pattern = family;
+	if (style & Font.Style.Bold)
+		pattern ~= ":bold";
+	if (style & Font.Style.Italic)
+		pattern ~= ":italic";
+
+	// configure the search pattern, 
+	// assume "family" is a std::string with the desired font family in it
+	FcPattern*	pat = FcNameParse(pattern.toStringz());
+
+	scope(exit) FcPatternDestroy(pat);
+
+	FcConfigSubstitute(config, pat, FcMatchKind.FcMatchPattern);
+	FcDefaultSubstitute(pat);
+
+	// find the font
+	FcResult	result;
+	FcPattern*	font = FcFontMatch(config, pat, &result);
+
+	scope(exit) FcPatternDestroy(font);
+	if (font)
 	{
-		Key		key;
-
-		fontPath = getFontFolder();
-
-		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
-
-		try
+		FcChar8*	file = null;
+		if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.FcResultMatch)
 		{
-			if (family == Font.Family.Regular)
-				fontFileName = key.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
-			else if (family == Font.Family.Bold)
-				fontFileName = key.getValue(name ~ " Bold (TrueType)").value_EXPAND_SZ();
-			else if (family == Font.Family.Italic)
-				fontFileName = key.getValue(name ~ " Italic (TrueType)").value_EXPAND_SZ();
-			else if (family == (Font.Family.Bold | Font.Family.Italic))
-				fontFileName = key.getValue(name ~ " Bold Italic (TrueType)").value_EXPAND_SZ();
-			else
-				throw new Exception(format("Unsupported family combination : %X", family));
+			// save the file to another std::string
+			fontPath = to!string(file);
 		}
-		catch (RegistryException e)
-		{
-			fontFileName = key.getValue(name ~ " (TrueType)").value_EXPAND_SZ();
-			// TODO catch exception and return a FontException with a "font not found" message
-		}
-		return fontPath ~ fontFileName;
 	}
-	else version(linux)
-	{
-		FcConfig*	config = FcInitLoadConfigAndFonts();
-
-		// configure the search pattern, 
-		// assume "name" is a std::string with the desired font name in it
-		FcPattern*	pat = FcNameParse(name.toStringz());
-
-		scope(exit) FcPatternDestroy(pat);
-
-		FcConfigSubstitute(config, pat, FcMatchKind.FcMatchPattern);
-		FcDefaultSubstitute(pat);
-
-		// find the font
-		FcResult	result;
-		FcPattern*	font = FcFontMatch(config, pat, &result);
-
-		scope(exit) FcPatternDestroy(font);
-		if (font)
-		{
-			FcChar8*	file = null;
-			if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.FcResultMatch)
-			{
-				// save the file to another std::string
-				fontPath = to!string(file);
-			}
-		}		
-		return fontPath;
-	}
+	return fontPath;
 }
 
-// TODO improve rules, this method contains few erronous results
+/// Return all font families available
 string[]	getSystemFonts()
 {
-	string[]	fontNames;
+	string[string]	fontFiles;
 
-	version(Windows)
+	FcPattern*		pat = FcPatternCreate();
+	FcObjectSet*	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE, FC_LANG, FC_FILE, null);
+	FcFontSet*		fs = FcFontList(config, pat, os);
+
+//	writefln("Total matching fonts: %d\n", fs.nfont);
+	for (int i = 0; fs && i < fs.nfont; i++)
 	{
-		string	fontFileName;
-		Key		key;
+		FcPattern*	font = fs.fonts[i];
+		FcChar8*	file, style, family;
 
-		key = Registry.localMachine().getKey("Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts");
-
-		string[]	families = [
-			" Regular",
-			" Condensed",
-			" Bold",
-			" Italic",
-			" Normal",
-			" Sans",
-			" Sherif",
-			" Monospace"
-		];
-
-		foreach (Value v; key.values())
+		if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.FcResultMatch &&
+			FcPatternGetString(font, FC_FAMILY, 0, &family) == FcResult.FcResultMatch &&
+			FcPatternGetString(font, FC_STYLE, 0, &style) == FcResult.FcResultMatch)
 		{
-			string	name = remove(v.name(), "(TrueType)");
-
-			bool	flag = true;
-			for (size_t i = 0; flag && i < families.length; i++)
-				flag = name.indexOf(families[i]) == -1;
-			if (flag)
-				fontNames ~= name;
+			fontFiles[to!string(family)] = to!string(file);
+//			writefln("Filename: %s (family %s, style %s)", to!string(file), to!string(family), to!string(style));
 		}
-		// Some fonts are only in Bold or Italic families (ex : "Arial Rounded MT Bold")
-		foreach (Value v; key.values())
-		{
-			string	name = remove(v.name(), "(TrueType)");
-			string	shortName = name;
-
-			for (size_t i = 0; i < families.length; i++)
-				shortName = remove(shortName, families[i]);
-
-			if (std.algorithm.find(fontNames, shortName).length == 0)
-				fontNames ~= shortName;
-		}
-		// Meiryo Bold & Meiryo Bold Italic & Meiryo UI Bold & Meiryo UI Bold Italic (TrueType)
 	}
-	else
-	{
-		assert(false);
-	}
-	return fontNames;
+	if (fs)
+		FcFontSetDestroy(fs);
+
+	return fontFiles.keys();
 }
 
 private string	remove(in string source, in string str)
@@ -593,13 +551,13 @@ unittest
 {
 	version(Windows)
 	{
-		assert(fontPathFromName("Arial") == "C:\\Windows\\Fonts/arial.ttf");
-		assert(fontPathFromName("arial") == "C:\\Windows\\Fonts/arial.ttf");	// Test with wrong case
-		assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:\\Windows\\Fonts/arialbi.ttf");
-		assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:\\Windows\\Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
+		assert(fontPathFromFamily("Arial") == "C:/Windows/Fonts/arial.ttf");
+		assert(fontPathFromFamily("arial") == "C:/Windows/Fonts/arial.ttf");	// Test with wrong case
+		assert(fontPathFromFamily("Arial", Font.Style.Bold | Font.Style.Italic) == "C:/Windows/Fonts/arialbi.ttf");
+		assert(fontPathFromFamily("Andalus", Font.Style.Bold) == "C:/Windows/Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
 	}
-	//writeln(getSystemFonts());
-	//writeln(getSystemFonts().length);
+	writeln(getSystemFonts());
+	writeln(getSystemFonts().length);
 }
 
 // TODO make unnittest using resource manager to share image atlas between us and applications (throw TextItem)
@@ -611,7 +569,7 @@ unittest
 
 	Image[]	images;
 
-	font = fontManager.getFont("Times New Roman", Font.Family.Regular, 36);
+	font = fontManager.getFont("Times New Roman", Font.Style.Regular, 36);
 	text = "Iñtërnâtiônàlizætiøn";
 
 	Image		textImage;
@@ -668,19 +626,3 @@ unittest
 
 	fontManager.clear();
 }
-
-/*
-extern (Windows)
-{
-	HRESULT SHGetKnownFolderPath(REFKNOWNFOLDERID rfid, DWORD dwFlags, HANDLE hToken, PWSTR *ppszPath);
-	alias GUID KNOWNFOLDERID;
-	alias KNOWNFOLDERID* REFKNOWNFOLDERID;
-
-	struct GUID {
-		ulong  Data1;
-		ushort Data2;
-		ushort Data3;
-		ubyte  Data4[ 8 ];
-	};
-}
-*/
