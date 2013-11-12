@@ -20,7 +20,7 @@ import dquick.system.fontconfig.fontconfig;
 import std.conv;
 
 /**
-* One Font per size and family
+* One Font per size and style
 * kerning requested at runtime
 **/
 
@@ -41,19 +41,19 @@ import std.conv;
 class FontManager
 {
 public:
-	ref Font	getFont(in string name, in Font.Family family, in int size)
+	ref Font	getFont(in string family, in Font.Style style, in int size)
 	{
 		string	fontKey;
 		Font*	font;
 
-		fontKey = format("%s-%d", name, size);
+		fontKey = format("%s-%d", family, size);
 		font = (fontKey in mFonts);
 		if (font !is null)
 			return *font;
 
 		Font	newFont = new Font;
 
-		newFont.load(fontPathFromName(name, family), family, size);
+		newFont.load(fontPathFromFamily(family, style), style, size);
 		mFonts[fontKey] = newFont;
 		return *(fontKey in mFonts);
 	}
@@ -113,9 +113,9 @@ FontManager	fontManager;
 class Font
 {
 public:
-	enum Family
+	enum Style
 	{
-		Regular = 0x00,	// 0 because Regular is the implicit family and couldn't be combined with others
+		Regular = 0x00,	// 0 because Regular is the implicit style and couldn't be combined with others
 		Bold = 0x01,
 		Italic = 0x02
 	}
@@ -277,9 +277,9 @@ public:
 		return mUnderlineThickness;
 	}
 
-	string	name()
+	string	family()
 	{
-		return mName;
+		return mFamily;
 	}
 
 	Vector2f32	kerning(uint previousCharacter, uint currentCharacter)
@@ -297,7 +297,7 @@ public:
 	}
 
 private:
-	void	load(in string filePath, in Font.Family family, in int size)
+	void	load(in string filePath, in Font.Style style, in int size)
 	{
 		mFilePath = filePath;
 		mSize = size;
@@ -380,7 +380,7 @@ private:
 	FT_Face			mFace;
 
     string	mFilePath;
-	string	mName;	// TODO Set it
+	string	mFamily;	// TODO Set it
 
     float	mSize;
     int		mHinting;
@@ -472,20 +472,20 @@ version(Windows)
 	}
 }
 
-string	fontPathFromName(in string name, in Font.Family family = Font.Family.Regular)
+string	fontPathFromFamily(in string family, in Font.Style style = Font.Style.Regular)
 {
 	string	fontPath;
 	string	fontFileName;
 	string	pattern;
 
-	pattern = name;
-	if (family & Font.Family.Bold)
+	pattern = family;
+	if (style & Font.Style.Bold)
 		pattern ~= ":bold";
-	if (family & Font.Family.Italic)
+	if (style & Font.Style.Italic)
 		pattern ~= ":italic";
 
 	// configure the search pattern, 
-	// assume "name" is a std::string with the desired font name in it
+	// assume "family" is a std::string with the desired font family in it
 	FcPattern*	pat = FcNameParse(pattern.toStringz());
 
 	scope(exit) FcPatternDestroy(pat);
@@ -532,10 +532,10 @@ unittest
 {
 	version(Windows)
 	{
-		assert(fontPathFromName("Arial") == "C:/Windows/Fonts/arial.ttf");
-		assert(fontPathFromName("arial") == "C:/Windows/Fonts/arial.ttf");	// Test with wrong case
-		assert(fontPathFromName("Arial", Font.Family.Bold | Font.Family.Italic) == "C:/Windows/Fonts/arialbi.ttf");
-		assert(fontPathFromName("Andalus", Font.Family.Bold) == "C:/Windows/Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
+		assert(fontPathFromFamily("Arial") == "C:/Windows/Fonts/arial.ttf");
+		assert(fontPathFromFamily("arial") == "C:/Windows/Fonts/arial.ttf");	// Test with wrong case
+		assert(fontPathFromFamily("Arial", Font.Style.Bold | Font.Style.Italic) == "C:/Windows/Fonts/arialbi.ttf");
+		assert(fontPathFromFamily("Andalus", Font.Style.Bold) == "C:/Windows/Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
 	}
 	//writeln(getSystemFonts());
 	//writeln(getSystemFonts().length);
@@ -550,7 +550,7 @@ unittest
 
 	Image[]	images;
 
-	font = fontManager.getFont("Times New Roman", Font.Family.Regular, 36);
+	font = fontManager.getFont("Times New Roman", Font.Style.Regular, 36);
 	text = "Iñtërnâtiônàlizætiøn";
 
 	Image		textImage;

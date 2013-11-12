@@ -22,7 +22,7 @@ import std.uni;
 // TODO Add a markup system (merge meshes by texture, but limit their size for a good support of occluders)
 // TODO Fix first character position when a line wrapping occurs just before (it seems there is a little residual offset coming from removed spaces)
 
-// TODO Make Font a property (fontFamily, fontSize,... have to be in a struct)
+// TODO Make Font a property (fontStyle, fontSize,... have to be in a struct)
 // TODO Check vocabulary (family, bold,...)
 
 // TODO Check how wrapping (WrapAnywhere and Wrap) works when there is no space for a character on a ligne (item width around 0)
@@ -30,7 +30,7 @@ import std.uni;
 class TextItem : GraphicItem
 {
 public:
-	alias Font.Family	FontFamily;
+	alias Font.Style	FontStyle;
 
 	enum WrapMode
 	{
@@ -61,35 +61,35 @@ public:
 	mixin Signal!(string) onTextChanged;
 
 	/// Giving an empty string will reset the default font
-	@property void	font(string font)
+	@property void	family(string family)
 	{
-		if (font.length)
-			mFont = font;
+		if (family.length)
+			mFamily = family;
 		else
-			mFont = defaultFont;
+			mFamily = defaultFont;
 		mNeedRebuild = true;
-		onFontChanged.emit(font);
+		onFamilyChanged.emit(family);
 	}
-	@property string	font() {return mFont;}
-	mixin Signal!(string) onFontChanged;
+	@property string	family() {return mFamily;}
+	mixin Signal!(string) onFamilyChanged;
 	
 	@property void	fontSize(int size)
 	{
-		mFontSize = size;
+		mFamilySize = size;
 		mNeedRebuild = true;
 		onFontSizeChanged.emit(size);
 	}
-	@property int	fontSize() {return mFontSize;}
+	@property int	fontSize() {return mFamilySize;}
 	mixin Signal!(int) onFontSizeChanged;
 	
-	@property void	fontFamily(FontFamily family)
+	@property void	fontStyle(FontStyle family)
 	{
-		mFontFamily = family;
+		mFamilyStyle = family;
 		mNeedRebuild = true;
-		onFontFamilyChanged.emit(family);
+		onFontStyleChanged.emit(family);
 	}
-	@property FontFamily	fontFamily() {return mFontFamily;}
-	mixin Signal!(FontFamily) onFontFamilyChanged;
+	@property FontStyle	fontStyle() {return mFamilyStyle;}
+	mixin Signal!(FontStyle) onFontStyleChanged;
 
 	@property void	wrapMode(WrapMode mode)
 	{
@@ -180,7 +180,7 @@ private:
 
 			Font	font;
 
-			font = fontManager.getFont(mFont, mFontFamily, mFontSize);
+			font = fontManager.getFont(mFamily, mFamilyStyle, mFamilySize);
 
 			Vector2f32	cursor;
 			bool		newLineStarted = true;
@@ -230,7 +230,7 @@ private:
 			}
 
 			cursor.x = 0;
-			cursor.y = cast(int)font.linegap /*mFontSize*/;
+			cursor.y = cast(int)font.linegap /*mFamilySize*/;
 
 			lines ~= Line();
 			size_t	previousWordIndex = -1;
@@ -423,9 +423,9 @@ private:
 	Shader			mShader;
 	ShaderProgram	mShaderProgram;
 	string			mText;
-	string			mFont = defaultFont;
-	int				mFontSize = 24;
-	FontFamily		mFontFamily = FontFamily.Regular;
+	string			mFamily = defaultFont;
+	int				mFamilySize = 24;
+	FontStyle		mFamilyStyle = FontStyle.Regular;
 	bool			mKerning = true;
 	WrapMode		mWrapMode = WrapMode.NoWrap;
 

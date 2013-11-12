@@ -210,18 +210,18 @@ GraphicItem
 			end,
 
 			text = textFr,
-			font = function()
+			family = function()
 				if (kerningButton.pressed) then
 					return "AngsanaUPC"
 				end
 				return "Arial"
 			end,
 			fontSize = 24,
-			fontFamily = function()
+			fontStyle = function()
 				if (kerningButton.pressed) then
-					return Text.FontFamily.Italic
+					return Text.FontStyle.Italic
 				end
-				return Text.FontFamily.Regular
+				return Text.FontStyle.Regular
 			end,
 		},
 	},
