@@ -510,14 +510,33 @@ string	fontPathFromFamily(in string family, in Font.Style style = Font.Style.Reg
 	return fontPath;
 }
 
-// TODO improve rules, this method contains few erronous results
+/// Return all font families available
 string[]	getSystemFonts()
 {
-	string[]	fontNames;
+	string[string]	fontFiles;
 
-	// TODO implement it using fontconfig
+	FcPattern*		pat = FcPatternCreate();
+	FcObjectSet*	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE, FC_LANG, FC_FILE, null);
+	FcFontSet*		fs = FcFontList(config, pat, os);
 
-	return fontNames;
+//	writefln("Total matching fonts: %d\n", fs.nfont);
+	for (int i = 0; fs && i < fs.nfont; i++)
+	{
+		FcPattern*	font = fs.fonts[i];
+		FcChar8*	file, style, family;
+
+		if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResult.FcResultMatch &&
+			FcPatternGetString(font, FC_FAMILY, 0, &family) == FcResult.FcResultMatch &&
+			FcPatternGetString(font, FC_STYLE, 0, &style) == FcResult.FcResultMatch)
+		{
+			fontFiles[to!string(family)] = to!string(file);
+//			writefln("Filename: %s (family %s, style %s)", to!string(file), to!string(family), to!string(style));
+		}
+	}
+	if (fs)
+		FcFontSetDestroy(fs);
+
+	return fontFiles.keys();
 }
 
 private string	remove(in string source, in string str)
@@ -537,8 +556,8 @@ unittest
 		assert(fontPathFromFamily("Arial", Font.Style.Bold | Font.Style.Italic) == "C:/Windows/Fonts/arialbi.ttf");
 		assert(fontPathFromFamily("Andalus", Font.Style.Bold) == "C:/Windows/Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
 	}
-	//writeln(getSystemFonts());
-	//writeln(getSystemFonts().length);
+	writeln(getSystemFonts());
+	writeln(getSystemFonts().length);
 }
 
 // TODO make unnittest using resource manager to share image atlas between us and applications (throw TextItem)
