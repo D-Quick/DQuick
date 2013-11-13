@@ -100,36 +100,20 @@ public:
 						mQuit = true;
 						break;
 					case SDL_MOUSEMOTION:
-						mouseEvent.moved = true;
-						mouseEvent.position = Vector2s32(event.motion.x, event.motion.y);
+						mouseEvent.type = MouseEvent.Type.Motion;
+						fillMouseEvent(mouseEvent);
 						sendEvent(event.window.windowID, mouseEvent);
 						break;
 					case SDL_MOUSEBUTTONDOWN:
-						mouseEvent.pressed = true;
-						if (event.button.button == SDL_BUTTON_LEFT)
-							mouseEvent.buttons = MouseEvent.Buttons.Left;
-						else if (event.button.button == SDL_BUTTON_RIGHT)
-							mouseEvent.buttons = MouseEvent.Buttons.Right;
-						else if (event.button.button == SDL_BUTTON_MIDDLE)
-							mouseEvent.buttons = MouseEvent.Buttons.Middle;
-						else if (event.button.button == SDL_BUTTON_X1)
-							mouseEvent.buttons = MouseEvent.Buttons.X1;
-						else if (event.button.button == SDL_BUTTON_X2)
-							mouseEvent.buttons = MouseEvent.Buttons.X2;
+						mouseEvent.type = MouseEvent.Type.ButtonPressed;
+						mouseEvent.buttons = mouseButtons(event.button.button);
+						fillMouseEvent(mouseEvent);
 						sendEvent(event.window.windowID, mouseEvent);
 						break;
 					case SDL_MOUSEBUTTONUP:
-						mouseEvent.released = true;
-						if (event.button.button == SDL_BUTTON_LEFT)
-							mouseEvent.buttons = MouseEvent.Buttons.Left;
-						else if (event.button.button == SDL_BUTTON_RIGHT)
-							mouseEvent.buttons = MouseEvent.Buttons.Right;
-						else if (event.button.button == SDL_BUTTON_MIDDLE)
-							mouseEvent.buttons = MouseEvent.Buttons.Middle;
-						else if (event.button.button == SDL_BUTTON_X1)
-							mouseEvent.buttons = MouseEvent.Buttons.X1;
-						else if (event.button.button == SDL_BUTTON_X2)
-							mouseEvent.buttons = MouseEvent.Buttons.X2;
+						mouseEvent.type = MouseEvent.Type.ButtonReleased;
+						mouseEvent.buttons = mouseButtons(event.button.button);
+						fillMouseEvent(mouseEvent);
 						sendEvent(event.window.windowID, mouseEvent);
 						break;
 					case SDL_MOUSEWHEEL:
@@ -217,6 +201,24 @@ private:
 	static void	registerWindow(Window window, Uint32 windowId)
 	{
 		mWindows[windowId] = window;
+	}
+	
+	static void fillMouseEvent(ref MouseEvent evt)
+	{
+		uint buttons = SDL_GetMouseState(&evt.position.vector[0], &evt.position.vector[1]);
+
+	}
+	
+	static MouseEvent.Buttons mouseButtons(Uint32 sdlbuttons)
+	{
+		MouseEvent.Buttons buttons;
+		if(sdlbuttons & SDL_BUTTON(1))
+			buttons |= MouseEvent.Buttons.Left;
+		if(sdlbuttons & SDL_BUTTON(2))
+			buttons |= MouseEvent.Buttons.Middle;
+		if(sdlbuttons & SDL_BUTTON(3))
+			buttons |= MouseEvent.Buttons.Right;
+		return buttons;
 	}
 	
 	static void sendEvent(Uint32 winId, MouseEvent event)
