@@ -117,13 +117,15 @@ public:
 				memcpy(mData.pixels[(y*mData.width + x)*mData.format..$].ptr, pixel.ptr, pixel.length);
 	}
 
-	void	blit(Image sourceImage, Vector2s32 sourcePosition, Vector2s32 sourceSize, Vector2s32 destPosition)
+	void	blend(Image sourceImage, Vector2s32 sourcePosition, Vector2s32 sourceSize, Vector2s32 destPosition)
 	in
 	{
 		assert(mData.format != ImageData.Format.Invalid);
 		assert(sourcePosition.x >= 0 && sourcePosition.y >= 0);
+		assert(sourcePosition.x < sourceImage.mData.width && sourcePosition.y < sourceImage.mData.height);
 		assert(sourceSize.x >= 0 && sourceSize.y >= 0);
 		assert(destPosition.x >= 0 && destPosition.y >= 0);
+		assert(destPosition.x < mData.width && destPosition.y < mData.height);
 	}
 	body
 	{
@@ -148,6 +150,83 @@ public:
 				si = (iy*sourceImage.mData.width + ix)*srcFmt;
 				blendFn(dstPixel, sourceImage.mData.pixels[si..si + srcFmt]);
 			}
+		}
+	}
+	
+	void	blit(Image sourceImage, Vector2s32 sourcePosition, Vector2s32 sourceSize, Vector2s32 destPosition)
+	in
+	{
+		assert(mData.format != ImageData.Format.Invalid);
+		assert(sourcePosition.x >= 0 && sourcePosition.y >= 0);
+		assert(sourcePosition.x < sourceImage.mData.width && sourcePosition.y < sourceImage.mData.height);
+		assert(sourceSize.x >= 0 && sourceSize.y >= 0);
+		assert(destPosition.x >= 0 && destPosition.y >= 0);
+		assert(destPosition.x < mData.width && destPosition.y < mData.height);
+	}
+	body
+	{
+		ImageData.Format srcFmt = sourceImage.mData.format;
+		
+		ubyte* dstPixels = mData.pixels.ptr;
+		const ubyte* srcPixels = sourceImage.mData.pixels.ptr;
+		
+		uint width = min!uint(sourceSize.x, destPosition.x+mData.width);
+		uint height = min!uint(sourceSize.y, destPosition.y+mData.height);
+		
+		uint dstWidth = mData.width;
+		uint dstHeight = mData.height;
+		uint srcWidth = sourceImage.mData.width;
+		uint srcHeight = sourceImage.mData.height;
+		
+		uint minDstX = destPosition.x;
+		uint minDstY = destPosition.y;
+		
+		uint minSrcX = sourcePosition.x;
+		uint minSrcY = sourcePosition.y;
+		
+		if(mData.format == ImageData.Format.Gr)
+		{
+			if(sourceImage.mData.format == ImageData.Format.Gr)
+			{ mixin(blitPixels!(1, 1)); }
+			else if(sourceImage.mData.format == ImageData.Format.GrA)
+			{ mixin(blitPixels!(1, 2)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGB)
+			{ mixin(blitPixels!(1, 3)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGBA)
+			{ mixin(blitPixels!(1, 4)); }
+		}
+		else if(mData.format == ImageData.Format.GrA)
+		{
+			if(sourceImage.mData.format == ImageData.Format.Gr)
+			{ mixin(blitPixels!(2, 1)); }
+			else if(sourceImage.mData.format == ImageData.Format.GrA)
+			{ mixin(blitPixels!(2, 2)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGB)
+			{ mixin(blitPixels!(2, 3)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGBA)
+			{ mixin(blitPixels!(2, 4)); }
+		}
+		else if(mData.format == ImageData.Format.RGB)
+		{
+			if(sourceImage.mData.format == ImageData.Format.Gr)
+			{ mixin(blitPixels!(3, 1)); }
+			else if(sourceImage.mData.format == ImageData.Format.GrA)
+			{ mixin(blitPixels!(3, 2)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGB)
+			{ mixin(blitPixels!(3, 3)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGBA)
+			{ mixin(blitPixels!(3, 4)); }
+		}
+		else if(mData.format == ImageData.Format.RGBA)
+		{
+			if(sourceImage.mData.format == ImageData.Format.Gr)
+			{ mixin(blitPixels!(4, 1)); }
+			else if(sourceImage.mData.format == ImageData.Format.GrA)
+			{ mixin(blitPixels!(4, 2)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGB)
+			{ mixin(blitPixels!(4, 3)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGBA)
+			{ mixin(blitPixels!(4, 4)); }
 		}
 	}
 
@@ -194,9 +273,76 @@ protected:
 
 
 private
-{	
+{
 	auto min(T)(T a, T b){ return a < b ? a : b; }
 	auto max(T)(T a, T b){ return a > b ? a : b; }
+	
+	template blitPixel(uint nd, uint ns)
+	{
+		static if(nd == 1)
+		{
+			static if(ns == 1)
+				enum blitPixel = "dst[0]=src[0];";
+			else static if(ns == 2)
+				enum blitPixel = "dst[0]=src[0];";
+			else static if(ns == 3)
+				enum blitPixel = "dst[0]=cast(ubyte)(src[0]*0.21f + src[1]*0.71f + src[2]*0.07f);";
+			else static if(ns == 4)
+				enum blitPixel = "dst[0]=cast(ubyte)(src[0]*0.21f + src[1]*0.71f + src[2]*0.07f);";
+		}
+		else static if(nd == 2)
+		{
+			static if(ns == 1)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=255;";
+			else static if(ns == 2)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1];";
+			else static if(ns == 3)
+				enum blitPixel = "dst[0]=cast(ubyte)(src[0]*0.21f + src[1]*0.71f + src[2]*0.07f); dst[1]=255;";
+			else static if(ns == 4)
+				enum blitPixel = "dst[0]=cast(ubyte)(src[0]*0.21f + src[1]*0.71f + src[2]*0.07f); dst[1]=dst[3];";
+		}
+		else static if(nd == 3)
+		{
+			static if(ns == 1)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[0]; dst[2]=src[0];";
+			else static if(ns == 2)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[0]; dst[2]=src[0];";
+			else static if(ns == 3)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1]; dst[2]=src[2];";
+			else static if(ns == 4)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1]; dst[2]=src[2];";
+		}
+		else static if(nd == 4)
+		{
+			static if(ns == 1)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[0]; dst[2]=src[0]; dst[3]=255;";
+			else static if(ns == 2)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[0]; dst[2]=src[0]; dst[3]=src[1];";
+			else static if(ns == 3)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1]; dst[2]=src[2]; dst[3]=255;";
+			else static if(ns == 4)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1]; dst[2]=src[2]; dst[3]=src[3];";
+		}
+	}
+	
+	template nStr(uint n)
+	{
+		enum nStr = ["0","1","2","3","4"][n];
+	}
+	
+	template blitPixels(uint nd, uint ns)
+	{
+		enum blitPixels = r"
+			for(uint x = 0; x < width; ++x)
+			{
+				for(uint y = 0; y < height; ++y)
+				{
+					ubyte* dst = &dstPixels[((y+minDstY)*dstWidth+(x+minDstX))*" ~ nStr!nd ~ r"];
+					const ubyte* src = &srcPixels[((y+minSrcY)*srcWidth+(x+minSrcX))*" ~ nStr!ns ~ r"];
+					" ~ blitPixel!(nd, ns) ~ r"
+				}
+			}";
+	}
 	
 	immutable void function(ref ubyte[], in ubyte[])[ImageData.Format.max+1][ImageData.Format.max+1] pixelBlendFn =
 	[

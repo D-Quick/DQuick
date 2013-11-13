@@ -6,5 +6,5 @@ alias Vector!(float, 4) Color;
 
 float toGrey(in Color col)
 {
-	return (col.r + col.g + col.b) / 3.0f;
+	return col.r*0.21f + col.g*0.71f + col.b*0.07f;
 }
