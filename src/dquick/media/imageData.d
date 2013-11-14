@@ -98,16 +98,17 @@ private
 	{
 		import std.stdio;
 		
-		import dquick.media.pnglite.pngImageLoader;
+		import dquick.media.libpng.pngImageLoader;
+		import dquick.media.libjpeg.jpegImageLoader;
 		try
 		{
 			ImageLoader.addLoader(new PngImageLoader());
+			ImageLoader.addLoader(new JpegImageLoader());
 		} catch(Exception exc){ writeln(exc.msg); }
 		
-		import dquick.media.pnglite.pngImageWriter;		
 		try
 		{
-			ImageWriter.addWriter(new PngImageWriter());
+			// TODO
 		} catch(Exception exc){ writeln(exc.msg); }
 	}
 }
