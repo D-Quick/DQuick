@@ -8,13 +8,11 @@ import std.stdio;
 import std.c.stdio;
 
 version(Posix)
-{
 	import core.sys.posix.setjmp;
-}
+else version(Windows)
+	import dquick.system.win32.setjmp;
 else
-{
 	static assert("This platform doesn't have setjmp/longjmp support in D!");
-}
 
 class JpegImageLoader : ImageLoader
 {
