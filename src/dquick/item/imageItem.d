@@ -4,6 +4,8 @@ import dquick.item.graphicItem;
 
 import dquick.renderer2D.openGL.rectangle;
 
+import dquick.media.image;
+
 import std.stdio;
 
 class ImageItem : GraphicItem
@@ -17,6 +19,11 @@ public:
 		Tile,
 		TileVertically,
 		TileHorizontally,
+	}
+	
+	this(DeclarativeItem parent = null)
+	{
+		super(parent);
 	}
 
 	override

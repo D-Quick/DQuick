@@ -13,7 +13,12 @@ class BorderImageItem : GraphicItem
 {
 public:
 	alias BorderRectangle.TileMode	TileMode;
-
+	
+	this(DeclarativeItem parent = null)
+	{
+		super(parent);
+	}
+	
 	override
 	void	paint(bool transformationUpdated)
 	{

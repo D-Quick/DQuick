@@ -40,8 +40,10 @@ public:
 		Wrap			/// If possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
 	}
 
-	this()
+	this(DeclarativeItem parent = null)
 	{
+		super(parent);
+		
 		Variant[] options;
 
 		options ~= Variant(import("rectangle.vert"));
@@ -62,14 +64,14 @@ public:
 
 	/// Giving an empty string will reset the default font
 	@property void	family(string family)
-	{
+ 	{
 		if (family.length)
 			mFamily = family;
-		else
+ 		else
 			mFamily = defaultFont;
-		mNeedRebuild = true;
+ 		mNeedRebuild = true;
 		onFamilyChanged.emit(family);
-	}
+ 	}
 	@property string	family() {return mFamily;}
 	mixin Signal!(string) onFamilyChanged;
 	

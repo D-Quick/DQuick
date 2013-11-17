@@ -36,7 +36,7 @@ public:
 	{
 		mSize = newSize;
 		mUserSize = true;
-		updateMesh();
+		mMeshIsDirty = true;
 	}
 
 	Vector2f32	size()
@@ -51,6 +51,8 @@ public:
 
 	void	draw()
 	{
+		if(mMeshIsDirty)
+			updateMesh();
 		mMesh.draw();
 	}
 
@@ -95,6 +97,8 @@ private:
 						 	  1.0f, 1.0f, 1.0f, 1.0f,
 						 	  1.0f, 1.0f, 1.0f, 1.0f],
 							  cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+		
+		mMeshIsDirty = false;
 	}
 
 	void	updateMesh()
@@ -106,11 +110,14 @@ private:
 			mSize.x,	0.0f,		0.0f,
 			0.0f,		mSize.y,	0.0f,
 			mSize.x,	mSize.y,	0.0f]);
+		
+		mMeshIsDirty = false;
 	}
 
 	bool			mUserSize;
 	Vector2f32		mSize;
 	Mesh			mMesh;
+	bool			mMeshIsDirty; // indicates that mesh has to be rebuilt in next draw() call.
 	Shader			mShader;
 	ShaderProgram	mShaderProgram;
 }

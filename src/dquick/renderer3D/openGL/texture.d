@@ -83,14 +83,28 @@ private:
 		checkgl!glGenTextures(1, &mId);
 		if (mId == mBadId)
 			throw new Exception("[Texture] Unable to generate a texture");
+			
+		uint internalFormat;
+		switch(image.nbBytesPerPixel)
+		{
+		case 1:
+			internalFormat = GL_LUMINANCE;
+			break;
+		case 2:
+			internalFormat = GL_LUMINANCE_ALPHA;
+			break;
+		case 3:
+			internalFormat = GL_RGB;
+			break;
+		case 4:
+			internalFormat = GL_RGBA;
+			break;
+		default:
+			throw new Exception("[Texture] Pixel format unsupported");
+		}
 
 		checkgl!glBindTexture(GL_TEXTURE_2D, mId);
-		if (image.nbBytesPerPixel() == 3)
-			checkgl!glTexImage2D(GL_TEXTURE_2D, 0, image.nbBytesPerPixel(), mSize.x, mSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, image.pixels());
-		else if (image.nbBytesPerPixel() == 4)
-			checkgl!glTexImage2D(GL_TEXTURE_2D, 0, image.nbBytesPerPixel(), mSize.x, mSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels());
-		else
-			throw new Exception("[Texture] Pixel format unsupported");
+		checkgl!glTexImage2D(GL_TEXTURE_2D, 0, image.nbBytesPerPixel(), mSize.x, mSize.y, 0, internalFormat, GL_UNSIGNED_BYTE, image.pixels());
 
 		checkgl!glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		checkgl!glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

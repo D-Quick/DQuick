@@ -2,6 +2,8 @@ module main;
 
 import dquick.system.guiApplication;
 import dquick.item.imageItem;
+import dquick.media.image;
+import dquick.maths.vector2s32;
 
 import std.file, std.stdio;
 import std.string;
@@ -17,17 +19,15 @@ version(Posix)
 int main(string[] args)
 {
 	try
-	{
+	{		
 		writeln("Current path: ", absolutePath("."));
 		GuiApplication.instance().setApplicationArguments(args);
 		GuiApplication.instance().setApplicationDisplayName("DQuick - Images sample");
-
-		Window	mainWindow = new Window();
-		mainWindow.create();
-
-		ImageItem mainDML = new ImageItem();
-
 		chdir(GuiApplication.instance().directoryPath);
+		
+		Window mainWindow = new Window();
+		mainWindow.setSize(Vector2s32(800, 600));
+		mainWindow.create();
 
 		mainWindow.setMainItem("dml/text - constitution.lua");
 //		mainWindow.setMainItem("dml/image.lua");
