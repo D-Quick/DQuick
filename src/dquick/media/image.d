@@ -40,9 +40,9 @@ public:
 		unload();
 		mFilePath = filePath;
 		
-		foreach(loader; ImageLoader)
+		foreach (loader; ImageLoader)
 		{
-			if(loader.load(filePath, mData))
+			if (loader.load(filePath, mData))
 				return;
 		}
 		
