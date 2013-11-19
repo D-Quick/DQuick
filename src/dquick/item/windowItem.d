@@ -1,28 +1,38 @@
-module dquick.item.window_item;
+module dquick.item.windowItem;
 
 import dquick.item.graphicItem;
+import dquick.system.window;
+import dquick.system.guiApplication;
+import std.signals;
 
-/*class WindowItem : GraphicItem
+class WindowItem : GraphicItem
 {
-	void	paint()
-	{
+	// WindowItem cannot be child of any other item
+	this()
+	{		
+		mWindow = new Window();
+		mWindow.setMainItem(this);
 	}
 
 	void	setSize(Vector2s32 newSize)
-	{
+	{		
+		if(!mWindow.wasCreated)
+			mWindow.create();
+		mWindow.setSize(newSize);
+		onSizeChanged.emit(newSize);
 	}
+	
+	@property Vector2s32	size() {return mWindow.size;}
+	mixin Signal!(Vector2s32) onSizeChanged;
+	
+	@property IWindow guiWindow(){return mWindow;}
 
-	Vector2s32	size() {}
+	@property override void	width(float width) {setSize(Vector2s32(cast(int)width, mWindow.size.y));}
+	@property override float	width() {return mWindow.size.x;}
 
-	@property void		id(string id) {mId = id;}
-	@property string	id() {return mId;}
-
-	@property void	width(int width) {mRectangle.size().x = width;}
-	@property int	width() {return mRectangle.size().x;}
-
-	@property void	height(int height) {mRectangle.size().y = height;}
-	@property int	height() {return mRectangle.size().y;}
+	@property override void	height(float height) {setSize(Vector2s32(mWindow.size.x, cast(int)height));}
+	@property override float	height() {return mWindow.size.y;}
 
 private:
+	IWindow mWindow;
 }
-*/

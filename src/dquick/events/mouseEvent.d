@@ -5,9 +5,18 @@ public import dquick.maths.vector2s32;
 struct MouseEvent
 {
 public:
+	enum	Type
+	{
+		Motion,
+		Entered,
+		Left,
+		ButtonPressed,
+		ButtonReleased
+	}
+
 	enum	Buttons
 	{
-		Any			= 0x00,
+		None		= 0x00,
 		Left		= 0x01,
 		Right		= 0x02,
 		Middle		= 0x04,
@@ -15,9 +24,7 @@ public:
 		X2			= 0x10,
 	}
 
-	bool		moved = false;			// If true position is valid
+	Type		type;
 	Vector2s32	position;
-	bool		pressed = false;		// If true buttons is valid
-	bool		released = false;		// If true buttons is valid
-	Buttons		buttons = Buttons.Any;
+	Buttons		buttons = Buttons.None; // buttons causing this event.
 }

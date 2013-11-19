@@ -16,6 +16,7 @@ import dquick.item.borderImageItem;
 import dquick.item.mouseAreaItem;
 import dquick.item.scrollViewItem;
 import dquick.script.dmlEngine;
+import dquick.algorithms.scheduler;
 
 import std.string;
 import std.exception;
@@ -45,14 +46,14 @@ shared static ~this()
 class GuiApplication : IGuiApplication
 {
 public:
-	static this()
+	shared static this()
 	{
 		if (SDL_Init(SDL_INIT_VIDEO) < 0)
 			throwError();
 		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 	}
 
-	static ~this()
+	shared static ~this()
 	{
 		destroy(resourceManager);	// Release latest resources because application is exiting
 		destroy(mInstance);
@@ -99,37 +100,21 @@ public:
 						mQuit = true;
 						break;
 					case SDL_MOUSEMOTION:
-						mouseEvent.moved = true;
-						mouseEvent.position = Vector2s32(event.motion.x, event.motion.y);
-						GuiApplication.mWindows[event.window.windowID].onMouseEvent(mouseEvent);
+						mouseEvent.type = MouseEvent.Type.Motion;
+						fillMouseEvent(mouseEvent);
+						sendEvent(event.window.windowID, mouseEvent);
 						break;
 					case SDL_MOUSEBUTTONDOWN:
-						mouseEvent.pressed = true;
-						if (event.button.button == SDL_BUTTON_LEFT)
-							mouseEvent.buttons = MouseEvent.Buttons.Left;
-						else if (event.button.button == SDL_BUTTON_RIGHT)
-							mouseEvent.buttons = MouseEvent.Buttons.Right;
-						else if (event.button.button == SDL_BUTTON_MIDDLE)
-							mouseEvent.buttons = MouseEvent.Buttons.Middle;
-						else if (event.button.button == SDL_BUTTON_X1)
-							mouseEvent.buttons = MouseEvent.Buttons.X1;
-						else if (event.button.button == SDL_BUTTON_X2)
-							mouseEvent.buttons = MouseEvent.Buttons.X2;
-						GuiApplication.mWindows[event.window.windowID].onMouseEvent(mouseEvent);
+						mouseEvent.type = MouseEvent.Type.ButtonPressed;
+						mouseEvent.buttons = mouseButtons(event.button.button);
+						fillMouseEvent(mouseEvent);
+						sendEvent(event.window.windowID, mouseEvent);
 						break;
 					case SDL_MOUSEBUTTONUP:
-						mouseEvent.released = true;
-						if (event.button.button == SDL_BUTTON_LEFT)
-							mouseEvent.buttons = MouseEvent.Buttons.Left;
-						else if (event.button.button == SDL_BUTTON_RIGHT)
-							mouseEvent.buttons = MouseEvent.Buttons.Right;
-						else if (event.button.button == SDL_BUTTON_MIDDLE)
-							mouseEvent.buttons = MouseEvent.Buttons.Middle;
-						else if (event.button.button == SDL_BUTTON_X1)
-							mouseEvent.buttons = MouseEvent.Buttons.X1;
-						else if (event.button.button == SDL_BUTTON_X2)
-							mouseEvent.buttons = MouseEvent.Buttons.X2;
-						GuiApplication.mWindows[event.window.windowID].onMouseEvent(mouseEvent);
+						mouseEvent.type = MouseEvent.Type.ButtonReleased;
+						mouseEvent.buttons = mouseButtons(event.button.button);
+						fillMouseEvent(mouseEvent);
+						sendEvent(event.window.windowID, mouseEvent);
 						break;
 					case SDL_MOUSEWHEEL:
 						break;
@@ -199,6 +184,8 @@ public:
 				foreach (Window window; mWindows)
 					window.onPaint();
 		}
+		
+		Scheduler.terminateAll();		
 		return 0;
 	}
 
@@ -214,6 +201,31 @@ private:
 	static void	registerWindow(Window window, Uint32 windowId)
 	{
 		mWindows[windowId] = window;
+	}
+	
+	static void fillMouseEvent(ref MouseEvent evt)
+	{
+		uint buttons = SDL_GetMouseState(&evt.position.vector[0], &evt.position.vector[1]);
+
+	}
+	
+	static MouseEvent.Buttons mouseButtons(Uint32 sdlbuttons)
+	{
+		MouseEvent.Buttons buttons;
+		if(sdlbuttons & SDL_BUTTON(1))
+			buttons |= MouseEvent.Buttons.Left;
+		if(sdlbuttons & SDL_BUTTON(2))
+			buttons |= MouseEvent.Buttons.Middle;
+		if(sdlbuttons & SDL_BUTTON(3))
+			buttons |= MouseEvent.Buttons.Right;
+		return buttons;
+	}
+	
+	static void sendEvent(Uint32 winId, MouseEvent event)
+	{
+		auto window = winId in mWindows;
+		if(window)
+			window.onMouseEvent(event);
 	}
 
 	static GuiApplication	mInstance;
@@ -270,6 +282,11 @@ class Window : IWindow
 
 		GuiApplication.registerWindow(this, SDL_GetWindowID(mWindow));	// Call it just after window creation validation
 		return true;
+	}
+
+	bool	wasCreated() const
+	{
+		return (mWindow !is null);
 	}
 
 	void	show()

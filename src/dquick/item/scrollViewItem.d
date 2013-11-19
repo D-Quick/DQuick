@@ -14,8 +14,9 @@ import std.stdio;
 class ScrollViewItem : MouseAreaItem
 {
 public:
-	this()
+	this(DeclarativeItem parent = null)
 	{
+		super(parent);
 		onMouseXChanged.connect(&onMouseX);
 		onMouseYChanged.connect(&onMouseY);
 		onPressedChanged.connect(&onPressed);

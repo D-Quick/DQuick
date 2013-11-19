@@ -252,6 +252,11 @@ version (Windows)
 			return true;
 		}
 
+		bool	wasCreated() const
+		{
+			return mhWnd != null;
+		}
+
 		void	show()
 		{
 			// TODO
@@ -445,30 +450,30 @@ version (Windows)
 				case WM_MOUSEMOVE:
 					position.x = GET_X_LPARAM(lParam);
 					position.y = GET_Y_LPARAM(lParam);
-					mouseEvent.moved = true;
+					mouseEvent.type = MouseEvent.Type.Motion;
 					mouseEvent.position = position;
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_LBUTTONDOWN:
-					mouseEvent.pressed = true;
+					mouseEvent.type = MouseEvent.Type.ButtonPressed;
 					mouseEvent.buttons = MouseEvent.Buttons.Left;
 					SetCapture(hWnd);
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_LBUTTONUP:
-					mouseEvent.released = true;
+					mouseEvent.type = MouseEvent.Type.ButtonReleased;
 					mouseEvent.buttons = MouseEvent.Buttons.Left;
 					ReleaseCapture();
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONDOWN:
-					mouseEvent.pressed = true;
+					mouseEvent.type = MouseEvent.Type.ButtonPressed;
 					mouseEvent.buttons = MouseEvent.Buttons.Right;
 					SetCapture(hWnd);
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONUP:
-					mouseEvent.released = true;
+					mouseEvent.type = MouseEvent.Type.ButtonReleased;
 					mouseEvent.buttons = MouseEvent.Buttons.Right;
 					ReleaseCapture();
 					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
