@@ -208,6 +208,9 @@ private:
 				glyph = glyphTuple[0];
 				alreadyLoaded = glyphTuple[1];
 
+				if (glyph.atlasRegion.width == 0 || glyph.atlasRegion.height == 0)
+					return glyph;
+
 				if (!alreadyLoaded)
 				{
 					updateTexture = true;
@@ -220,12 +223,6 @@ private:
 											  fontManager.getAtlas(mImages.length - 1).size().y,
 											  4);
 						mImages[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), mImages[$ - 1].size());
-					}
-
-					if (!(0 < glyph.image.width && 0 < glyph.image.height))
-					{
-						writeln(glyph.image.width);
-						writeln(glyph.image.height);
 					}
 
 					// Write glyph in image
