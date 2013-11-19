@@ -205,6 +205,10 @@ import std.c.string;
 /// This test will use images to simplify the debugging
 unittest
 {
+	import std.file;
+	import std.path;
+	chdir(dirName(thisExePath()));
+
 	void	fillAtlas(ref Atlas atlas, Image imageAtlas, Vector2s32 size, Color color)
 	{
 		Rect2s32	region;
