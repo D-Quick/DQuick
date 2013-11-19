@@ -23,6 +23,7 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
+  <errDeprecated>0</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -116,6 +117,7 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
+  <errDeprecated>0</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -209,6 +211,7 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
+  <errDeprecated>0</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -302,6 +305,7 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
+  <errDeprecated>0</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -376,10 +380,22 @@
   <Folder name="dquick">
    <Folder name="algorithms">
     <File path="..\src\dquick\algorithms\atlas.d" />
+    <File path="..\src\dquick\algorithms\scheduler.d" />
     <File path="..\src\dquick\algorithms\textToGeometry.d" />
+    <File path="..\src\dquick\algorithms\weak.d" />
+   </Folder>
+   <Folder name="animation">
+    <File path="..\src\dquick\animation\animation.d" />
    </Folder>
    <Folder name="etc">
     <Folder name="derelict">
+     <Folder name="devil">
+      <File path="..\src\dquick\etc\derelict\import\derelict\devil\functions.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\devil\il.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\devil\ilu.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\devil\ilut.d" />
+      <File path="..\src\dquick\etc\derelict\import\derelict\devil\types.d" />
+     </Folder>
      <Folder name="freetype">
       <File path="..\src\dquick\etc\derelict\import\derelict\freetype\ft.d" />
       <File path="..\src\dquick\etc\derelict\import\derelict\freetype\functions.d" />
@@ -483,9 +499,13 @@
     <File path="..\src\dquick\maths\vector4f32.d" />
    </Folder>
    <Folder name="media">
+    <Folder name="devil">
+     <File path="..\src\dquick\media\devil\devilLoader.d" />
+    </Folder>
     <File path="..\src\dquick\media\font.d" />
     <File path="..\src\dquick\media\geometry.d" />
     <File path="..\src\dquick\media\image.d" />
+    <File path="..\src\dquick\media\imageData.d" />
    </Folder>
    <Folder name="renderer2D">
     <Folder name="openGL">

@@ -26,16 +26,16 @@ class DevILImageLoader : ImageLoader
 		ilBindImage(img);
 		scope(exit) ilDeleteImages(1, &img);
 		
-		if(!ilLoadImage(fileName.toStringz))
+		if (!ilLoadImage(fileName.toStringz))
 			return false;
-			
+
 		data.width = ilGetInteger(IL_IMAGE_WIDTH);
 		data.height = ilGetInteger(IL_IMAGE_HEIGHT); 
 		uint fmt = ilGetInteger(IL_IMAGE_FORMAT).swapILFormat;
 		data.format = formatFromIL(fmt);
-		data.pixels = new ubyte[data.width*data.height*data.format];
+		data.pixels = new ubyte[data.width * data.height * data.format];
 		ilCopyPixels(0, 0, 0, data.width, data.height, 1, fmt, IL_UNSIGNED_BYTE, data.pixels.ptr);
-		
+
 		return true;
 	}
 }

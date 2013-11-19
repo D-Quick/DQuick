@@ -42,7 +42,7 @@ interface ImageLoader
 		int opApply(int delegate(ImageLoader) dlg)
 		{
 			int result;
-			for(ulong i = 0; i < msLoaders.length; ++i)
+			for (size_t i = 0; i < msLoaders.length; ++i)
 			{
 				result = dlg(msLoaders[i]);
 				if(result)
@@ -96,14 +96,6 @@ private
 		import std.stdio;
 		
 		import dquick.media.devil.devilLoader;
-		try
-		{
-			ImageLoader.addLoader(new DevILImageLoader());
-		} catch(Exception exc){ writeln(exc.msg); }
-		
-		try
-		{
-			// TODO
-		} catch(Exception exc){ writeln(exc.msg); }
+		ImageLoader.addLoader(new DevILImageLoader());
 	}
 }

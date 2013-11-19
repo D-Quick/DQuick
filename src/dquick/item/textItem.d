@@ -208,6 +208,9 @@ private:
 				glyph = glyphTuple[0];
 				alreadyLoaded = glyphTuple[1];
 
+				if (glyph.atlasRegion.width == 0 || glyph.atlasRegion.height == 0)
+					return glyph;
+
 				if (!alreadyLoaded)
 				{
 					updateTexture = true;
