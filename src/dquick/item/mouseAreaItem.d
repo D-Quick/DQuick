@@ -16,6 +16,11 @@ class MouseAreaItem : GraphicItem
 {
 public:
 	alias MouseEvent.Buttons	Buttons;
+	
+	this(DeclarativeItem parent = null)
+	{
+		super(parent);
+	}
 
 	@property bool			containsMouse() {return mContainsMouse;}
 	mixin Signal!(bool)		onContainsMouseChanged;
@@ -65,12 +70,12 @@ public:
 
 			Vector3f32	transformedPoint;
 			
-			if (event.moved)
+			if (event.type == MouseEvent.Type.Motion)
 				mWindowMousePosition = event.position;
 
-			if (event.pressed)
+			if (event.type == MouseEvent.Type.ButtonPressed)
 				mPressedButtons |= event.buttons;
-			if (event.released)
+			if (event.type == MouseEvent.Type.ButtonReleased)
 				mPressedButtons = mPressedButtons & (event.buttons ^ cast(Buttons)(-1));
 
 			transformedPoint = Vector3f32(mMatrix.inverse() * Vector4f32(Vector3f32(mWindowMousePosition.x, mWindowMousePosition.y, 0)));
@@ -111,7 +116,7 @@ protected:
 
 	bool	computePressedStatus()
 	{
-		return (mPressedButtons != Buttons.Any) && mContainsMouse;
+		return (mPressedButtons != Buttons.None) && mContainsMouse;
 	}
 
 	bool		mEnable = true;
@@ -121,5 +126,5 @@ protected:
 
 	Vector2f32	mMousePosition = Vector2f32(0.0f, 0.0f);
 	Vector2s32	mWindowMousePosition = Vector2s32(0, 0);
-	Buttons		mPressedButtons = Buttons.Any;
+	Buttons		mPressedButtons = Buttons.None;
 }

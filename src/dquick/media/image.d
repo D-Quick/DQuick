@@ -3,15 +3,12 @@ module dquick.media.image;
 import std.string;
 import std.stdio;
 import std.conv;
+import std.path;
+import std.c.string;
 
-import derelict.sdl2.image;
-import derelict.sdl2.sdl;
-
+import dquick.media.imageData;
 import dquick.maths.color;
 import dquick.maths.vector2s32;
-
-//import dquick.system.dynamic_library;
-
 import dquick.utils.resourceManager;
 
 ResourceManager	resourceManager;
@@ -41,139 +38,460 @@ public:
 	{
 		assert(options == null);
 		unload();
-
-		if ((mSurface = IMG_Load(filePath.toStringz)) != null)
+		mFilePath = filePath;
+		
+		foreach(loader; ImageLoader)
 		{
-			mWeight = width * height * nbBytesPerPixel;
-			mFilePath = filePath;
-			if (SDL_SetSurfaceBlendMode(mSurface, SDL_BLENDMODE_NONE) != 0)
-				throw new Exception(format("Unable to fix rigth blending mode, error : \"%s\"", to!string(SDL_GetError())));
+			if(loader.load(filePath, mData))
+				return;
 		}
-		else
-			throw new Exception(format("Unable to load image \"%s\"", filePath));
+		
+		throw new Exception("Unable to load an image from '" ~ filePath ~ "': file does not exist, or format is unsupported!");
 	}
 
 	void	save(string filePath)
 	{
-		if (SDL_SaveBMP(mSurface, filePath.toStringz) != 0)
-			throw new Exception(format("Unable to save image \"%s\", error : \"%s\"", filePath, to!string(SDL_GetError())));
+		string ext = filePath.extension;
+		foreach(writer; ImageWriter)
+		{
+			if(writer.handlesFormat(ext))
+			{
+				writer.write(filePath, mData);
+				return;
+			}
+		}
+		
+		throw new Exception("Unable to save an image to '" ~ filePath ~ "'!");
 	}
 
 	void	create(string filePath, uint width, uint height, ubyte nbBytesPerPixel)
 	{
 		unload();
-
-		version(BigEndian)
-		{
-			uint rmask = 0xff000000;
-			uint gmask = 0x00ff0000;
-			uint bmask = 0x0000ff00;
-			uint amask = 0x000000ff;
-		}
-		else
-		{
-			uint rmask = 0x000000ff;
-			uint gmask = 0x0000ff00;
-			uint bmask = 0x00ff0000;
-			uint amask = 0xff000000;
-		}
-
-		if ((mSurface = SDL_CreateRGBSurface(0, width, height, nbBytesPerPixel * 8, rmask, gmask, bmask, amask)) != null)
-		{
-			mWeight = width * height * nbBytesPerPixel;
-			mFilePath = filePath;
-			if (SDL_SetSurfaceBlendMode(mSurface, SDL_BLENDMODE_NONE) != 0)
-				throw new Exception(format("Unable to fix rigth blending mode, error : \"%s\"", to!string(SDL_GetError())));
-		}
-		else
-			throw new Exception(format("Unable to create image \"%s\", error : \"%s\"", filePath, to!string(SDL_GetError())));
+		
+		mFilePath = filePath;
+		mData.format = ImageData.formatFromChannels(nbBytesPerPixel);
+		mData.width = width;
+		mData.height = height;
+		mData.pixels = new ubyte[width*height*nbBytesPerPixel];
 	}
 
 	void	fill(Color color, Vector2s32 position, Vector2s32 size)
-	{
-		assert(mSurface);
+	{		
+		scope ubyte[] pixel = new ubyte[mData.format];
+		final switch(mData.format)
+		{
+		case ImageData.Format.Invalid:
+			return;
+		case ImageData.Format.Gr:
+			pixel[0] = cast(ubyte)(color.toGrey * 255.0f);
+			break;
+		case ImageData.Format.GrA:
+			pixel[0] = cast(ubyte)(color.toGrey * 255.0f);
+			pixel[1] = cast(ubyte)(color.w * 255.0f);
+			break;
+		case ImageData.Format.RGB:
+			pixel[0] = cast(ubyte)(color.x * 255.0f);
+			pixel[1] = cast(ubyte)(color.y * 255.0f);
+			pixel[2] = cast(ubyte)(color.z * 255.0f);
+			break;
+		case ImageData.Format.RGBA:
+			pixel[0] = cast(ubyte)(color.x * 255.0f);
+			pixel[1] = cast(ubyte)(color.y * 255.0f);
+			pixel[2] = cast(ubyte)(color.z * 255.0f);
+			pixel[3] = cast(ubyte)(color.w * 255.0f);
+			break;
+		}
+		
+		uint minX = min!int(position.x, 0);
+		uint maxX = min!int(max!int(position.x + size.x, mData.width), 0);
+		uint minY = min!int(position.y, 0);
+		uint maxY = min!int(max!int(position.y + size.y, mData.height), 0);
 
-		SDL_Rect	rect;
-		Uint32		colorCode;
-
-		rect.x = position.x;
-		rect.y = position.y;
-		rect.w = size.x;
-		rect.h = size.y;
-
-		colorCode = SDL_MapRGBA(mSurface.format, cast(ubyte)(color.z * 255.0), cast(ubyte)(color.y * 255.0), cast(ubyte)(color.x * 255.0), cast(ubyte)(color.w * 255.0));
-		if (SDL_FillRect(mSurface, &rect, colorCode) != 0)
-			throw new Exception(format("Unable to fill image, error : \"%s\"", to!string(SDL_GetError())));
+		for(uint x = minX; x < maxX; ++x)
+			for(uint y = minY; y < maxY; ++y)
+				memcpy(mData.pixels[(y*mData.width + x)*mData.format..$].ptr, pixel.ptr, pixel.length);
 	}
 
-	/// Doesn't support blending
-	void	blit(Image sourceImage, Vector2s32 sourcePosition, Vector2s32 sourceSize, Vector2s32 destPosition)
+	void	blend(Image sourceImage, Vector2s32 sourcePosition, Vector2s32 sourceSize, Vector2s32 destPosition)
+	in
 	{
-		assert(sourceImage.mSurface != null);
-		assert(mSurface != null);
-
-		SDL_Rect	sourceRect;
-		SDL_Rect	destinationRect;
-
-		sourceRect.x = sourcePosition.x;
-		sourceRect.y = sourcePosition.y;
-		sourceRect.w = sourceSize.x;
-		sourceRect.h = sourceSize.y;
-
-		destinationRect.x = destPosition.x;
-		destinationRect.y = destPosition.y;
-		destinationRect.w = 0;
-		destinationRect.h = 0;
-
-		if (SDL_BlitSurface(sourceImage.mSurface, &sourceRect, mSurface, &destinationRect) != 0)
-			throw new Exception(format("Unable to fill image, error : \"%s\"", to!string(SDL_GetError())));
+		assert(mData.format != ImageData.Format.Invalid);
+		assert(sourcePosition.x >= 0 && sourcePosition.y >= 0);
+		assert(sourcePosition.x < sourceImage.mData.width && sourcePosition.y < sourceImage.mData.height);
+		assert(sourceSize.x >= 0 && sourceSize.y >= 0);
+		assert(destPosition.x >= 0 && destPosition.y >= 0);
+		assert(destPosition.x < mData.width && destPosition.y < mData.height);
+	}
+	body
+	{
+		void function(ref ubyte[] dst, in ubyte[] src) blendFn = pixelBlendFn[mData.format][sourceImage.mData.format];
+		
+		ImageData.Format srcFmt = sourceImage.mData.format;
+		
+		uint maxX = min!int(sourceSize.x, mData.width - destPosition.x);
+		uint maxY = min!int(sourceSize.y, mData.height - destPosition.y);
+		
+		for(uint x = 0; x < maxX; ++x)
+		{
+			for(uint y = 0; y < maxY; ++y)
+			{
+				uint ix = x + destPosition.x;
+				uint iy = y + destPosition.y;
+				uint si = (iy*mData.width + ix)*mData.format;
+				ubyte[] dstPixel = mData.pixels[si..si+mData.format];
+				
+				ix = x + sourcePosition.x;
+				iy = y + sourcePosition.y;
+				si = (iy*sourceImage.mData.width + ix)*srcFmt;
+				blendFn(dstPixel, sourceImage.mData.pixels[si..si + srcFmt]);
+			}
+		}
+	}
+	
+	void	blit(Image sourceImage, Vector2s32 sourcePosition, Vector2s32 sourceSize, Vector2s32 destPosition)
+	in
+	{
+		assert(mData.format != ImageData.Format.Invalid);
+		assert(sourcePosition.x >= 0 && sourcePosition.y >= 0);
+		assert(sourcePosition.x < sourceImage.mData.width && sourcePosition.y < sourceImage.mData.height);
+		assert(sourceSize.x >= 0 && sourceSize.y >= 0);
+		assert(destPosition.x >= 0 && destPosition.y >= 0);
+		assert(destPosition.x < mData.width && destPosition.y < mData.height);
+	}
+	body
+	{
+		ImageData.Format srcFmt = sourceImage.mData.format;
+		
+		ubyte* dstPixels = mData.pixels.ptr;
+		const ubyte* srcPixels = sourceImage.mData.pixels.ptr;
+		
+		uint width = min!uint(sourceSize.x, destPosition.x+mData.width);
+		uint height = min!uint(sourceSize.y, destPosition.y+mData.height);
+		
+		uint dstWidth = mData.width;
+		uint dstHeight = mData.height;
+		uint srcWidth = sourceImage.mData.width;
+		uint srcHeight = sourceImage.mData.height;
+		
+		uint minDstX = destPosition.x;
+		uint minDstY = destPosition.y;
+		
+		uint minSrcX = sourcePosition.x;
+		uint minSrcY = sourcePosition.y;
+		
+		if(mData.format == ImageData.Format.Gr)
+		{
+			if(sourceImage.mData.format == ImageData.Format.Gr)
+			{ mixin(blitPixels!(1, 1)); }
+			else if(sourceImage.mData.format == ImageData.Format.GrA)
+			{ mixin(blitPixels!(1, 2)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGB)
+			{ mixin(blitPixels!(1, 3)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGBA)
+			{ mixin(blitPixels!(1, 4)); }
+		}
+		else if(mData.format == ImageData.Format.GrA)
+		{
+			if(sourceImage.mData.format == ImageData.Format.Gr)
+			{ mixin(blitPixels!(2, 1)); }
+			else if(sourceImage.mData.format == ImageData.Format.GrA)
+			{ mixin(blitPixels!(2, 2)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGB)
+			{ mixin(blitPixels!(2, 3)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGBA)
+			{ mixin(blitPixels!(2, 4)); }
+		}
+		else if(mData.format == ImageData.Format.RGB)
+		{
+			if(sourceImage.mData.format == ImageData.Format.Gr)
+			{ mixin(blitPixels!(3, 1)); }
+			else if(sourceImage.mData.format == ImageData.Format.GrA)
+			{ mixin(blitPixels!(3, 2)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGB)
+			{ mixin(blitPixels!(3, 3)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGBA)
+			{ mixin(blitPixels!(3, 4)); }
+		}
+		else if(mData.format == ImageData.Format.RGBA)
+		{
+			if(sourceImage.mData.format == ImageData.Format.Gr)
+			{ mixin(blitPixels!(4, 1)); }
+			else if(sourceImage.mData.format == ImageData.Format.GrA)
+			{ mixin(blitPixels!(4, 2)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGB)
+			{ mixin(blitPixels!(4, 3)); }
+			else if(sourceImage.mData.format == ImageData.Format.RGBA)
+			{ mixin(blitPixels!(4, 4)); }
+		}
 	}
 
 	void	unload()
 	{
-		if (mSurface != null)
-		{
-			SDL_FreeSurface(mSurface);
-			mSurface = null;
-		}
+		mData.format = ImageData.Format.Invalid;
+		mData.width = mData.height = 0;
+		mData.pixels = null;
 	}
 
-	uint	width()
+	uint	width() const
 	{
-		if (mSurface)
-			return mSurface.w;
-		return 0;
+		return mData.width;
 	}
 
-	uint	height()
+	uint	height() const
 	{
-		if (mSurface)
-			return mSurface.h;
-		return 0;
+		return mData.height;
 	}
 
-	Vector2s32	size()
+	Vector2s32	size() const
 	{
 		return Vector2s32(width, height);
 	}
 
 	ubyte*	pixels()
 	{
-		if (mSurface)
-			return cast(ubyte*)mSurface.pixels;
-		return null;
+		return mData.pixels.ptr;
 	}
 
-	ubyte	nbBytesPerPixel()
+	const(ubyte*)	pixels() const
 	{
-		if (mSurface)
-			return mSurface.format.BytesPerPixel;
-		return 0;
+		return mData.pixels.ptr;
 	}
 
-	// TODO find why ImageAtlas that derived Image can't acces mSurface member directly (check method setRegion and parameter subImage)
-	SDL_Surface*	getSurface() {return mSurface;}
+	ubyte	nbBytesPerPixel() const
+	{
+		return cast(ubyte)mData.format;
+	}
 
 protected:
-	SDL_Surface*	mSurface = null;
+	ImageData mData;
+}
+
+
+private
+{
+	auto min(T)(T a, T b){ return a < b ? a : b; }
+	auto max(T)(T a, T b){ return a > b ? a : b; }
+	
+	template blitPixel(uint nd, uint ns)
+	{
+		static if(nd == 1)
+		{
+			static if(ns == 1)
+				enum blitPixel = "dst[0]=src[0];";
+			else static if(ns == 2)
+				enum blitPixel = "dst[0]=src[0];";
+			else static if(ns == 3)
+				enum blitPixel = "dst[0]=cast(ubyte)(src[0]*0.21f + src[1]*0.71f + src[2]*0.07f);";
+			else static if(ns == 4)
+				enum blitPixel = "dst[0]=cast(ubyte)(src[0]*0.21f + src[1]*0.71f + src[2]*0.07f);";
+		}
+		else static if(nd == 2)
+		{
+			static if(ns == 1)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=255;";
+			else static if(ns == 2)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1];";
+			else static if(ns == 3)
+				enum blitPixel = "dst[0]=cast(ubyte)(src[0]*0.21f + src[1]*0.71f + src[2]*0.07f); dst[1]=255;";
+			else static if(ns == 4)
+				enum blitPixel = "dst[0]=cast(ubyte)(src[0]*0.21f + src[1]*0.71f + src[2]*0.07f); dst[1]=dst[3];";
+		}
+		else static if(nd == 3)
+		{
+			static if(ns == 1)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[0]; dst[2]=src[0];";
+			else static if(ns == 2)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[0]; dst[2]=src[0];";
+			else static if(ns == 3)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1]; dst[2]=src[2];";
+			else static if(ns == 4)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1]; dst[2]=src[2];";
+		}
+		else static if(nd == 4)
+		{
+			static if(ns == 1)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[0]; dst[2]=src[0]; dst[3]=255;";
+			else static if(ns == 2)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[0]; dst[2]=src[0]; dst[3]=src[1];";
+			else static if(ns == 3)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1]; dst[2]=src[2]; dst[3]=255;";
+			else static if(ns == 4)
+				enum blitPixel = "dst[0]=src[0]; dst[1]=src[1]; dst[2]=src[2]; dst[3]=src[3];";
+		}
+	}
+	
+	template nStr(uint n)
+	{
+		enum nStr = ["0","1","2","3","4"][n];
+	}
+	
+	template blitPixels(uint nd, uint ns)
+	{
+		enum blitPixels = r"
+			for(uint x = 0; x < width; ++x)
+			{
+				for(uint y = 0; y < height; ++y)
+				{
+					ubyte* dst = &dstPixels[((y+minDstY)*dstWidth+(x+minDstX))*" ~ nStr!nd ~ r"];
+					const ubyte* src = &srcPixels[((y+minSrcY)*srcWidth+(x+minSrcX))*" ~ nStr!ns ~ r"];
+					" ~ blitPixel!(nd, ns) ~ r"
+				}
+			}";
+	}
+	
+	immutable void function(ref ubyte[], in ubyte[])[ImageData.Format.max+1][ImageData.Format.max+1] pixelBlendFn =
+	[
+		// dst.length == 0
+		[
+			function void(ref ubyte[], in ubyte[]){},
+			function void(ref ubyte[], in ubyte[]){},
+			function void(ref ubyte[], in ubyte[]){},
+			function void(ref ubyte[], in ubyte[]){},
+			function void(ref ubyte[], in ubyte[]){}
+		],
+		
+		// dst.length == 1
+		[
+			// src.length == 0
+			function void(ref ubyte[] dst, in ubyte[] src){
+				dst[0] = 0;
+			},
+			// src.length == 1
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(1, false, false, ubyte).go(dst.ptr, src[0]);
+			},
+			// src.length == 2
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(1, false, true, ubyte, ubyte).go(dst.ptr, src[0], src[1]);
+			},
+			// src.length == 3
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(1, false, false, ubyte).go(dst.ptr, (src[0] + src[1] + src[2])/3);
+			},
+			// src.length == 4
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(1, false, true, ubyte, ubyte).go(dst.ptr, (src[0] + src[1] + src[2])/3, src[3]);
+			}
+		],
+		
+		// dst.length == 2
+		[
+			// src.length == 0
+			function void(ref ubyte[] dst, in ubyte[] src){
+				dst[0] = 0; dst[1] = 0;
+			},
+			// src.length == 1
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(2, true, false, ubyte).go(dst.ptr, src[0]);
+			},
+			// src.length == 2
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(2, true, true, ubyte, ubyte).go(dst.ptr, src[0], src[1]);
+			},
+			// src.length == 3
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(2, true, false, ubyte).go(dst.ptr, (src[0] + src[1] + src[2])/3);
+			},
+			// src.length == 4
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(2, true, true, ubyte, ubyte).go(dst.ptr, (src[0] + src[1] + src[2])/3, src[3]);
+			}
+		],
+		
+		// dst.length == 3
+		[
+			// src.length == 0
+			function void(ref ubyte[] dst, in ubyte[] src){
+				dst[0] = dst[1] = dst[2] = 0;
+			},
+			// src.length == 1
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(3, false, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0]);
+			},
+			// src.length == 2
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(3, false, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0], src[1]);
+			},
+			// src.length == 3
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(3, false, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[1], src[2]);
+			},
+			// src.length == 4
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(3, false, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[1], src[2], src[3]);
+			}
+		],
+		
+		// dst.length == 4
+		[
+			// src.length == 0
+			function void(ref ubyte[] dst, in ubyte[] src){
+				dst[0] = dst[1] = dst[2] = dst[3] = 0;
+			},
+			// src.length == 1
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(4, true, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0]);
+			},
+			// src.length == 2
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(4, true, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[0], src[0], src[1]);
+			},
+			// src.length == 3
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(4, true, false, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[3], src[2]);
+			},
+			// src.length == 4
+			function void(ref ubyte[] dst, in ubyte[] src){
+				blender!(4, true, true, ubyte, ubyte, ubyte, ubyte).go(dst.ptr, src[0], src[1], src[2], src[3]);
+			}
+		]
+	];
+	
+	template blender(uint numCh, bool dstAlpha, bool srcAlpha, Src...)
+	{
+		void go(ubyte* dst, Src src)
+		{
+			static if(dstAlpha && srcAlpha)
+			{
+				uint tmp;
+				float sa = (cast(float)src[$-1])/255.0f;
+				float da = 1.0f - sa;
+				mixin(repeat!(0, numCh-1, "i", q{
+					tmp = cast(uint)(dst[i] * da + src[i] * sa);
+					dst[i] = cast(ubyte)min(tmp, 255u);
+				}));
+				dst[numCh-1] = cast(ubyte)min(cast(uint)(src[$-1]*sa + dst[numCh-1]*dst[numCh-1]/255.0f), 255u);
+			}
+			else static if(dstAlpha)
+			{
+				mixin(repeat!(0, numCh-1, "i", q{
+					dst[i] = src[i];
+				}));
+				dst[numCh-1] = 255;
+			}
+			else static if(srcAlpha)
+			{
+				uint tmp;
+				float sa = (cast(float)src[$-1])/255.0f;
+				float da = 1.0f - sa;
+				mixin(repeat!(0, numCh, "i", q{
+					tmp = cast(uint)(dst[i] * da + src[i] * sa);
+					dst[i] = cast(ubyte)min(tmp, 255u);
+				}));
+			}
+			else
+			{
+				foreach(s; src)
+					(*dst++) = s;
+			}
+		}
+	}
+	
+	template repeat(uint i, uint max, string indexName, string code)
+	{
+		static if(i < max - 1)
+			enum repeat = "{ enum " ~ indexName ~ "=" ~ to!string(i) ~ "; " ~ code ~ " } " ~ repeat!(i+1, max, indexName, code);
+		else
+			enum repeat = "{ enum " ~ indexName ~ "=" ~ to!string(i) ~ "; " ~ code ~ " } ";
+	}
 }

@@ -19,11 +19,48 @@ public:
 
 	@property void				parent(DeclarativeItem parent) {mParent = parent;}
 	@property DeclarativeItem	parent() {return mParent;}
+	
+	this(DeclarativeItem parent = null)
+	{
+		if(parent !is null)
+			parent.addChild(this);
+	}
+	
+	~this()
+	{
+		foreach(child; mChildren)
+			child.detach();
+	}
 
 	void	addChild(DeclarativeItem item)
 	{
+		// detach item from its previous parent
+		if(item.parent !is null)
+			item.parent.removeChild(item);
+		
 		mChildren ~= item;
 		item.parent = this;
+	}
+	
+	void	removeChild(DeclarativeItem item)
+	{
+		for(uint i = 0; i < mChildren.length; )
+		{
+			if(mChildren[i] is item)
+				mChildren = mChildren[0..i] ~ mChildren[i+1..$];
+			else
+				++i;
+		}
+	}
+	
+	/* This function is called by parent/window when parent is destroyed.
+	 * Children should release resources here.
+	 */
+	void	detach()
+	{
+		foreach(child; mChildren)
+			child.detach();
+		mChildren = null;
 	}
 
 	void	paint(bool transformationUpdated)
