@@ -551,8 +551,8 @@ unittest
 {
 	version(Windows)
 	{
-		assert(fontPathFromFamily("Arial") == "C:/Windows/Fonts/arial.ttf");
-		assert(fontPathFromFamily("arial") == "C:/Windows/Fonts/arial.ttf");	// Test with wrong case
+		assert(icmp(fontPathFromFamily("Arial"), "C:/Windows/Fonts/arial.ttf") == 0 || icmp(fontPathFromFamily("Arial"), "C:/Windows/Fonts/Arialtbg.ttf") == 0);
+		assert(icmp(fontPathFromFamily("arial"), "C:/Windows/Fonts/arial.ttf") == 0 || icmp(fontPathFromFamily("arial"), "C:/Windows/Fonts/Arialtbg.ttf") == 0);	// Test with wrong case
 		assert(fontPathFromFamily("Arial", Font.Style.Bold | Font.Style.Italic) == "C:/Windows/Fonts/arialbi.ttf");
 		assert(fontPathFromFamily("Andalus", Font.Style.Bold) == "C:/Windows/Fonts/andlso.ttf");	// There is no bold file for this font, so the same file as for regular must be returned (because it can contains bold layout)
 	}
