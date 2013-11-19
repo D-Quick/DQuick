@@ -222,6 +222,12 @@ private:
 						mImages[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), mImages[$ - 1].size());
 					}
 
+					if (!(0 < glyph.image.width && 0 < glyph.image.height))
+					{
+						writeln(glyph.image.width);
+						writeln(glyph.image.height);
+					}
+
 					// Write glyph in image
 					mImages[glyph.atlasIndex].blit(glyph.image,
 												   Vector2s32(0, 0),
