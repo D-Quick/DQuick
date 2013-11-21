@@ -1,25 +1,25 @@
-module dquick.media.devil.devilLoader;
+module dquick.media.devil.devilLoaderWriter;
 
 import dquick.media.imageData;
 import derelict.devil.il;
 import std.string;
 
-class DevILImageLoader : ImageLoader
+class DevilLoaderWriter : ImageLoader, ImageWriter
 {	
-	this()
+	static this()
 	{
 		DerelictIL.load();
 		ilInit();
 	}
 	
-	~this()
+	static ~this()
 	{
 		DerelictIL.unload();
 	}
 	
 	@property string name() const{ return "DevIL"; }
 
-	bool load(in string fileName, ref ImageData data)
+	bool load(in string fileName, ref ImageData data) const
 	{
 		ILuint img;
 		ilGenImages(1, &img);
@@ -37,6 +37,25 @@ class DevILImageLoader : ImageLoader
 		ilCopyPixels(0, 0, 0, data.width, data.height, 1, fmt, IL_UNSIGNED_BYTE, data.pixels.ptr);
 
 		return true;
+	}
+
+	bool handlesFormat(in string formatExtension) const
+	{
+		return true;
+	}
+
+	void write(in string filePath, in ImageData data) const
+	{
+		ILuint img;
+
+		// TODO fill img with data pixels
+
+		ilGenImages(1, &img);
+		ilBindImage(img);
+		scope(exit) ilDeleteImages(1, &img);
+
+		if (ilSaveImage(filePath.toStringz))
+			throw new Exception("Failed to save image with Devil at : %s", filePath);
 	}
 }
 

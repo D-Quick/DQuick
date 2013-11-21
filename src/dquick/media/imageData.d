@@ -95,7 +95,12 @@ private
 	{
 		import std.stdio;
 		
-		import dquick.media.devil.devilLoader;
-		ImageLoader.addLoader(new DevILImageLoader());
+		import dquick.media.devil.devilLoaderWriter;
+
+		DevilLoaderWriter devilLoaderWriter = new DevilLoaderWriter();
+
+		//		devilLoaderWriter = new DevilLoaderWriter();
+		ImageLoader.addLoader(devilLoaderWriter);
+		ImageWriter.addWriter(devilLoaderWriter);
 	}
 }

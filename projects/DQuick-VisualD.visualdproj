@@ -500,7 +500,7 @@
    </Folder>
    <Folder name="media">
     <Folder name="devil">
-     <File path="..\src\dquick\media\devil\devilLoader.d" />
+     <File path="..\src\dquick\media\devil\devilLoaderWriter.d" />
     </Folder>
     <File path="..\src\dquick\media\font.d" />
     <File path="..\src\dquick\media\geometry.d" />
