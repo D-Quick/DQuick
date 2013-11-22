@@ -221,7 +221,7 @@ private:
 						mImages[$ - 1].create(format("ImageAtlas-%d", mImages.length),
 											  fontManager.getAtlas(mImages.length - 1).size().x,
 											  fontManager.getAtlas(mImages.length - 1).size().y,
-											  4);
+											  Image.Format.RGBA);
 						mImages[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), mImages[$ - 1].size());
 					}
 

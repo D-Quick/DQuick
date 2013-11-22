@@ -29,6 +29,8 @@ class Image : IResource
 	mixin ResourceBase;
 
 public:
+	alias ImageData.Format	Format;
+
 	~this()
 	{
 		unload();
@@ -64,15 +66,15 @@ public:
 		throw new Exception("Unable to save an image to '" ~ filePath ~ "'!");
 	}
 
-	void	create(string filePath, uint width, uint height, ubyte nbBytesPerPixel)
+	void	create(string filePath, uint width, uint height, ImageData.Format format)
 	{
 		unload();
 		
 		mFilePath = filePath;
-		mData.format = ImageData.formatFromChannels(nbBytesPerPixel);
+		mData.format = format;
 		mData.width = width;
 		mData.height = height;
-		mData.pixels = new ubyte[width*height*nbBytesPerPixel];
+		mData.pixels = new ubyte[width * height * mData.nbBytesPerPixel];
 	}
 
 	void	fill(Color color, Vector2s32 position, Vector2s32 size)
@@ -257,9 +259,14 @@ public:
 		return mData.pixels.ptr;
 	}
 
+	Format	format() const
+	{
+		return mData.format;
+	}
+
 	ubyte	nbBytesPerPixel() const
 	{
-		return cast(ubyte)mData.format;
+		return mData.nbBytesPerPixel;
 	}
 
 protected:

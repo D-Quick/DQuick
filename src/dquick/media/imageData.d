@@ -10,26 +10,23 @@ struct ImageData
 		RGB,
 		RGBA
 	}
-		
-	Format format;
-	uint width, height;
-	ubyte[] pixels;
-	
-	static Format formatFromChannels(uint numChannels)
-	{
-		static const Format[] formats =
-		[
-			Format.Invalid,
-			Format.Gr,
-			Format.GrA,
-			Format.RGB,
-			Format.RGBA
-		];
-		
-		if(numChannels >= formats.length)
-			return Format.Invalid;
-		return formats[numChannels];
-	}
+
+	Format	format;
+	uint	width;
+	uint	height;
+
+	@property
+	ubyte	nbBytesPerPixel() const {return formats[format];}
+
+	ubyte[]	pixels;
+
+private:
+	static enum ubyte[Format] formats = [
+		Format.Invalid :	0,
+		Format.Gr :			1,
+		Format.GrA :		2,
+		Format.RGB :		3,
+		Format.RGBA:		4];
 }
 
 interface ImageLoader
@@ -99,7 +96,6 @@ private
 
 		DevilLoaderWriter devilLoaderWriter = new DevilLoaderWriter();
 
-		//		devilLoaderWriter = new DevilLoaderWriter();
 		ImageLoader.addLoader(devilLoaderWriter);
 		ImageWriter.addWriter(devilLoaderWriter);
 	}
