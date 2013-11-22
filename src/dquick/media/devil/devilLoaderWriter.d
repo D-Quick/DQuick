@@ -49,8 +49,6 @@ class DevilLoaderWriter : ImageLoader, ImageWriter
 	{
 		ILuint img;
 
-		// TODO fill img with data pixels
-
 		ilGenImages(1, &img);
 		ilBindImage(img);
 		scope(exit) ilDeleteImages(1, &img);
@@ -67,10 +65,10 @@ class DevilLoaderWriter : ImageLoader, ImageWriter
 				throw new Exception("Image's format isn't supported for saving file.");
 				break;
 			case ImageData.Format.RGB:
-				ilTexImage(data.width, data.height, 0, data.nbBytesPerPixel(), IL_RGB, IL_UNSIGNED_BYTE, cast(void*)data.pixels.ptr);
+				ilTexImage(data.width, data.height, 1, data.nbBytesPerPixel(), IL_RGB, IL_UNSIGNED_BYTE, cast(void*)data.pixels.ptr);
 			   break;
 			case ImageData.Format.RGBA:
-				ilTexImage(data.width, data.height, 0, data.nbBytesPerPixel(), IL_RGBA, IL_UNSIGNED_BYTE, cast(void*)data.pixels.ptr);
+				ilTexImage(data.width, data.height, 1, data.nbBytesPerPixel(), IL_RGBA, IL_UNSIGNED_BYTE, cast(void*)data.pixels.ptr);
 				break;
 		}
 
