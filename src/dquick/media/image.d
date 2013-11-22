@@ -104,10 +104,10 @@ public:
 			break;
 		}
 		
-		uint minX = min!int(position.x, 0);
-		uint maxX = min!int(max!int(position.x + size.x, mData.width), 0);
-		uint minY = min!int(position.y, 0);
-		uint maxY = min!int(max!int(position.y + size.y, mData.height), 0);
+		uint minX = max!int(position.x, 0);
+		uint maxX = min!int(position.x + size.x, mData.width);
+		uint minY = max!int(position.y, 0);
+		uint maxY = min!int(position.y + size.y, mData.height);
 
 		for(uint x = minX; x < maxX; ++x)
 			for(uint y = minY; y < maxY; ++y)
