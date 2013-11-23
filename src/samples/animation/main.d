@@ -4,11 +4,14 @@ import dquick.item.imageItem;
 import dquick.animation.animation;
 import core.time;
 import std.stdio;
+import std.path;
 
-int main()
+int main(string[] args)
 {
 	try
 	{
+		writeln("Current path: ", absolutePath("."));
+		GuiApplication.instance().setApplicationArguments(args);
 		GuiApplication.instance.setApplicationDisplayName("DQuick - Animation sample");
 		
 		WindowItem wnd = new WindowItem();
@@ -16,7 +19,7 @@ int main()
 		wnd.height = 512;
 
 		ImageItem image = new ImageItem(wnd);
-		image.source = "images/pngtest.png";
+		image.source = "../data/images/pngtest.png";
 		image.width = 64;
 		image.height = 64;
 		
@@ -61,7 +64,7 @@ int main()
 		
 		ImageItem btt = new ImageItem(wnd);
 		btt.y = 16;
-		btt.source = "images/Qt/toolbutton.png";
+		btt.source = "../data/images/Qt/toolbutton.png";
 			
 		ParallelAnimation bttSizeAnim = new ParallelAnimation();
 		bttSizeAnim.duration = dur!"msecs"(1500);

@@ -186,7 +186,7 @@
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
- <Folder name="Images">
+ <Folder name="Image">
   <Folder name="data">
    <Folder name="dml">
     <File path="..\data\dml\button.lua" />
@@ -195,6 +195,6 @@
     <File path="..\data\dml\transformations.lua" />
    </Folder>
   </Folder>
-  <File path="..\src\samples\images\main.d" />
+  <File path="..\src\samples\image\main.d" />
  </Folder>
 </DProject>

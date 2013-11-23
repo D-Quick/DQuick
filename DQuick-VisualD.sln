@@ -1,12 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Images", "projects\Images-VisualD.visualdproj", "{A02DE709-944A-4DC4-9964-E8A551410AAC}"
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Image", "projects\Image-VisualD.visualdproj", "{A02DE709-944A-4DC4-9964-E8A551410AAC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB} = {5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}
 	EndProjectSection
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "DQuick", "projects\DQuick-VisualD.visualdproj", "{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}"
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Animation", "projects\Animation-VisualD.visualdproj", "{C14FA60F-A580-4B9F-A1BC-3253548C37E2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB} = {5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}
+	EndProjectSection
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Scheduler", "projects\Scheduler-VisualD.visualdproj", "{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB} = {5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +41,22 @@ Global
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Release|Win32.Build.0 = Release|Win32
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.ReleaseUnittest|Win32.ActiveCfg = ReleaseUnittest|Win32
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.ReleaseUnittest|Win32.Build.0 = ReleaseUnittest|Win32
+		{C14FA60F-A580-4B9F-A1BC-3253548C37E2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C14FA60F-A580-4B9F-A1BC-3253548C37E2}.Debug|Win32.Build.0 = Debug|Win32
+		{C14FA60F-A580-4B9F-A1BC-3253548C37E2}.DebugUnittest|Win32.ActiveCfg = Debug|Win32
+		{C14FA60F-A580-4B9F-A1BC-3253548C37E2}.DebugUnittest|Win32.Build.0 = Debug|Win32
+		{C14FA60F-A580-4B9F-A1BC-3253548C37E2}.Release|Win32.ActiveCfg = Release|Win32
+		{C14FA60F-A580-4B9F-A1BC-3253548C37E2}.Release|Win32.Build.0 = Release|Win32
+		{C14FA60F-A580-4B9F-A1BC-3253548C37E2}.ReleaseUnittest|Win32.ActiveCfg = Release|Win32
+		{C14FA60F-A580-4B9F-A1BC-3253548C37E2}.ReleaseUnittest|Win32.Build.0 = Release|Win32
+		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.Debug|Win32.Build.0 = Debug|Win32
+		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.DebugUnittest|Win32.ActiveCfg = Debug|Win32
+		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.DebugUnittest|Win32.Build.0 = Debug|Win32
+		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.Release|Win32.ActiveCfg = Release|Win32
+		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.Release|Win32.Build.0 = Release|Win32
+		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.ReleaseUnittest|Win32.ActiveCfg = Release|Win32
+		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.ReleaseUnittest|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
