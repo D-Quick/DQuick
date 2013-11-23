@@ -221,7 +221,7 @@ private:
 						mImages[$ - 1].create(format("ImageAtlas-%d", mImages.length),
 											  fontManager.getAtlas(mImages.length - 1).size().x,
 											  fontManager.getAtlas(mImages.length - 1).size().y,
-											  4);
+											  Image.Format.RGBA);
 						mImages[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), mImages[$ - 1].size());
 					}
 
@@ -407,10 +407,10 @@ private:
 			x,			y + height,	0.0f,
 			x + width,	y + height,	0.0f];
 		texCoords ~= cast(GLfloat[])[// Don't forget opengl is down to top oriented (left-top corner = 0,1 coords)
-			tX,				tY,
-			tX + tWidth,	tY,
-			tX,				tY + tHeight,
-			tX + tWidth,	tY + tHeight];
+			tX,				1.0f - tY,
+			tX + tWidth,	1.0f - tY,
+			tX,				1.0f - (tY + tHeight),
+			tX + tWidth,	1.0f - (tY + tHeight)];
 		colors~= cast(GLfloat[])[
 			1.0f, 1.0f, 1.0f, 1.0f,
 			1.0f, 1.0f, 1.0f, 1.0f,

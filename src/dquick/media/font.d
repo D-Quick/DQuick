@@ -347,7 +347,7 @@ private:
 	void	blitGlyph(const ref FT_Bitmap ftBitmap, ref Glyph glyph)
 	{
 		glyph.image = new Image;
-		glyph.image.create("", glyph.atlasRegion.width, glyph.atlasRegion.height, 4);
+		glyph.image.create("", glyph.atlasRegion.width, glyph.atlasRegion.height, Image.Format.RGBA);
 
 		glyph.image.fill(Color(1.0f, 1.0f, 1.0f, 0.0f), Vector2s32(0, 0), Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height));
 
@@ -578,7 +578,7 @@ unittest
 	cursor.x = 0;
 	cursor.y = /*cast(int)font.linegap*/ 36;
 	textImage = new Image;
-	textImage.create("", 500, 100, 4);
+	textImage.create("", 500, 100, Image.Format.RGBA);
 	textImage.fill(Color(1.0f, 1.0f, 1.0f, 0.0f), Vector2s32(0, 0), textImage.size());
 
 	foreach (dchar charCode; text)
@@ -600,7 +600,7 @@ unittest
 				images[$ - 1].create(format("ImageAtlas-%d", images.length),
 									 fontManager.getAtlas(images.length - 1).size().x,
 									 fontManager.getAtlas(images.length - 1).size().y,
-									 4);
+									 Image.Format.RGBA);
 				images[$ - 1].fill(Color(1.0f, 1.0f, 1.0f, 1.0f), Vector2s32(0, 0), images[$ - 1].size());
 			}
 
@@ -622,7 +622,7 @@ unittest
 		cursor.x = cursor.x + glyph.advance.x;
 	}
 
-	textImage.save("../data/FontTestText.bmp");
+	textImage.save("../data/FontTestText.png");
 
 	fontManager.clear();
 }
