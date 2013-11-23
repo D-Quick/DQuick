@@ -141,7 +141,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>..\src</imppath>
+  <imppath>..\src;..\src\dquick\etc\gl3n;..\src\dquick\etc\derelict\import</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)/../../data</outdir>
   <objdir>$(OutDir)</objdir>
