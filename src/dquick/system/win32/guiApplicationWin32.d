@@ -294,7 +294,7 @@ version (Windows)
 		{
 			mScriptContext.executeFile(filePath);
 
-			mRootItem = cast(GraphicItem)mScriptContext.rootItem();
+			mRootItem = mScriptContext.rootItem!GraphicItem();
 			assert(mRootItem);
 
 			mRootItem.setSize(Vector2f32(size()));

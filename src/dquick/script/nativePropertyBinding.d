@@ -28,7 +28,8 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 
 	override void	valueFromLua(lua_State* L, int index, bool popFromStack = false)
 	{
-		ValueType	value = dquick.script.utils.valueFromLua!ValueType(L, index);
+		ValueType	value;
+		dquick.script.utils.valueFromLua!ValueType(L, index, value);
 		if (popFromStack)
 			lua_remove(L, index);
 		static if (__traits(compiles, __traits(getMember, cast(ItemType)(item), PropertyName)(value)))
