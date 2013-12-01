@@ -22,7 +22,7 @@ class VirtualPropertyBinding : PropertyBinding
 
 	override void	valueFromLua(lua_State* L, int index, bool popFromStack = false)
 	{
-		value = dquick.script.utils.valueFromLua!Variant(L, index);
+		dquick.script.utils.valueFromLua!Variant(L, index, value);
 		if (popFromStack)
 			lua_remove(L, index);
 		onChanged();

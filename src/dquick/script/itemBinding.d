@@ -5,6 +5,8 @@ import std.typetuple;
 import std.string;
 import std.stdio;
 import std.signals;
+import std.conv;
+import derelict.lua.lua;
 
 import dquick.item.declarativeItem;
 import dquick.script.nativePropertyBinding;
@@ -13,20 +15,112 @@ import dquick.script.utils;
 
 static string	I_ITEM_BINDING()
 {
-	return ITEM_BINDING() ~ "
-		override void	dmlEngine(dquick.script.dmlEngineCore.DMLEngineCore dmlEngine) {mDMLEngine = dmlEngine;}
-	";
+	return BASE_ITEM_BINDING() ~ q"(
+	)";
 }
 
 static string	ITEM_BINDING()
 {
-	return "
+	return BASE_ITEM_BINDING() ~ q"(
+		override string	id()
+		{
+			return this.item.id;
+		}
+	)";
+}
+
+
+static string	BASE_ITEM_BINDING()
+{
+	return q"(
 		dquick.script.dmlEngineCore.DMLEngineCore	mDMLEngine;
 		override dquick.script.dmlEngineCore.DMLEngineCore	dmlEngine() {return mDMLEngine;};
+		override void	dmlEngine(dquick.script.dmlEngineCore.DMLEngineCore dmlEngine)
+		{
+			assert(mDMLEngine is null || mDMLEngine is dmlEngine);
+			if (mDMLEngine != dmlEngine)
+			{
+				mDMLEngine = dmlEngine;
+				createItemBindingLuaEnv();
+			}
+		}
+
+		void	createItemBindingLuaEnv()
+		{
+			// Load env lookup function to handle this and parent
+			string	lua = q"(
+				__item_index = function (_, n)
+					if n == "this" then
+						return rawget(_, n)
+					else 
+						local itemMemberVal = rawget(_, "this")[n];
+						if itemMemberVal == nil then
+							return _ENV[n]
+						else
+							return itemMemberVal
+						end
+					end
+				end
+				__item_newindex = function (_, n, v)
+					assert(n ~= "this")
+					local this = rawget(_, "this")
+					if this[n] == nil then
+						_ENV[n] = v
+					else
+						this[n] = v
+					end
+				end
+			)";
+			dmlEngine.load(lua, "");
+			dmlEngine.execute();
+
+			// Create new _ENV table
+			lua_newtable(dmlEngine.luaState);
+
+			// this global
+			lua_pushstring(dmlEngine.luaState, "this");
+			pushToLua(dmlEngine.luaState);
+			lua_settable(dmlEngine.luaState, -3);
+
+			// Create new _ENV's metatable
+			lua_newtable(dmlEngine.luaState);
+			{
+				{
+					// __index metamethod to chain lookup to the parent env
+					lua_pushstring(dmlEngine.luaState, "__index");
+					lua_getglobal(dmlEngine.luaState, "__item_index");
+
+					// Put component env
+					lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, dmlEngine.currentLuaEnv);
+
+					const char*	envUpvalue = lua_setupvalue(dmlEngine.luaState, -2, 1);
+					if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
+						lua_pop(dmlEngine.luaState, 1);
+
+					lua_settable(dmlEngine.luaState, -3);
+				}
+
+				{
+					// __newindex metamethod to chain assign to the parent env
+					lua_pushstring(dmlEngine.luaState, "__newindex");
+					lua_getglobal(dmlEngine.luaState, "__item_newindex");
+
+					// Put component env
+					lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, dmlEngine.currentLuaEnv);
+					const char*	envUpvalue = lua_setupvalue(dmlEngine.luaState, -2, 1);
+					if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
+						lua_pop(dmlEngine.luaState, 1);
+
+					lua_settable(dmlEngine.luaState, -3);
+				}
+			}
+			lua_setmetatable(dmlEngine.luaState, -2);
+
+			mItemBindingLuaEnvReference = luaL_ref(dmlEngine.luaState, LUA_REGISTRYINDEX);
+		}
 
 		bool	mCreating;
 		bool	creating() {return mCreating;}
-		void	creating(bool creating) {mCreating = creating;}
 
 		dquick.script.virtualPropertyBinding.VirtualPropertyBinding[string]	virtualProperties;
 
@@ -54,129 +148,243 @@ static string	ITEM_BINDING()
 					static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 					{
 						assert(__traits(getMember, this, member) !is null);
-						result ~= format(\"%s\n\", member);
-						result ~= shiftRight(__traits(getMember, this, member).displayDependents(), \"\t\", 1);
+						result ~= format("%s\n", member);
+						result ~= shiftRight(__traits(getMember, this, member).displayDependents(), "\t", 1);
 					}
+				}
+				foreach (key, virtualProperty; virtualProperties)
+				{
+					result ~= format("%s\n", key);
+					result ~= shiftRight(virtualProperty.displayDependents(), "\t", 1);
 				}
 				return result;
 			}
 		}
-		";
-}
 
-static bool		isProperty(T, string member)()
-{
-	static if (__traits(compiles, __traits(getOverloads, T, member)))
-	{
-		foreach (overload; __traits(getOverloads, T, member)) 
+		override void	valueFromLua(lua_State* L)
 		{
-			static if (isCallable!(overload))
-			{
-				static if (!is(ReturnType!(overload) == void) && TypeTuple!(ParameterTypeTuple!overload).length == 0) // Has a getter
+			if (!lua_istable(L, -1))
+				throw new Exception("valueFromLua:: the lua value is not a table\n");
+
+			mCreating = true;
+
+			/* table is in the stack at index 't' */
+			lua_pushnil(L);  /* first key */
+			while (lua_next(L, -2) != 0) {
+				/* uses 'key' (at index -2) and 'value' (at index -1) */
+
+				if (lua_type(L, -2) == LUA_TSTRING)
 				{
-					static if (__traits(hasMember, T, getSignalNameFromPropertyName(member))) // Has a signal
-						return true;
+					string	key = to!(string)(lua_tostring(L, -2));
+
+					bool	found = false;
+					foreach (member; __traits(allMembers, typeof(this)))
+					{
+						static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
+						{
+							if (key == getPropertyNameFromPropertyDeclaration(member))
+							{
+								found = true;
+								__traits(getMember, this, member).bindingFromLua(L, -1);
+								break;
+							}
+							else if (key == getSignalNameFromPropertyName(getPropertyNameFromPropertyDeclaration(member)))
+							{
+								found = true;
+
+								if (lua_isfunction(L, -1))
+								{
+									__traits(getMember, this, member).slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
+									lua_pushnil(L); // To compensate the value poped by luaL_ref
+								}
+								else
+									writefln("createLuaBind:: Attribute %s is not a function", key);
+								break;
+							}
+						}
+					}
+
+					if (found == false)
+					{
+						auto	propertyName = getPropertyNameFromSignalName(key);
+						if (propertyName != "")
+						{
+							found = true;
+
+							if (lua_isfunction(L, -1))
+							{
+								dquick.script.virtualPropertyBinding.VirtualPropertyBinding virtualProperty;
+								auto virtualPropertyPtr = (propertyName in this.virtualProperties);
+								if (!virtualPropertyPtr)
+								{
+									virtualProperty = new dquick.script.virtualPropertyBinding.VirtualPropertyBinding(this, propertyName);
+									this.virtualProperties[propertyName] = virtualProperty;
+								}
+								else
+								{
+									virtualProperty = *virtualPropertyPtr;
+								}
+								virtualProperty.slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
+								lua_pushnil(L); // To compensate the value poped by luaL_ref
+							}
+							else
+								throw new Exception(format("createLuaBind:: Attribute %s is not a function", key));
+						}
+						else
+						{
+							dquick.script.virtualPropertyBinding.VirtualPropertyBinding virtualProperty;
+							auto virtualPropertyPtr = (key in this.virtualProperties);
+							if (!virtualPropertyPtr)
+							{
+								virtualProperty = new dquick.script.virtualPropertyBinding.VirtualPropertyBinding(this, key);
+								this.virtualProperties[key] = virtualProperty;
+							}
+							else
+							{
+								virtualProperty = *virtualPropertyPtr;
+							}
+							virtualProperty.bindingFromLua(L, -1);
+						}
+					}
 				}
+				else if (lua_type(L, -2) == LUA_TNUMBER)
+				{
+					void*	itemBindingPtr = *(cast(void**)lua_touserdata(L, -1));
+					auto	child = cast(dquick.script.iItemBinding.IItemBinding)(itemBindingPtr);
+					if (child is null)
+						throw new Exception(format("createLuaBind:: can't find item at key \"%d\"\n", lua_type(L, -2)));
+
+					static if (__traits(hasMember, this, "addChild") == false)
+						throw new Exception(format("createLuaBind:: can't add item at key \"%d\" as child without addChild method\n", lua_type(L, -2)));
+
+					foreach (overload; __traits(getOverloads, this, "addChild")) 
+					{
+						alias ParameterTypeTuple!(overload) MyParameterTypeTuple;
+						static if (MyParameterTypeTuple.length == 1)
+						{
+							DeclarativeItem	test = cast(DeclarativeItem)child;
+							MyParameterTypeTuple[0]	castedItemBinding = cast(MyParameterTypeTuple[0])(child);
+							if (castedItemBinding !is null)
+								__traits(getMember, this, "addChild")(castedItemBinding);
+						}
+					}
+				}
+
+				/* removes 'value'; keeps 'key' for next iteration */
+				lua_pop(L, 1);
 			}
+			lua_pop(L, 1); // Remove param 1 (table)
+
+			mCreating = false;
 		}
-	}
-	return false;
+
+		override void pushToLua(lua_State* L)
+		{
+			dquick.script.utils.valueToLua!(typeof(this))(L, this);
+		}
+
+		int	mItemBindingLuaEnvReference;
+		override int	itemBindingLuaEnvReference()
+		{
+			return mItemBindingLuaEnvReference;
+		}
+	)";
 }
 
-static string	genProperties(T, propertyTypes...)()
+static string	genProperties(T)()
 {
 	string result = "";
 
 	foreach (member; __traits(allMembers, T))
 	{
-		static if (isProperty!(T, member)) // Property
+		static if (__traits(compiles, PropertyType!(T, member)))
 		{
-			static if (__traits(compiles, __traits(getOverloads, T, member)))
+			alias PropertyType!(T, member)	MyPropertyType;
+			static if (is(MyPropertyType == void) == false) // Property
 			{
-				foreach (overload; __traits(getOverloads, T, member)) 
+				static if (__traits(compiles, fullyQualifiedName2!(MyPropertyType))) // Hack because of a bug in fullyQualifiedName
 				{
-					static if (isCallable!(overload))
+					static if (member == "__ctor")
+						continue;
+
+					static if (is(MyPropertyType : dquick.item.declarativeItem.DeclarativeItem))
 					{
-						static if (!is(ReturnType!(overload) == void) && TypeTuple!(ParameterTypeTuple!overload).length == 0) // Has a getter
-						{
-							static if (__traits(hasMember, T, getSignalNameFromPropertyName(member))) // Has a signal
-							{
-								static if (is(ReturnType!(overload) : dquick.item.declarativeItem.DeclarativeItem))
-								{
-									result ~= format("	void															__%s(%s value) {
-															if (!(value is null && ____%sItemBinding is null) && !(____%sItemBinding && value is ____%sItemBinding.item))
-															{
-																if (____%sItemBinding)
-																	dmlEngine2.unregisterItem!(%s)(____%sItemBinding.item);
-																if (value)
-																	____%sItemBinding = dmlEngine2.registerItem!(%s)(value);
-																else
-																	____%sItemBinding = null;
-																__%s.emit(____%sItemBinding);
-															}																
-														}",
-													 getSignalNameFromPropertyName(member), fullyQualifiedName2!(ReturnType!(overload)),
-													 member, member, member,
-													 member,
-													 fullyQualifiedName2!(ReturnType!(overload)), member,
-													 member, fullyQualifiedName2!(ReturnType!(overload)),
-													 member,
-													 getSignalNameFromPropertyName(member~"ItemBinding"), member);	// Item Signal
+										
+						result ~= format("	void															__%s(%s value) {
+												if (!(value is null && ____%sItemBinding is null) && !(____%sItemBinding && value is ____%sItemBinding.item))
+												{
+													if (____%sItemBinding)
+														dmlEngine2.unregisterItem!(%s)(____%sItemBinding.item);
+													if (value)
+														____%sItemBinding = dmlEngine2.registerItem!(%s)(value);
+													else
+														____%sItemBinding = null;
+													__%s.emit(____%sItemBinding);
+												}																
+											}",
+											getSignalNameFromPropertyName(member), fullyQualifiedName2!(MyPropertyType),
+											member, member, member,
+											member,
+											fullyQualifiedName2!(MyPropertyType), member,
+											member, fullyQualifiedName2!(MyPropertyType),
+											member,
+											getSignalNameFromPropertyName(member~"ItemBinding"), member);	// Item Signal
 
-									result ~= format("	dquick.script.itemBinding.ItemBinding!(%s)					____%sItemBinding;\n", fullyQualifiedName2!(ReturnType!(overload)), member); // ItemBinding
-									result ~= format("	dquick.script.itemBinding.ItemBinding!(%s)					__%sItemBinding() {
-															return ____%sItemBinding;
-														}",
-													 fullyQualifiedName2!(ReturnType!(overload)), member,
-													 member); // ItemBinding Getter
-									result ~= format("	void															__%sItemBinding(dquick.script.itemBinding.ItemBinding!(%s) value) {
-															if (value != ____%sItemBinding)
-															{
-																if (____%sItemBinding !is null)
-																	dmlEngine2.unregisterItem!(%s)(____%sItemBinding.item);
-																 ____%sItemBinding = value;
-																if (____%sItemBinding !is null)
-																{
-																	dmlEngine2.registerItem!(%s)(____%sItemBinding.item);
-																	item.%s = value.item;
-																}
-																else
-																{
-																	item.%s = null;
-																}
-																__%s.emit(value);
-															}
-														}",
-													 member, fullyQualifiedName2!(ReturnType!(overload)),
-													 member,
-													 member,
-													 fullyQualifiedName2!(ReturnType!(overload)), member,
-													 member,
-													 member,
-													 fullyQualifiedName2!(ReturnType!(overload)), member,
-													 member,
-													 member,
-													 getSignalNameFromPropertyName(member~"ItemBinding"));	// ItemBinding Setter
-									result ~= format("	mixin Signal!(dquick.script.itemBinding.ItemBinding!(%s))	__%s;", fullyQualifiedName2!(ReturnType!(overload)), getSignalNameFromPropertyName(member~"ItemBinding"));
+						result ~= format("	dquick.script.itemBinding.ItemBinding!(%s)					____%sItemBinding;\n", fullyQualifiedName2!(MyPropertyType), member); // ItemBinding
+						result ~= format("	dquick.script.itemBinding.ItemBinding!(%s)					__%sItemBinding() {
+												return ____%sItemBinding;
+											}",
+											fullyQualifiedName2!(MyPropertyType), member,
+											member); // ItemBinding Getter
+						result ~= format("	void															__%sItemBinding(dquick.script.itemBinding.ItemBinding!(%s) value) {
+												if (value != ____%sItemBinding)
+												{
+													if (____%sItemBinding !is null)
+														dmlEngine2.unregisterItem!(%s)(____%sItemBinding.item);
+														____%sItemBinding = value;
+													if (____%sItemBinding !is null)
+													{
+														dmlEngine2.registerItem!(%s)(____%sItemBinding.item);
+														item.%s = value.item;
+													}
+													else
+													{
+														item.%s = null;
+													}
+													__%s.emit(value);
+												}
+											}",
+											member, fullyQualifiedName2!(MyPropertyType),
+											member,
+											member,
+											fullyQualifiedName2!(MyPropertyType), member,
+											member,
+											member,
+											fullyQualifiedName2!(MyPropertyType), member,
+											member,
+											member,
+											getSignalNameFromPropertyName(member~"ItemBinding"));	// ItemBinding Setter
+						//static if (__traits(hasMember, T, getSignalNameFromPropertyName(member))) // Has a signal
+							result ~= format("	mixin Signal!(dquick.script.itemBinding.ItemBinding!(%s))	__%s;", fullyQualifiedName2!(MyPropertyType), getSignalNameFromPropertyName(member~"ItemBinding"));
 
-									result ~= format("	dquick.script.nativePropertyBinding.NativePropertyBinding!(dquick.script.itemBinding.ItemBinding!(%s), dquick.script.itemBinding.ItemBinding!T, \"__%sItemBinding\")	%s;\n", fullyQualifiedName2!(ReturnType!(overload)), member, member~"Property");
-								}
-								else
-									result ~= format("	dquick.script.nativePropertyBinding.NativePropertyBinding!(%s, T, \"%s\")\t%s;\n", fullyQualifiedName2!(ReturnType!(overload)), member, member~"Property");
-							}
-						}
+						result ~= format("	dquick.script.nativePropertyBinding.NativePropertyBinding!(dquick.script.itemBinding.ItemBinding!(%s), dquick.script.itemBinding.ItemBinding!T, \"__%sItemBinding\")	%s;\n", fullyQualifiedName2!(MyPropertyType), member, member~"Property");
 					}
+					else
+						result ~= format("	dquick.script.nativePropertyBinding.NativePropertyBinding!(%s, T, \"%s\")\t%s;\n", fullyQualifiedName2!(MyPropertyType), member, member~"Property");
+
 				}
 			}
-		}
-		static if (isProperty!(T, member) == false)
-		{
-			static if (__traits(compiles, generateMethodBinding!(T, member))) // Method
-				result ~= generateMethodBinding!(T, member);
-		}
-		static if (__traits(compiles, EnumMembers!(__traits(getMember, T, member))) && is(OriginalType!(__traits(getMember, T, member)) == int)) // If its an int enum
-		{
-			result ~= format("alias %s	%s;", fullyQualifiedName2!(__traits(getMember, T, member)), member);
+			static if (is(MyPropertyType == void) == true)
+			{
+				static if (__traits(compiles, generateMethodBinding!(T, member))) // Method
+				{
+					result ~= generateMethodBinding!(T, member);
+				}
+			}
+			static if (__traits(compiles, EnumMembers!(__traits(getMember, T, member))) && is(OriginalType!(__traits(getMember, T, member)) == int)) // If its an int enum
+			{
+				result ~= format("alias %s	%s;", fullyQualifiedName2!(__traits(getMember, T, member)), member);
+			}
 		}
 	}
 
@@ -276,17 +484,19 @@ class ItemBinding(T) : ItemBindingBase!(T) // Proxy that auto bind T
 				static if (__traits(hasMember, this, "____"~propertyName~"ItemBinding")) // Instanciate subitem binding
 				{
 					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, this);  // Instantiate property binding linked to __propertyName inside this
-					__traits(getMember, this, "__"~getSignalNameFromPropertyName(propertyName~"ItemBinding")).connect(&__traits(getMember, this, member).onChanged); // Signal
+					static if (__traits(hasMember, this.item, getSignalNameFromPropertyName(propertyName)))
+						__traits(getMember, this, "__"~getSignalNameFromPropertyName(propertyName~"ItemBinding")).connect(&__traits(getMember, this, member).onChanged); // Signal
 
-					__traits(getMember, this.item, getSignalNameFromPropertyName(propertyName)).connect(&__traits(getMember, this, "__"~getSignalNameFromPropertyName(propertyName))); // Signal
+					static if (__traits(hasMember, this.item, getSignalNameFromPropertyName(propertyName)))
+						__traits(getMember, this.item, getSignalNameFromPropertyName(propertyName)).connect(&__traits(getMember, this, "__"~getSignalNameFromPropertyName(propertyName))); // Signal
 					__traits(getMember, this, "__"~getSignalNameFromPropertyName(propertyName))(__traits(getMember, item, propertyName)); // Set initial value
 				}
 				else // Simple type
 				{
 					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, item);  // Instantiate property binding linked to member inside item
-					__traits(getMember, this.item, getSignalNameFromPropertyName(propertyName)).connect(&__traits(getMember, this, member).onChanged); // Signal
+					static if (__traits(hasMember, this.item, getSignalNameFromPropertyName(propertyName)))
+						__traits(getMember, this.item, getSignalNameFromPropertyName(propertyName)).connect(&__traits(getMember, this, member).onChanged); // Signal
 				}
-
 			}
 		}
 	}
@@ -326,16 +536,7 @@ class ItemBinding(T) : ItemBindingBase!(T) // Proxy that auto bind T
 
 	Object	itemObject() { return item;}
 
-	override void			dmlEngine(dquick.script.dmlEngineCore.DMLEngineCore dmlEngine)
-	{
-		if (mDMLEngine != dmlEngine)
-		{
-			mDMLEngine = dmlEngine;
-			dmlEngine2.registerItem!T(item, this);
-		}
-	}
-
-	mixin(genProperties!(T, dquick.script.dmlEngine.DMLEngine.propertyTypes));
+	mixin(genProperties!(T));
 	
 	mixin(ITEM_BINDING());
 }
