@@ -1,4 +1,4 @@
-module main;
+module dquick.samples.image.main;
 
 import dquick.system.guiApplication;
 import dquick.item.imageItem;

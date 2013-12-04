@@ -1,0 +1,10 @@
+{
+	"name": "libdquick",
+	"version" : "~master",
+	"mainSourceFile": "main.d",
+	"sourcePaths": ["./"],
+	"importPaths": ["./"],
+	"excludedSourceFiles": ["etc/derelict/build/build.d"],
+	"stringImportPaths": ["renderer2D/openGL"],
+	"buildRequirements": ["allowWarnings"],
+}

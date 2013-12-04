@@ -1,0 +1,30 @@
+{
+	"name": "dquick",
+	"targetType": "none",
+	"description": "A GUI library written in D.",
+	"authors": ["Bruno Deligny", "Xavier Bigand"],
+	"homepage": "https://github.com/D-Quick/DQuick",
+	"license": "BSL-1.0",
+	"version" : "~master",
+	
+	
+	
+	
+	
+	"dependencies": {
+	},
+	"subPackages": [
+		{
+			"name": "image",
+			"targetType": "executable",
+			"version" : "~master",
+			"mainSourceFile": "src/samples/image/main.d",
+			"sourcePaths": ["src/samples/image"],
+			"excludedSourceFiles": ["src/dquick/main.d"],
+			"buildRequirements": ["allowWarnings"],
+			"dependencies": {
+				"lib": {"version": "~master", "path": "src/dquick"},
+			},			
+		},	
+	],
+}
