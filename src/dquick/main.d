@@ -1,4 +1,4 @@
-module main;
+module dquick.main;
 
 version (unittest)
 {
