@@ -58,6 +58,8 @@ public:
 		onWidthChanged.emit(mSize.x);
 		onHeightChanged.emit(mSize.y);
 	}
+	
+	Vector2f32	size() {return mSize;}
 
 	@property void	width(float width)
 	{
