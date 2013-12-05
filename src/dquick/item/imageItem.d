@@ -13,12 +13,13 @@ class ImageItem : GraphicItem
 public:
 	enum	FillMode
 	{
-		Stretch,				// the image is scaled to fit
+		Stretch,				// (default) the image is scaled to fit
 		PreserveAspectFit,		// the image is scaled uniformly to fit without cropping
 		PreserveAspectCrop,		// the image is scaled uniformly to fill, cropping if necessary
 		Tile,					// the image is duplicated horizontally and vertically
 		TileVertically,			// the image is stretched horizontally and tiled vertically
 		TileHorizontally,		// the image is stretched vertically and tiled horizontally
+		Pad,					// the image is not transformed
 	}
 	
 	this(DeclarativeItem parent = null)
@@ -42,21 +43,34 @@ public:
 
 	@property void	source(string filePath)
 	{
+		Vector2s32	oldSourceSize = mRectangle.textureSize;
+
 		mSource = filePath;
 		if (filePath != "" && !mRectangle.setTexture(filePath))
 			writeln("ImageItem::source:: Warning : can't load image \"" ~ filePath ~"\"");
 		// TODO If this item is root, update the window size (only when item has to repect the image size)
 		setSize(mRectangle.size);
 		onSourceChanged.emit(filePath);
-		onImplicitWidthChanged.emit(implicitWidth);
-		onImplicitHeightChanged.emit(implicitHeight);
+		if (mRectangle.textureSize.x != oldSourceSize.x)
+			onSourceWidthChanged.emit(mRectangle.textureSize.x);
+		if (mRectangle.textureSize.y != oldSourceSize.y)
+			onSourceHeightChanged.emit(mRectangle.textureSize.y);
 	}
 
-	@property string	source() {return mSource;}
+	@property string		source() {return mSource;}
 	mixin Signal!(string)	onSourceChanged;
 
-	@property Vector2s32	sourceSize() {return Vector2s32(0, 0);}
-	mixin Signal!(Vector2s32)	onSourceSizeChanged;
+	@property float	sourceWidth()
+	{
+		return mRectangle.textureSize.x;
+	}
+	mixin Signal!(float)	onSourceWidthChanged;
+
+	@property float	sourceHeight()
+	{
+		return mRectangle.textureSize.y;
+	}
+	mixin Signal!(float)	onSourceHeightChanged;
 
 	@property void	fillMode(FillMode mode)
 	{
@@ -65,8 +79,11 @@ public:
 
 		mFillMode = mode;
 		onFillModeChanged.emit(mode);
-		setSize(GraphicItem.size());
+		setSize(mSize);
 	}
+
+	@property FillMode	fillMode() {return mFillMode;}
+	mixin Signal!(FillMode)	onFillModeChanged;
 
 	@property FillMode	fillMode() {return mFillMode;}
 	mixin Signal!(FillMode)	onFillModeChanged;
@@ -75,6 +92,7 @@ public:
 	{
 		void	setSize(Vector2f32 size)
 		{
+			Vector2f32	oldImplicitSize = mImplicitSize;
 			Vector2f32	implicitSize;
 
 			final switch (mFillMode)
@@ -83,20 +101,20 @@ public:
 					implicitSize = size;
 					break;
 				case FillMode.PreserveAspectFit:
-					if (sourceSize.x / sourceSize.y < size.x / size.y)
+					if (sourceWidth / sourceHeight < size.x / size.y)
 					{
-						implicitSize.x = size.x * (sourceSize.y / sourceSize.x);
+						implicitSize.x = size.x * (sourceHeight / sourceWidth);
 						implicitSize.y = size.y;
 					}
 					else
 					{
 						implicitSize.x = size.x;
-						implicitSize.y = size.y * (sourceSize.y / sourceSize.x);
+						implicitSize.y = size.y * (sourceHeight / sourceWidth);
 					}
 					break;
 				case FillMode.PreserveAspectCrop:
 					implicitSize.x = size.x;
-					implicitSize.y = size.y * (sourceSize.x / sourceSize.y);
+					implicitSize.y = size.y * (sourceWidth / sourceHeight);
 					break;
 				case FillMode.Tile:
 					implicitSize = size;
@@ -107,6 +125,9 @@ public:
 				case FillMode.TileHorizontally:
 					implicitSize = size;
 					break;
+				case FillMode.Pad:
+					implicitSize = Vector2f32(sourceWidth, sourceHeight);
+					break;
 			}
 
 			mRectangle.setSize(implicitSize);
@@ -116,17 +137,17 @@ public:
 				return;
 
 			mImplicitSize = implicitSize;
-			onImplicitWidthChanged.emit(mImplicitSize.x);
-			onImplicitHeightChanged.emit(mImplicitSize.y);
+			if (mImplicitSize.x != oldImplicitSize.x)
+				onImplicitWidthChanged.emit(mImplicitSize.x);
+			if (mImplicitSize.y != oldImplicitSize.y)
+				onImplicitHeightChanged.emit(mImplicitSize.y);
 		}
 
 		@property void	width(float width) {mRectangle.width = width; GraphicItem.width = width;}
 		@property float	width() {return GraphicItem.width;}
 		@property void	height(float height) {mRectangle.height = height; GraphicItem.height = height;}
 		@property float	height() {return GraphicItem.height;}
-
 		@property float	implicitWidth() {return mRectangle.textureSize.x;}
-
 		@property float	implicitHeight() {return mRectangle.textureSize.y;}
 	}
 
@@ -135,4 +156,8 @@ private:
 	Rectangle	mRectangle;
 	FillMode	mFillMode = FillMode.Stretch;
 	string		mSource;
+}
+
+unittest
+{
 }

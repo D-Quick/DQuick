@@ -1,7 +1,7 @@
 {
 	"name": "image",
 	"description": "A GUI library written in D.",
-	"authors": ["Bruno Deligny", "Xavier Bigand", "Piotr Podsiadly"],
+	"authors": ["Bruno Deligny", "Xavier Bigand"],
 	"homepage": "https://github.com/D-Quick/DQuick",
 	"license": "BSL-1.0",
 

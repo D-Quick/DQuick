@@ -22,7 +22,7 @@ int main(string[] args)
 	{		
 		writeln("Current path: ", absolutePath("."));
 		GuiApplication.instance().setApplicationArguments(args);
-		GuiApplication.instance().setApplicationDisplayName("DQuick - Images sample");
+		GuiApplication.instance().setApplicationDisplayName("DQuick - Text sample");
 
 		writeln("Executable path: ", dirName(thisExePath()));
 		chdir(dirName(thisExePath()));
@@ -31,7 +31,8 @@ int main(string[] args)
 		mainWindow.setSize(Vector2s32(800, 600));
 		mainWindow.create();
 
-		mainWindow.setMainItem("samples/dml/image.lua");
+		mainWindow.setMainItem("dml/text - constitution.lua");
+//		mainWindow.setMainItem("dml/image2.lua");
 
 		mainWindow.show();
 

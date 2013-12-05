@@ -1,10 +1,9 @@
-require "dml/button"
-
-Button {
-	width = function()
-		return image.width
-	end,
-	height = function()
-		return image.height
-	end,
+GraphicItem {
+	id = "root",
+	
+	Image {
+		id = "Stretch",
+		
+		source = "samples/images/Qt/qt-logo.png",
+	}
 }
