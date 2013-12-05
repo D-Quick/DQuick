@@ -30,7 +30,7 @@ int main(string[] args)
 		mainWindow.create();
 
 		mainWindow.setMainItem("dml/text - constitution.lua");
-//		mainWindow.setMainItem("dml/image.lua");
+//		mainWindow.setMainItem("dml/image2.lua");
 
 		mainWindow.show();
 

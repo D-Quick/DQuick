@@ -63,7 +63,7 @@ public:
 			}
 		}
 		
-		throw new Exception("Unable to save an image to '" ~ filePath ~ "'!");
+		throw new Exception("There is no plugin that handle image format of '" ~ filePath ~ "'!");
 	}
 
 	void	create(string filePath, uint width, uint height, ImageData.Format format)
