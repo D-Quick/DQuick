@@ -10,6 +10,7 @@ import dquick.renderer3D.openGL.mesh;
 
 import dquick.maths.color;
 import dquick.maths.vector2f32;
+import dquick.maths.vector2s32;
 
 import derelict.opengl3.gl;
 
@@ -55,6 +56,8 @@ public:
 			updateMesh();
 		mMesh.draw();
 	}
+
+	@property Vector2s32	textureSize() {return mMesh.texture.size;}
 
 private:
 	void	create()	// Safe to call it if mesh is already created

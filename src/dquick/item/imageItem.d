@@ -30,7 +30,8 @@ public:
 	void	paint(bool transformationUpdated)
 	{
 		startPaint(transformationUpdated);
-		mRectangle.draw();
+		if (mSource != "")
+			mRectangle.draw();
 		paintChildren();
 		endPaint();
 	}
@@ -43,6 +44,8 @@ public:
 		// TODO If this item is root, update the window size (only when item has to repect the image size)
 		setSize(mRectangle.size);
 		onSourceChanged.emit(filePath);
+		onImplicitWidthChanged.emit(implicitWidth);
+		onImplicitHeightChanged.emit(implicitHeight);
 	}
 
 	@property string	source() {return mSource;}
@@ -65,6 +68,10 @@ public:
 		@property float	width() {return GraphicItem.width;}
 		@property void	height(float height) {mRectangle.height = height; GraphicItem.height = height;}
 		@property float	height() {return GraphicItem.height;}
+
+		@property float	implicitWidth() {return mRectangle.textureSize.x;}
+
+		@property float	implicitHeight() {return mRectangle.textureSize.y;}
 	}
 
 private:
