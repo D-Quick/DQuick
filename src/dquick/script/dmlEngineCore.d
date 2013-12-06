@@ -923,6 +923,7 @@ extern(C)
 			lua_remove(L, 1);
 			const char*	propertyIdCString = lua_tostring(L, 1);
 			const(char)[]	propertyId = propertyIdCString[0 .. strlen(propertyIdCString)];
+			writefln("index %s.%s", itemBinding.id, propertyId);
 			//string	propertyId;
 			//dquick.script.utils.valueFromLua!(string)(L, 1, propertyId);
 			//lua_remove(L, 1);

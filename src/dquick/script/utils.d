@@ -142,7 +142,9 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 		}
 	}
 	else
-		static assert(false);
+	{
+		static assert(false, fullyQualifiedName2!(T));
+	}
 }
 
 void	valueToLua(T)(lua_State* L, T value)

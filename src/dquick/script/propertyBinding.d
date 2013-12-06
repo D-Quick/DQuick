@@ -216,6 +216,8 @@ class PropertyBinding
 			// Set _ENV upvalue
 			lua_rawgeti(L, LUA_REGISTRYINDEX, itemBinding.itemBindingLuaEnvReference);
 			const char*	envUpvalue = lua_setupvalue(L, -2, 1);
+			if (envUpvalue)
+				writefln("env binding %s", to!(string)(envUpvalue));
 			if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
 				lua_pop(L, 1);
 

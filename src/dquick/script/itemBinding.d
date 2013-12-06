@@ -54,6 +54,7 @@ static string	BASE_ITEM_BINDING()
 						return rawget(_, n)
 					else 
 						local itemMemberVal = rawget(_, "this")[n];
+		print("itemMemberVal")
 						if itemMemberVal == nil then
 							return _ENV[n]
 						else
@@ -79,6 +80,7 @@ static string	BASE_ITEM_BINDING()
 
 			// this global
 			lua_pushstring(dmlEngine.luaState, "this");
+			writefln("pushToLua %x", &this);
 			pushToLua(dmlEngine.luaState);
 			lua_settable(dmlEngine.luaState, -3);
 
@@ -194,6 +196,14 @@ static string	BASE_ITEM_BINDING()
 
 								if (lua_isfunction(L, -1))
 								{
+									// Set _ENV upvalue
+									lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvReference);
+									const char*	envUpvalue = lua_setupvalue(L, -2, 1);
+									if (envUpvalue)
+										writefln("env slot %s", to!(string)(envUpvalue));
+									if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
+										lua_pop(L, 1);
+
 									__traits(getMember, this, member).slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
 									lua_pushnil(L); // To compensate the value poped by luaL_ref
 								}
@@ -224,6 +234,14 @@ static string	BASE_ITEM_BINDING()
 								{
 									virtualProperty = *virtualPropertyPtr;
 								}
+								/*// Set _ENV upvalue
+								lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvReference);
+								const char*	envUpvalue = lua_setupvalue(L, -2, 1);
+								if (envUpvalue)
+									writefln("env virtual slot %s", to!(string)(envUpvalue));
+								if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
+									lua_pop(L, 1);*/
+
 								virtualProperty.slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
 								lua_pushnil(L); // To compensate the value poped by luaL_ref
 							}
