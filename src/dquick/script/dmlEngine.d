@@ -462,13 +462,13 @@ unittest
 					return this.virtualProperty
 				end,
 				onNativePropertyChanged = function()
-					this.nativeTotalProperty = 20
+					this.nativeTotalProperty = this.virtualProperty
 				end
 			}
 		)";
 		dmlEngine.execute(lua, "");
 		assert(dmlEngine.getLuaGlobal!Item("item19").nativeProperty == 10);
-		assert(dmlEngine.getLuaGlobal!Item("item19").nativeTotalProperty == 20);
+		assert(dmlEngine.getLuaGlobal!Item("item19").nativeTotalProperty == 10);
 	}
 
 	// Implicit this
@@ -481,13 +481,13 @@ unittest
 					return virtualProperty
 				end,
 				onNativePropertyChanged = function()
-					nativeTotalProperty = 20
+					nativeTotalProperty = virtualProperty
 				end
 			}
 		)";
 		dmlEngine.execute(lua, "");
 		assert(dmlEngine.getLuaGlobal!Item("item20").nativeProperty == 10);
-		assert(dmlEngine.getLuaGlobal!Item("item20").nativeTotalProperty == 20);
+		assert(dmlEngine.getLuaGlobal!Item("item20").nativeTotalProperty == 10);
 	}
 }
 

@@ -47,78 +47,66 @@ static string	BASE_ITEM_BINDING()
 
 		void	createItemBindingLuaEnv()
 		{
-			// Load env lookup function to handle this and parent
+			// Create new _ENV table with lookup function to handle this and parent
 			string	lua = q"(
-				__item_index = function (_, n)
-					if n == "this" then
-						return rawget(_, n)
-					else 
-						local itemMemberVal = rawget(_, "this")[n];
-		print("itemMemberVal")
-						if itemMemberVal == nil then
-							return _ENV[n]
+				local __itemBinding_env = {
+				}
+				local __itemBinding_env_mt = {
+					__index = function (_, n)
+						if n == "this" then
+							return rawget(_, n)
+						else 
+							local itemMemberVal = rawget(_, "this")[n];
+							if itemMemberVal == nil then
+								return _ENV[n]
+							else
+								return itemMemberVal
+							end
+						end
+					end,
+					__newindex = function (_, n, v)
+						assert(n ~= "this")
+						local this = rawget(_, "this")
+						if this[n] == nil then
+							_ENV[n] = v
 						else
-							return itemMemberVal
+							this[n] = v
 						end
 					end
-				end
-				__item_newindex = function (_, n, v)
-					assert(n ~= "this")
-					local this = rawget(_, "this")
-					if this[n] == nil then
-						_ENV[n] = v
-					else
-						this[n] = v
-					end
+				}
+				setmetatable(__itemBinding_env, __itemBinding_env_mt)
+				__itemBinding_env_global = __itemBinding_env
+
+				__itemBinding_dummy_closure_global = function()
+					return __itemBinding_env
 				end
 			)";
 			dmlEngine.load(lua, "");
+
+			// Put component env
+			lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, dmlEngine.currentLuaEnv);
+			lua_setupvalue(dmlEngine.luaState, -2, 1);
+
 			dmlEngine.execute();
 
-			// Create new _ENV table
-			lua_newtable(dmlEngine.luaState);
+			// Get new env table
+			lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, dmlEngine.currentLuaEnv);
+			lua_pushstring(dmlEngine.luaState, "__itemBinding_env_global");
+			lua_rawget(dmlEngine.luaState, -2); // Raw get without calling index metamethod to not get parent components values
 
-			// this global
+			// set this into env
 			lua_pushstring(dmlEngine.luaState, "this");
-			writefln("pushToLua %x", &this);
 			pushToLua(dmlEngine.luaState);
-			lua_settable(dmlEngine.luaState, -3);
+			lua_rawset(dmlEngine.luaState, -3);
+			lua_pop(dmlEngine.luaState, 1);
 
-			// Create new _ENV's metatable
-			lua_newtable(dmlEngine.luaState);
-			{
-				{
-					// __index metamethod to chain lookup to the parent env
-					lua_pushstring(dmlEngine.luaState, "__index");
-					lua_getglobal(dmlEngine.luaState, "__item_index");
+			// Get dummy closure
+			lua_pushstring(dmlEngine.luaState, "__itemBinding_dummy_closure_global");
+			lua_rawget(dmlEngine.luaState, -2); // Raw get without calling index metamethod to not get parent components values
 
-					// Put component env
-					lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, dmlEngine.currentLuaEnv);
+			mItemBindingLuaEnvDummyClosureReference = luaL_ref(dmlEngine.luaState, LUA_REGISTRYINDEX);
 
-					const char*	envUpvalue = lua_setupvalue(dmlEngine.luaState, -2, 1);
-					if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
-						lua_pop(dmlEngine.luaState, 1);
-
-					lua_settable(dmlEngine.luaState, -3);
-				}
-
-				{
-					// __newindex metamethod to chain assign to the parent env
-					lua_pushstring(dmlEngine.luaState, "__newindex");
-					lua_getglobal(dmlEngine.luaState, "__item_newindex");
-
-					// Put component env
-					lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, dmlEngine.currentLuaEnv);
-					const char*	envUpvalue = lua_setupvalue(dmlEngine.luaState, -2, 1);
-					if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
-						lua_pop(dmlEngine.luaState, 1);
-
-					lua_settable(dmlEngine.luaState, -3);
-				}
-			}
-			lua_setmetatable(dmlEngine.luaState, -2);
-
-			mItemBindingLuaEnvReference = luaL_ref(dmlEngine.luaState, LUA_REGISTRYINDEX);
+			lua_pop(dmlEngine.luaState, 1);
 		}
 
 		bool	mCreating;
@@ -197,12 +185,9 @@ static string	BASE_ITEM_BINDING()
 								if (lua_isfunction(L, -1))
 								{
 									// Set _ENV upvalue
-									lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvReference);
-									const char*	envUpvalue = lua_setupvalue(L, -2, 1);
-									if (envUpvalue)
-										writefln("env slot %s", to!(string)(envUpvalue));
-									if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
-										lua_pop(L, 1);
+									lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
+									lua_upvaluejoin (L, -2, 1, -1, 1);
+									lua_pop(L, 1);
 
 									__traits(getMember, this, member).slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
 									lua_pushnil(L); // To compensate the value poped by luaL_ref
@@ -234,13 +219,10 @@ static string	BASE_ITEM_BINDING()
 								{
 									virtualProperty = *virtualPropertyPtr;
 								}
-								/*// Set _ENV upvalue
-								lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvReference);
-								const char*	envUpvalue = lua_setupvalue(L, -2, 1);
-								if (envUpvalue)
-									writefln("env virtual slot %s", to!(string)(envUpvalue));
-								if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
-									lua_pop(L, 1);*/
+								// Set _ENV upvalue
+								lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
+								lua_upvaluejoin (L, -2, 1, -1, 1);
+								lua_pop(L, 1);
 
 								virtualProperty.slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
 								lua_pushnil(L); // To compensate the value poped by luaL_ref
@@ -301,10 +283,10 @@ static string	BASE_ITEM_BINDING()
 			dquick.script.utils.valueToLua!(typeof(this))(L, this);
 		}
 
-		int	mItemBindingLuaEnvReference;
-		override int	itemBindingLuaEnvReference()
+		int	mItemBindingLuaEnvDummyClosureReference;
+		override int	itemBindingLuaEnvDummyClosureReference()
 		{
-			return mItemBindingLuaEnvReference;
+			return mItemBindingLuaEnvDummyClosureReference;
 		}
 	)";
 }
