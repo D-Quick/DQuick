@@ -39,7 +39,7 @@ public:
 	@property void	source(string filePath)
 	{
 		mSource = filePath;
-		if (!mRectangle.setTexture(filePath))
+		if (filePath != "" && !mRectangle.setTexture(filePath))
 			writeln("ImageItem::source:: Warning : can't load image \"" ~ filePath ~"\"");
 		// TODO If this item is root, update the window size (only when item has to repect the image size)
 		setSize(mRectangle.size);
