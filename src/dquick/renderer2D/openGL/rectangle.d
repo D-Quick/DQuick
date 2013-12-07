@@ -57,7 +57,12 @@ public:
 		mMesh.draw();
 	}
 
-	@property Vector2s32	textureSize() {return mMesh.texture.size;}
+	@property Vector2s32	textureSize()
+	{
+		if (mMesh is null || mMesh.texture is null)
+			return Vector2s32(0, 0);
+		return mMesh.texture.size;
+	}
 
 private:
 	void	create()	// Safe to call it if mesh is already created
