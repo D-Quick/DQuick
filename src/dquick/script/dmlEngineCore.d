@@ -259,6 +259,22 @@ unittest
 	dmlEngine.execute(lua5, "");
 	assert(dmlEngine.getLuaGlobal!Item("item7").nativeTotalProperty == 175);
 
+	// Test native property anti hijack protection (property assignment from D that compete with his binding)
+	{
+		string lua = q"(
+			Item {
+				id = "item7_1",
+				nativeProperty = function()
+					return 100
+				end
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		assert(dmlEngine.getLuaGlobal!Item("item7_1").nativeProperty == 100);
+		dmlEngine.getLuaGlobal!Item("item7_1").nativeProperty = 200;
+		assert(dmlEngine.getLuaGlobal!Item("item7_1").nativeProperty == 100);
+	}
+
 	// Test property binding loop detection
 	/*string lua6 = q"(
 		Item {

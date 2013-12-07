@@ -142,14 +142,15 @@ class PropertyBinding
 			foreach (dependency; dependencies)
 				dependency.dependents[this] = this;
 
-			itemBinding.dmlEngine.currentlyExecutedBindingStack.length--;
-
 			if (lua_gettop(itemBinding.dmlEngine.luaState) - top != 1)
 			{
 				writefln("executeBinding:: too few or too many return values, got %d, expected 1\n", lua_gettop(itemBinding.dmlEngine.luaState) - top);
 				return;
 			}
 			valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
+
+			// Pop from stack only after assignment so that onChanged can detect it's a value change from binding or from D
+			itemBinding.dmlEngine.currentlyExecutedBindingStack.length--;
 		}
 	}
 
@@ -160,7 +161,15 @@ class PropertyBinding
 
 		if (itemBinding.creating == false)
 		{
-			assert(dirty == true || luaReference == -1, format("%s.%s value assignement from D compete with his binding", itemBinding.id, propertyName));
+			// Detect assignment from D that compete with his binding
+			if ((itemBinding.dmlEngine.currentlyExecutedBindingStack.length == 0 || itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1] !is this) &&
+				luaReference != -1)
+			{
+				dirty = true;
+				executeBinding();
+				return;
+			}
+
 			dirty = false;
 			if (slotLuaReference != -1)
 				itemBinding.dmlEngine.execute(slotLuaReference);
