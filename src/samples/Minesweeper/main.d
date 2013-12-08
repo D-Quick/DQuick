@@ -1,4 +1,4 @@
-module main;
+module dquick.samples.minesweeper.main;
 
 import dquick.system.guiApplication;
 import dquick.item.imageItem;
@@ -19,7 +19,7 @@ version(Posix)
 
 bool	randomBool()
 {
-	auto x = cast(bool)dice(0.5, 0.5);
+	auto x = cast(bool)dice(0.8, 0.2);
 	return x;
 }
 
@@ -36,7 +36,7 @@ int main(string[] args)
 		mainWindow.setSize(Vector2s32(800, 600));
 		mainWindow.create();
 
-		//mainWindow.dmlEngine.addFunction!(randomBool, "randomBool")();
+		mainWindow.dmlEngine.addFunction!(randomBool, "randomBool")();
 		mainWindow.setMainItem("dml/Minesweeper.lua");
 
 		mainWindow.show();
