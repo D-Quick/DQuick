@@ -143,10 +143,7 @@ class PropertyBinding
 				dependency.dependents[this] = this;
 
 			if (lua_gettop(itemBinding.dmlEngine.luaState) - top != 1)
-			{
-				writefln("executeBinding:: too few or too many return values, got %d, expected 1\n", lua_gettop(itemBinding.dmlEngine.luaState) - top);
-				return;
-			}
+				throw new Exception(format("executeBinding:: too few or too many return values on property binding %s.%s, got %d, expected 1\n", itemBinding.id, propertyName, lua_gettop(itemBinding.dmlEngine.luaState) - top));
 			valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
 
 			// Pop from stack only after assignment so that onChanged can detect it's a value change from binding or from D
