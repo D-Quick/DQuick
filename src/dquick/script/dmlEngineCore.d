@@ -828,14 +828,8 @@ extern(C)
 		try
 		{
 			const char* error = lua_tostring(L, 1);
-			writeln("[DMLEngineCore] " ~ to!(string)(error));
 			lua_pop(L, 1);
-			assert(false);
-
-			version(release)
-			{
-				return 1;
-			}
+			throw new Exception(format("luaPanicFunction error: %s", error));
 		}
 		catch (Throwable e)
 		{
@@ -849,20 +843,11 @@ extern(C)
 		try
 		{
 			if (lua_gettop(L) != 2)
-			{
-				writefln("createLuaBind:: too few or too many param, got %d, expected 1\n", lua_gettop(L));
-				return 0;
-			}
+				throw new Exception(format("too few or too many param, got %d, expected 1\n", lua_gettop(L)));
 			if (!lua_istable(L, 1))
-			{
-				writeln("createLuaBind:: the lua value is not a table\n");
-				return 0;
-			}
+				throw new Exception(format("Lua value at index %d is a \"%s\", a table was expected\n", 1, getLuaTypeName(L, 1)));
 			if (!lua_istable(L, 2))
-			{
-				writeln("createLuaBind:: the lua value is not a table\n");
-				return 0;
-			}
+				throw new Exception(format("Lua value at index %d is a \"%s\", a table was expected\n", 2, getLuaTypeName(L, 2)));
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -903,7 +888,7 @@ extern(C)
 		}
 		catch (Throwable e)
 		{
-			writeln(e.toString());
+			luaL_error(L, e.msg.toStringz());
 			return 0;
 		}
 	}
@@ -913,20 +898,11 @@ extern(C)
 		try
 		{
 			if (lua_gettop(L) != 2)
-			{
-				writefln("indexLuaBind:: too few or too many param, got %d, expected 2\n", lua_gettop(L));
-				return 0;
-			}
+				throw new Exception(format("too few or too many param, got %d, expected 1\n", lua_gettop(L)));
 			if (!lua_isuserdata(L, 1))
-			{
-				writeln("indexLuaBind:: param 1 is not a userdata\n");
-				return 0;
-			}
+				throw new Exception(format("Lua value at index %d is a \"%s\", a userdata was expected\n", 1, getLuaTypeName(L, 1)));
 			if (!lua_isstring(L, 2))
-			{
-				writeln("indexLuaBind:: param 2 is not a string\n");
-				return 0;
-			}
+				throw new Exception(format("Lua value at index %d is a \"%s\", a string was expected\n", 2, getLuaTypeName(L, 2)));
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -1004,7 +980,7 @@ extern(C)
 		}
 		catch (Throwable e)
 		{
-			writeln(e.toString());
+			luaL_error(L, e.msg.toStringz());
 			return 0;
 		}
 	}
@@ -1014,20 +990,11 @@ extern(C)
 		try
 		{
 			if (lua_gettop(L) != 3)
-			{
-				writefln("newindexLuaBind:: too few or too many param, got %d, expected 3\n", lua_gettop(L));
-				return 0;
-			}
+				throw new Exception(format("too few or too many param, got %d, expected 3\n", lua_gettop(L)));
 			if (!lua_isuserdata(L, 1))
-			{
-				writeln("newindexLuaBind:: param 1 is not a string\n");
-				return 0;
-			}
+				throw new Exception(format("Lua value at index %d is a \"%s\", a userdata was expected\n", 1, getLuaTypeName(L, 1)));
 			if (!lua_isstring(L, 2))
-			{
-				writeln("newindexLuaBind:: param 2 is not a string\n");
-				return 0;
-			}
+				throw new Exception(format("Lua value at index %d is a \"%s\", a string was expected\n", 2, getLuaTypeName(L, 2)));
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -1068,7 +1035,7 @@ extern(C)
 		}
 		catch (Throwable e)
 		{
-			writeln(e.toString());
+			luaL_error(L, e.msg.toStringz());
 			return 0;
 		}
 	}
@@ -1104,7 +1071,7 @@ extern(C)
 			if (lua_gettop(L) < 1)
 				throw new Exception(format("too few param, got %d, expected at least 1\n", lua_gettop(L)));
 			if (!lua_isuserdata(L, 1))
-				throw new Exception("param 1 is not a userdata");
+				throw new Exception(format("Lua value at index %d is a \"%s\", a userdata was expected\n", 1, getLuaTypeName(L, 1)));
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -1144,9 +1111,9 @@ extern(C)
 		try
 		{
 			if (lua_gettop(L) != 1)
-				throw new Exception(format("too few param, got %d, expected at least 1\n", lua_gettop(L)));
+				throw new Exception(format("too few param, got %d, expected 1\n", lua_gettop(L)));
 			if (!lua_isstring(L, 1))
-				throw new Exception("param 1 is not a string");
+				throw new Exception(format("Lua value at index %d is a \"%s\", a string was expected\n", 1, getLuaTypeName(L, 1)));
 
 			string	path = to!(string)(lua_tostring(L, 1));
 			lua_pop(L, 1);
@@ -1190,9 +1157,9 @@ extern(C)
 		try
 		{
 			if (lua_gettop(L) != 1)
-				throw new Exception(format("createComponentLuaBind:: too few or too many param, got %d, expected 1\n", lua_gettop(L)));
+				throw new Exception(format("too few or too many param, got %d, expected 1\n", lua_gettop(L)));
 			if (!lua_istable(L, 1))
-				throw new Exception("createComponentLuaBind:: the lua value is not a table\n");
+				throw new Exception("the lua value is not a table\n");
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -1204,12 +1171,8 @@ extern(C)
 				__env_chaining_index = function (_, n)
 				    local localRawGet = rawget(_, n)
 					if localRawGet == nil then
-						--print("up "..n)
-						--print(_ENV[n])
 						return _ENV[n]
 					else
-						--print("local "..n)
-						--print(localRawGet)
 						return localRawGet
 					end
 				end
