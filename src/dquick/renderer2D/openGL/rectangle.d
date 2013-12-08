@@ -10,6 +10,7 @@ import dquick.renderer3D.openGL.mesh;
 
 import dquick.maths.color;
 import dquick.maths.vector2f32;
+import dquick.maths.vector2s32;
 
 import derelict.opengl3.gl;
 
@@ -54,6 +55,13 @@ public:
 		if(mMeshIsDirty)
 			updateMesh();
 		mMesh.draw();
+	}
+
+	@property Vector2s32	textureSize()
+	{
+		if (mMesh is null || mMesh.texture is null)
+			return Vector2s32(0, 0);
+		return mMesh.texture.size;
 	}
 
 private:

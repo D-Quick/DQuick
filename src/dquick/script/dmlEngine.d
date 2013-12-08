@@ -219,6 +219,22 @@ unittest
 	dmlEngine.execute(lua5, "");
 	assert(dmlEngine.getLuaGlobal!Item("item7").nativeTotalProperty == 175);
 
+	// Test native property anti hijack protection (property assignment from D that compete with his binding)
+	{
+		string lua = q"(
+			Item {
+				id = "item7_1",
+				nativeProperty = function()
+					return 100
+				end
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		assert(dmlEngine.getLuaGlobal!Item("item7_1").nativeProperty == 100);
+		dmlEngine.getLuaGlobal!Item("item7_1").nativeProperty = 200;
+		assert(dmlEngine.getLuaGlobal!Item("item7_1").nativeProperty == 100);
+	}
+
 	// Test property binding loop detection
 	/*string lua6 = q"(
 		Item {
@@ -462,13 +478,13 @@ unittest
 					return this.virtualProperty
 				end,
 				onNativePropertyChanged = function()
-					this.nativeTotalProperty = 20
+					this.nativeTotalProperty = this.virtualProperty
 				end
 			}
 		)";
 		dmlEngine.execute(lua, "");
 		assert(dmlEngine.getLuaGlobal!Item("item19").nativeProperty == 10);
-		assert(dmlEngine.getLuaGlobal!Item("item19").nativeTotalProperty == 20);
+		assert(dmlEngine.getLuaGlobal!Item("item19").nativeTotalProperty == 10);
 	}
 
 	// Implicit this
@@ -481,13 +497,13 @@ unittest
 					return virtualProperty
 				end,
 				onNativePropertyChanged = function()
-					nativeTotalProperty = 20
+					nativeTotalProperty = virtualProperty
 				end
 			}
 		)";
 		dmlEngine.execute(lua, "");
 		assert(dmlEngine.getLuaGlobal!Item("item20").nativeProperty == 10);
-		assert(dmlEngine.getLuaGlobal!Item("item20").nativeTotalProperty == 20);
+		assert(dmlEngine.getLuaGlobal!Item("item20").nativeTotalProperty == 10);
 	}
 }
 

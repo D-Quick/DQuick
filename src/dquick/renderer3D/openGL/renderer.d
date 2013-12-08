@@ -46,6 +46,13 @@ class Renderer
 
 		checkgl!glDisable(GL_TEXTURE_2D);
 
+		checkgl!glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_FALSE);
+		checkgl!glPixelStorei(GL_UNPACK_LSB_FIRST, GL_FALSE);
+		checkgl!glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+		checkgl!glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+		checkgl!glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+		checkgl!glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
 		mInitialized = true;
 	}
 
