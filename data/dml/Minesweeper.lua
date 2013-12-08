@@ -45,10 +45,10 @@ function createGrid()
 	t = {}
 	t.id = "grid"
 	t.width = function()
-		return background.width
+		return root.width
 	end
 	t.height = function()
-		return background.height - face.height
+		return root.height - face.height
 	end
 	
 	local total = 6
@@ -74,57 +74,49 @@ function createGrid()
 	return t
 end
 
-GraphicItem {
+
+Image {
 	id = "root",
+	source = "images/Minesweeper/background.png",
 	status = function()
 		return calculateStatus()
-	end,
+	end,		
 	
 	Image {
-		id = "background",
-		source = "images/Minesweeper/background.png",
+		id = "cheat",
 		width = function()
-			return root.width
+			return root.width / 100
 		end,
 		height = function()
-			return root.height
-		end,
-		
-		Image {
-			id = "cheat",
-			width = function()
-				return root.width / 100
-			end,
-			height = function()
-				return root.height / 100
-			end,			
-		},
-		
-		Image {
-			id = "face",
-			x = function()
-				return (root.width - width) / 2
-			end,
-			y = function()
-				return root.height - height
-			end,
-			width = function()
-				return height * implicitWidth/implicitHeight
-			end,
-			height = function()
-				return root.height / 10
-			end,	
-			source = function()
-				if root.status == "inGame" then
-					return "images/Minesweeper/face-smile.png"
-				elseif root.status == "lost" then
-					return "images/Minesweeper/face-sad.png"
-				else
-					return "images/Minesweeper/face-smile-big.png"
-				end
-			end
-		},		
-		
-		GraphicItem(createGrid())
+			return root.height / 100
+		end,			
 	},
+	
+	Image {
+		id = "face",
+		x = function()
+			return (root.width - width) / 2
+		end,
+		y = function()
+			return root.height - height
+		end,
+		width = function()
+			return height * implicitWidth/implicitHeight
+		end,
+		height = function()
+			return root.height / 10
+		end,	
+		source = function()
+			if root.status == "inGame" then
+				return "images/Minesweeper/face-smile.png"
+			elseif root.status == "lost" then
+				return "images/Minesweeper/face-sad.png"
+			else
+				return "images/Minesweeper/face-smile-big.png"
+			end
+		end
+	},		
+	
+	GraphicItem(createGrid())
 }
+
