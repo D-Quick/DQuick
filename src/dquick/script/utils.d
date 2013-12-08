@@ -95,8 +95,8 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 	static if (is(T == Variant))
 	{
 		if (lua_isboolean(L, index))
-			value = lua_toboolean(L, index);
-		if (lua_isnumber(L, index))
+			value = cast(bool)lua_toboolean(L, index);
+		else if (lua_isnumber(L, index))
 			value = lua_tonumber(L, index);
 		else if (lua_isstring(L, index))
 			value = to!(string)(lua_tostring(L, index));
@@ -142,7 +142,9 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 		}
 	}
 	else
-		static assert(false);
+	{
+		static assert(false, fullyQualifiedName2!(T));
+	}
 }
 
 void	valueToLua(T)(lua_State* L, T value)

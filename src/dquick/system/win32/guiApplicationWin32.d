@@ -354,6 +354,8 @@ version (Windows)
 			return Vector2s32(rc.right - rc.left, rc.bottom - rc.top);
 		}
 
+		DMLEngine	dmlEngine() {return mScriptContext;}
+
 		//==========================================================================
 		//==========================================================================
 

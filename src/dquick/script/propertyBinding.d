@@ -142,14 +142,15 @@ class PropertyBinding
 			foreach (dependency; dependencies)
 				dependency.dependents[this] = this;
 
-			itemBinding.dmlEngine.currentlyExecutedBindingStack.length--;
-
 			if (lua_gettop(itemBinding.dmlEngine.luaState) - top != 1)
 			{
 				writefln("executeBinding:: too few or too many return values, got %d, expected 1\n", lua_gettop(itemBinding.dmlEngine.luaState) - top);
 				return;
 			}
 			valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
+
+			// Pop from stack only after assignment so that onChanged can detect it's a value change from binding or from D
+			itemBinding.dmlEngine.currentlyExecutedBindingStack.length--;
 		}
 	}
 
@@ -160,7 +161,15 @@ class PropertyBinding
 
 		if (itemBinding.creating == false)
 		{
-			assert(dirty == true || luaReference == -1, format("%s.%s value assignement from D compete with his binding", itemBinding.id, propertyName));
+			// Detect assignment from D that compete with his binding
+			if ((itemBinding.dmlEngine.currentlyExecutedBindingStack.length == 0 || itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1] !is this) &&
+				luaReference != -1)
+			{
+				dirty = true;
+				executeBinding();
+				return;
+			}
+
 			dirty = false;
 			if (slotLuaReference != -1)
 				itemBinding.dmlEngine.execute(slotLuaReference);
@@ -214,10 +223,9 @@ class PropertyBinding
 		if (lua_isfunction(L, index)) // Binding is a lua function
 		{
 			// Set _ENV upvalue
-			lua_rawgeti(L, LUA_REGISTRYINDEX, itemBinding.itemBindingLuaEnvReference);
-			const char*	envUpvalue = lua_setupvalue(L, -2, 1);
-			if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
-				lua_pop(L, 1);
+			lua_rawgeti(L, LUA_REGISTRYINDEX, itemBinding.itemBindingLuaEnvDummyClosureReference);
+			lua_upvaluejoin (L, -2, 1, -1, 1);
+			lua_pop(L, 1);
 
 			luaReference = luaL_ref(L, LUA_REGISTRYINDEX);
 			lua_pushnil(L); // To compensate the value poped by luaL_ref

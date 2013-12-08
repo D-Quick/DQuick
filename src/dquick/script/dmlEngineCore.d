@@ -259,6 +259,22 @@ unittest
 	dmlEngine.execute(lua5, "");
 	assert(dmlEngine.getLuaGlobal!Item("item7").nativeTotalProperty == 175);
 
+	// Test native property anti hijack protection (property assignment from D that compete with his binding)
+	{
+		string lua = q"(
+			Item {
+				id = "item7_1",
+				nativeProperty = function()
+					return 100
+				end
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		assert(dmlEngine.getLuaGlobal!Item("item7_1").nativeProperty == 100);
+		dmlEngine.getLuaGlobal!Item("item7_1").nativeProperty = 200;
+		assert(dmlEngine.getLuaGlobal!Item("item7_1").nativeProperty == 100);
+	}
+
 	// Test property binding loop detection
 	/*string lua6 = q"(
 		Item {
@@ -502,13 +518,13 @@ unittest
 					return this.virtualProperty
 				end,
 				onNativePropertyChanged = function()
-					this.nativeTotalProperty = 20
+					this.nativeTotalProperty = this.virtualProperty
 				end
 			}
 		)";
 		dmlEngine.execute(lua, "");
 		assert(dmlEngine.getLuaGlobal!Item("item19").nativeProperty == 10);
-		assert(dmlEngine.getLuaGlobal!Item("item19").nativeTotalProperty == 20);
+		assert(dmlEngine.getLuaGlobal!Item("item19").nativeTotalProperty == 10);
 	}
 
 	// Implicit this
@@ -521,13 +537,13 @@ unittest
 					return virtualProperty
 				end,
 				onNativePropertyChanged = function()
-					nativeTotalProperty = 20
+					nativeTotalProperty = virtualProperty
 				end
 			}
 		)";
 		dmlEngine.execute(lua, "");
 		assert(dmlEngine.getLuaGlobal!Item("item20").nativeProperty == 10);
-		assert(dmlEngine.getLuaGlobal!Item("item20").nativeTotalProperty == 20);
+		assert(dmlEngine.getLuaGlobal!Item("item20").nativeTotalProperty == 10);
 	}
 	}
 	catch (Throwable e)
@@ -1218,10 +1234,10 @@ extern(C)
 				lua_getglobal(dmlEngine.luaState, "__env_chaining_index");
 
 				// Put component env
-				/*lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, dmlEngine.currentLuaEnv);
+				lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, dmlEngine.currentLuaEnv);
 				const char*	envUpvalue = lua_setupvalue(dmlEngine.luaState, -2, 1);
 				if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
-					lua_pop(dmlEngine.luaState, 1);*/
+					lua_pop(dmlEngine.luaState, 1);
 
 				lua_settable(dmlEngine.luaState, -3);
 			}

@@ -18,6 +18,11 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Scheduler", "projects\Sched
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB} = {5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}
 	EndProjectSection
 EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Minesweeper", "projects\Minesweeper.visualdproj", "{AFEF9D10-70F7-4E3B-A045-A2078781A178}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB} = {5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -57,6 +62,14 @@ Global
 		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.Release|Win32.Build.0 = Release|Win32
 		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.ReleaseUnittest|Win32.ActiveCfg = Release|Win32
 		{3AC046D7-C0A4-45DE-A260-D23CC3BDAA12}.ReleaseUnittest|Win32.Build.0 = Release|Win32
+		{AFEF9D10-70F7-4E3B-A045-A2078781A178}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AFEF9D10-70F7-4E3B-A045-A2078781A178}.Debug|Win32.Build.0 = Debug|Win32
+		{AFEF9D10-70F7-4E3B-A045-A2078781A178}.DebugUnittest|Win32.ActiveCfg = Debug|Win32
+		{AFEF9D10-70F7-4E3B-A045-A2078781A178}.DebugUnittest|Win32.Build.0 = Debug|Win32
+		{AFEF9D10-70F7-4E3B-A045-A2078781A178}.Release|Win32.ActiveCfg = Release|Win32
+		{AFEF9D10-70F7-4E3B-A045-A2078781A178}.Release|Win32.Build.0 = Release|Win32
+		{AFEF9D10-70F7-4E3B-A045-A2078781A178}.ReleaseUnittest|Win32.ActiveCfg = Release|Win32
+		{AFEF9D10-70F7-4E3B-A045-A2078781A178}.ReleaseUnittest|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
