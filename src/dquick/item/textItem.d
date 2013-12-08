@@ -148,9 +148,19 @@ public:
 		}
 		@property float	height() {return GraphicItem.height;}
 
-		@property float	implicitWidth() {return mImplicitSize.x;}
+		@property float	implicitWidth()
+		{
+			if (mNeedRebuild)
+				rebuildMesh();
+			return mImplicitSize.x;
+		}
 
-		@property float	implicitHeight() {return mImplicitSize.y;}
+		@property float	implicitHeight()
+		{
+			if (mNeedRebuild)
+				rebuildMesh();
+			return mImplicitSize.y;
+		}
 	}
 
 private:
@@ -169,10 +179,13 @@ private:
 		mNeedRebuild = false;
 		clear(mMesh);
 		if (!mText.length)
+		{
+			setImplicitSize(Vector2f32(0.0f, 0.0f));
 			return;
+		}
 
-		Line[]	lines;
-		mImplicitSize = Vector2f32(0.0f, 0.0f);
+		Vector2f32	implicitSize = Vector2f32(0.0f, 0.0f);
+		Line[]		lines;
 
 		bool	updateTexture = false;	// True if a new glyph is loaded (this is a little optimization)
 
@@ -314,8 +327,8 @@ private:
 
 						float	heightUnderOrigin = -font.underLinePosition() + font.underLineThickness();
 
-						if (lines[$ - 1].size.x > mImplicitSize.x)
-							mImplicitSize.x = lines[$ - 1].size.x;
+						if (lines[$ - 1].size.x > implicitSize.x)
+							implicitSize.x = lines[$ - 1].size.x;
 						if (heightUnderOrigin > lines[$ - 1].maxHeightUnderOrigin)
 							lines[$ - 1].maxHeightUnderOrigin = heightUnderOrigin;
 
@@ -328,7 +341,7 @@ private:
 			}
 
 			if (lines.length)
-				mImplicitSize.y = lines[$ - 1].verticalCursor + lines[$ - 1].maxHeightUnderOrigin;	// TODO clean that, it's not really exact (a little margin is necessary for character that can be draw under the cursor like 'g')
+				implicitSize.y = lines[$ - 1].verticalCursor + lines[$ - 1].maxHeightUnderOrigin;	// TODO clean that, it's not really exact (a little margin is necessary for character that can be draw under the cursor like 'g')
 
 			// Building the Mesh
 			mMesh = new Mesh();
@@ -375,8 +388,7 @@ private:
 
 			mMesh.setTexture(mTextures[0]);
 			
-			onImplicitWidthChanged.emit(mImplicitSize.x);
-			onImplicitHeightChanged.emit(mImplicitSize.y);		
+			setImplicitSize(implicitSize);
 		}
 		catch (Exception e)
 		{
@@ -416,6 +428,20 @@ private:
 			1.0f, 1.0f, 1.0f, 1.0f,
 			1.0f, 1.0f, 1.0f, 1.0f,
 			1.0f, 1.0f, 1.0f, 1.0f];
+	}
+
+	void	setImplicitSize(Vector2f32 implicitSize)
+	{
+		if (implicitSize.x != mImplicitSize.x)
+		{
+			mImplicitSize.x = implicitSize.x;
+			onImplicitWidthChanged.emit(mImplicitSize.x);
+		}
+		if (implicitSize.y != mImplicitSize.y)
+		{
+			mImplicitSize.y = implicitSize.y;
+			onImplicitHeightChanged.emit(mImplicitSize.y);
+		}
 	}
 
 	static const string	defaultFont = "Verdana";

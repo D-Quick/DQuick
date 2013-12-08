@@ -51,11 +51,11 @@ Image {
 	Text {
 		id = "text",
 		x = function()
-			return (comproot.width - width) / 2
+			return (comproot.width - implicitWidth) / 2
 		end,
-		-- y = function()
-			-- return (comproot.height - height) / 2
-		-- end,	
+		y = function()
+			return (comproot.height - implicitHeight) / 2
+		end,	
 		y = 0,
 		text = function()
 			if (comproot.flipped or root.status == "lost") and comproot.hasMine == false and comproot.nearbyMineCount > 0 then
