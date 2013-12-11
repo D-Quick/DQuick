@@ -50,6 +50,7 @@ Image {
 	containsMouse = function()
 		return mouseArea.containsMouse
 	end,
+	hasMine = false,
 	
 	Text {
 		id = "text",

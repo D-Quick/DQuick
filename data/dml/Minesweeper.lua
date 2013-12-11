@@ -58,6 +58,21 @@ function calculateCheat()
 	return false
 end
 
+function init()
+	local allFlipped = true
+	local row = 0	
+	while getTile(row, 0) do	
+		local col = 0
+		while getTile(row, col) do
+			getTile(row, col).hasMine = randomBool()
+			getTile(row, col).flipped = false
+			col = col + 1
+		end
+		row = row + 1
+	end	
+	return false
+end
+
 function createGrid()
 	t = {}
 	t.id = "grid"
@@ -80,7 +95,6 @@ function createGrid()
 				col = col,
 				row = row,
 				total = total,
-				hasMine = randomBool()
 			}
 			col = col + 1
 			sum = sum + 1
@@ -88,6 +102,8 @@ function createGrid()
 		row = row + 1
 	end
 
+	init()
+	
 	return t
 end
 
@@ -138,7 +154,22 @@ Image {
 			else
 				return "images/Minesweeper/face-smile-big.png"
 			end
-		end
+		end,
+		
+		MouseArea {
+			id = "mouseArea",
+			width = function()
+				return face.width
+			end,
+			height = function()
+				return face.height
+			end,
+			onPressedChanged = function()
+				if pressed == false then
+					init()
+				end
+			end,
+		},
 	},		
 	
 	GraphicItem(createGrid())
