@@ -1,11 +1,10 @@
 {
 	"name": "image",
 	"targetType": "executable",
-	"version" : "~master",
+	"dependencies": {
+		"dquick": {"version": "~master", "path": "../../../"}
+	},
 	"mainSourceFile": "main.d",
 	"sourcePaths": ["./"],
-	"importPaths": ["./"],
-	"dependencies": {
-		"libdquick": {"version": "~master", "path": "../../dquick"},
-	},			
-},	
+	"importPaths": ["./"]
+}
