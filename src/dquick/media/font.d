@@ -22,6 +22,7 @@ import std.conv;
 /**
 * One Font per size and style
 * kerning requested at runtime
+* Notice that all glyph bitmap contains an extra border of 1 pixel large to avoid issue with filtering
 **/
 
 // TODO The font manager have to find fonts files in system folders
@@ -220,7 +221,7 @@ public:
 			ftBitmap = ftBitmapGlyph.bitmap;
 		}
 
-		region = imageAtlas.allocateRegion(ftBitmap.width, ftBitmap.rows);
+		region = imageAtlas.allocateRegion(ftBitmap.width + 2, ftBitmap.rows + 2);
 		if (region.x < 0)
 		{
 			throw new Exception("Texture atlas is full. Instanciate a new one isn't supported yet");	// TODO
@@ -351,12 +352,12 @@ private:
 
 		glyph.image.fill(Color(1.0f, 1.0f, 1.0f, 0.0f), Vector2s32(0, 0), Vector2s32(glyph.atlasRegion.width, glyph.atlasRegion.height));
 
-		assert(glyph.atlasRegion.width == ftBitmap.width);
-		assert(glyph.atlasRegion.height == ftBitmap.rows);
+		assert(glyph.atlasRegion.width == ftBitmap.width + 2);
+		assert(glyph.atlasRegion.height == ftBitmap.rows + 2);
 
 		size_t	depth;
-		uint	x = 0;
-		uint	y = 0;
+		uint	x = 1;
+		uint	y = 1;
 
 		depth = glyph.image.nbBytesPerPixel;
 		for (size_t i = 0; i < ftBitmap.width; i++)
@@ -368,7 +369,7 @@ private:
 				color[1] = 0;
 				color[2] = 0;
 				color[3] = ftBitmap.buffer[j * ftBitmap.pitch + i];
-				memcpy(glyph.image.pixels + ((y + j) * ftBitmap.width + (x + i)) * depth,
+				memcpy(glyph.image.pixels + ((y + j) * (ftBitmap.width + 2) + (x + i)) * depth,
 					   color.ptr,
 					   color.sizeof);
 			}
