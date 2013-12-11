@@ -329,7 +329,7 @@ private:
 							lines[$ - 1].size.y = font.linegap();
 						// --
 
-						float	heightUnderOrigin = -font.underLinePosition() + font.underLineThickness();
+						float	heightUnderOrigin = /*-font.underLinePosition() + */font.underLineThickness();	// We want text fit just in implicitSize without extra marge (we detecte the lowest rendered pixel for the current line) 
 
 						if (lines[$ - 1].size.x > implicitSize.x)
 							implicitSize.x = lines[$ - 1].size.x;
@@ -345,7 +345,7 @@ private:
 			}
 
 			if (lines.length)
-				implicitSize.y = lines[$ - 1].verticalCursor + lines[$ - 1].maxHeightUnderOrigin;	// TODO clean that, it's not really exact (a little margin is necessary for character that can be draw under the cursor like 'g')
+				implicitSize.y = lines[$ - 1].verticalCursor + lines[$ - 1].maxHeightUnderOrigin;
 
 			// Building the Mesh
 			mMesh = new Mesh();
