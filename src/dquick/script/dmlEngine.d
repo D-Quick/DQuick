@@ -527,9 +527,9 @@ public:
 
 	T	rootItem(T)()
 	{
-		dquick.script.itemBinding.ItemBinding!T	result = rootItemBinding!(dquick.script.itemBinding.ItemBinding!T)();
+		dquick.script.itemBinding.ItemBindingBase!T	result = rootItemBinding!(dquick.script.itemBinding.ItemBindingBase!T)();
 		if (result !is null)
-			return result.item;
+			return cast(T)result.itemObject;
 		return null;
 	}
 
@@ -539,11 +539,11 @@ public:
 		T	value;
 		static if (is(T : dquick.item.declarativeItem.DeclarativeItem))
 		{
-			dquick.script.itemBinding.ItemBinding!T	itemBinding;
-			dquick.script.utils.valueFromLua!(dquick.script.itemBinding.ItemBinding!(T))(luaState, -1, itemBinding);
+			dquick.script.itemBinding.ItemBindingBase!T	itemBinding;
+			dquick.script.utils.valueFromLua!(dquick.script.itemBinding.ItemBindingBase!(T))(luaState, -1, itemBinding);
 			if (itemBinding is null)
 				return null;
-			value = cast(T)(itemBinding.declarativeItem());
+			value = cast(T)(itemBinding.itemObject());
 		}
 		else
 		{
