@@ -118,7 +118,11 @@ public:
 		if (mNeedRebuild)
 			rebuildMesh();
 		if (mMesh !is null)
+		{
+			if (mText == "")
+				int toto = 10;
 			mMesh.draw();
+		}
 		paintChildren();
 		endPaint();
 	}
@@ -177,7 +181,7 @@ private:
 	void	rebuildMesh()
 	{
 		mNeedRebuild = false;
-		clear(mMesh);
+		mMesh = null;
 		if (!mText.length)
 		{
 			setImplicitSize(Vector2f32(0.0f, 0.0f));

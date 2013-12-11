@@ -295,7 +295,8 @@ version (Windows)
 			mScriptContext.executeFile(filePath);
 
 			mRootItem = mScriptContext.rootItem!GraphicItem();
-			assert(mRootItem);
+			if (mRootItem is null)
+				throw new Exception("There is no root item or it's not a GraphicItem");
 
 			mRootItem.setSize(Vector2f32(size()));
 		}

@@ -41,14 +41,46 @@ function calculateStatus()
 	end
 end
 
+function calculateCheat()
+	local allFlipped = true
+	local row = 0	
+	while getTile(row, 0) do	
+		local col = 0
+		while getTile(row, col) do
+			if getTile(row, col).containsMouse and getTile(row, col).hasMine then
+				
+				return true
+			end
+			col = col + 1
+		end
+		row = row + 1
+	end	
+	return false
+end
+
+function init()
+	local allFlipped = true
+	local row = 0	
+	while getTile(row, 0) do	
+		local col = 0
+		while getTile(row, col) do
+			getTile(row, col).hasMine = randomBool()
+			getTile(row, col).flipped = false
+			col = col + 1
+		end
+		row = row + 1
+	end	
+	return false
+end
+
 function createGrid()
 	t = {}
 	t.id = "grid"
 	t.width = function()
-		return background.width
+		return root.width
 	end
 	t.height = function()
-		return background.height - face.height
+		return root.height - face.height
 	end
 	
 	local total = 6
@@ -63,7 +95,6 @@ function createGrid()
 				col = col,
 				row = row,
 				total = total,
-				hasMine = randomBool()
 			}
 			col = col + 1
 			sum = sum + 1
@@ -71,60 +102,76 @@ function createGrid()
 		row = row + 1
 	end
 
+	init()
+	
 	return t
 end
 
-GraphicItem {
+
+Image {
 	id = "root",
+	source = "images/Minesweeper/background.png",
 	status = function()
 		return calculateStatus()
-	end,
+	end,		
 	
 	Image {
-		id = "background",
-		source = "images/Minesweeper/background.png",
+		id = "cheat",
 		width = function()
-			return root.width
+			return root.width / 100
 		end,
 		height = function()
-			return root.height
+			return root.height / 100
+		end,		
+		source = function()
+			if calculateCheat() then
+				return "images/Minesweeper/back.png"
+			else
+				return ""
+			end		
+		end,
+	},
+	
+	Image {
+		id = "face",
+		x = function()
+			return (root.width - width) / 2
+		end,
+		y = function()
+			return root.height - height
+		end,
+		width = function()
+			return height * implicitWidth/implicitHeight
+		end,
+		height = function()
+			return root.height / 10
+		end,	
+		source = function()
+			if root.status == "inGame" then
+				return "images/Minesweeper/face-smile.png"
+			elseif root.status == "lost" then
+				return "images/Minesweeper/face-sad.png"
+			else
+				return "images/Minesweeper/face-smile-big.png"
+			end
 		end,
 		
-		Image {
-			id = "cheat",
+		MouseArea {
+			id = "mouseArea",
 			width = function()
-				return root.width / 100
+				return face.width
 			end,
 			height = function()
-				return root.height / 100
-			end,			
-		},
-		
-		Image {
-			id = "face",
-			x = function()
-				return (root.width - width) / 2
+				return face.height
 			end,
-			y = function()
-				return root.height - height
-			end,
-			width = function()
-				return height * implicitWidth/implicitHeight
-			end,
-			height = function()
-				return root.height / 10
-			end,	
-			source = function()
-				if root.status == "inGame" then
-					return "images/Minesweeper/face-smile.png"
-				elseif root.status == "lost" then
-					return "images/Minesweeper/face-sad.png"
-				else
-					return "images/Minesweeper/face-smile-big.png"
+			onPressedChanged = function()
+				if pressed == false then
+					init()
 				end
-			end
-		},		
-		
-		GraphicItem(createGrid())
-	},
+			end,
+		},
+	},		
+	
+	GraphicItem(createGrid())
 }
+
