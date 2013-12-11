@@ -406,16 +406,16 @@ private:
 		float	x, y, width, height;
 		float	tX, tY, tWidth, tHeight;
 
+		// Notice we need manage the 1 pixel border around the glyph
 		x = origin.x;
 		y = origin.y;
-		width = glyph.atlasRegion.width;
-		height = glyph.atlasRegion.height;
+		width = glyph.atlasRegion.width - 2.0f;
+		height = glyph.atlasRegion.height - 2.0f;
 
-		// Compute texture offsets with taking care of the 1 pixel border
 		tX = (cast(float)glyph.atlasRegion.x + 1.0f) / cast(float)atlasSize.x;
 		tY = (cast(float)glyph.atlasRegion.y + 1.0f) / cast(float)atlasSize.y;
-		tWidth = (cast(float)width - 2.0f) / cast(float)atlasSize.x;
-		tHeight = (cast(float)height - 2.0f) / cast(float)atlasSize.y;
+		tWidth = cast(float)width / cast(float)atlasSize.x;
+		tHeight = cast(float)height / cast(float)atlasSize.y;
 
 		indexes ~= cast(GLuint[])[glyphIndex * 4 + 0, glyphIndex * 4 + 1, glyphIndex * 4 + 2, glyphIndex * 4 + 1, glyphIndex * 4 + 3, glyphIndex * 4 + 2];
 		vertices ~= cast(GLfloat[])[
