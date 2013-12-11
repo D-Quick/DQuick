@@ -47,6 +47,9 @@ Image {
 	nearbyMineCount = function()
 		return calculateNearbyCount(row, col)
 	end,
+	containsMouse = function()
+		return mouseArea.containsMouse
+	end,
 	
 	Text {
 		id = "text",
@@ -156,13 +159,6 @@ Image {
 				if comproot.hasMine then
 					root.status = "lost"
 				end
-			end
-		end,
-		onContainsMouseChanged = function()
-			if containsMouse and comproot.hasMine then
-				cheat.source = "images/Minesweeper/back.png"
-			else
-				cheat.source = ""
 			end
 		end,
 	}
