@@ -41,6 +41,23 @@ function calculateStatus()
 	end
 end
 
+function calculateCheat()
+	local allFlipped = true
+	local row = 0	
+	while getTile(row, 0) do	
+		local col = 0
+		while getTile(row, col) do
+			if getTile(row, col).containsMouse and getTile(row, col).hasMine then
+				
+				return true
+			end
+			col = col + 1
+		end
+		row = row + 1
+	end	
+	return false
+end
+
 function createGrid()
 	t = {}
 	t.id = "grid"
@@ -89,7 +106,14 @@ Image {
 		end,
 		height = function()
 			return root.height / 100
-		end,			
+		end,		
+		source = function()
+			if calculateCheat() then
+				return "images/Minesweeper/back.png"
+			else
+				return ""
+			end		
+		end,
 	},
 	
 	Image {
