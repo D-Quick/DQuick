@@ -91,7 +91,6 @@ private:
 								mSize.x,	mSize.y,	0.0f],
 								cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
 
-
 		mMesh.texCoords.setArray(cast(GLfloat[])[
  								 0.0f, 0.0f,
  								 1.0f, 0.0f,
@@ -105,13 +104,13 @@ private:
 						 	  1.0f, 1.0f, 1.0f, 1.0f,
 						 	  1.0f, 1.0f, 1.0f, 1.0f],
 							  cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
-		
+
 		mMeshIsDirty = false;
 	}
 
 	void	updateMesh()
 	{
-		create();
+		create();	// TODO find a way to avoid update just after creation
 
 		mMesh.vertices.updateArray(cast(GLfloat[])[
 			0.0f,		0.0f,		0.0f,

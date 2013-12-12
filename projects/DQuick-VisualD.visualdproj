@@ -513,6 +513,8 @@
      <File path="..\src\dquick\renderer2D\openGL\borderRectangle.vert" />
      <File path="..\src\dquick\renderer2D\openGL\borderRectangleShader.d" />
      <File path="..\src\dquick\renderer2D\openGL\borderRectangleVertices.d" />
+     <File path="..\src\dquick\renderer2D\openGL\color.frag" />
+     <File path="..\src\dquick\renderer2D\openGL\color.vert" />
      <File path="..\src\dquick\renderer2D\openGL\rectangle.d" />
      <File path="..\src\dquick\renderer2D\openGL\rectangle.frag" />
      <File path="..\src\dquick\renderer2D\openGL\rectangle.vert" />

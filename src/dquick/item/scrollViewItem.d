@@ -20,6 +20,10 @@ public:
 		onMouseXChanged.connect(&onMouseX);
 		onMouseYChanged.connect(&onMouseY);
 		onPressedChanged.connect(&onPressed);
+		debug
+		{
+			debugColor(Color(128 / 255, 0 / 255, 0 / 255, 1.0f));
+		}
 	}
 
 	override
