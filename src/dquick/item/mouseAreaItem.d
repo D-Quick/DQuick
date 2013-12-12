@@ -22,7 +22,7 @@ public:
 		super(parent);
 		debug
 		{
-			debugColor(Color(0 / 255, 128 / 255, 255 / 255, 1.0f));
+			debugMeshColor(Color(0 / 255, 128 / 255, 255 / 255, 1.0f));
 		}
 	}
 

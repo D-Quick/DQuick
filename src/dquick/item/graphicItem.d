@@ -29,8 +29,9 @@ public:
 		mTransformationUpdated = true;
 		debug
 		{
-			mRebuildDebugMesh = true;
-			mDebugColor = [0.0f, 1.0f, 0.0f, 1.0f];
+			mRebuildDebugMeshes = true;
+			mDebugMeshColor = [0.0f, 1.0f, 0.0f, 1.0f];
+			mDebugImplicitMeshColor = [0.0f, 1.0f, 0.0f, 1.0f];
 		}
 	}
 
@@ -70,7 +71,7 @@ public:
 
 		debug
 		{
-			mRebuildDebugMesh = true;
+			mRebuildDebugMeshes = true;
 		}
 	}
 	
@@ -87,7 +88,7 @@ public:
 
 		debug
 		{
-			mRebuildDebugMesh = true;
+			mRebuildDebugMeshes = true;
 		}
 	}
 	@property float	width() {return mSize.x;}
@@ -104,7 +105,7 @@ public:
 
 		debug
 		{
-			mRebuildDebugMesh = true;
+			mRebuildDebugMeshes = true;
 		}
 	}
 	@property float	height() {return mSize.y;}
@@ -167,27 +168,50 @@ public:
 	}
 
 	/// Color will be used to draw the rectangle that represent the GraphicItem's size
-	@property void	debugColor(Color color)
+	@property void	debugMeshColor(Color color)
 	{
 		debug
 		{
-			mRebuildDebugMesh = true;
-			mDebugColor = color;
-			onDebugColorChanged.emit(color);
+			mRebuildDebugMeshes = true;
+			mDebugMeshColor = color;
+			onDebugMeshColorChanged.emit(color);
 		}
 	}
-	@property Color	debugColor()
+	@property Color	debugMeshColor()
 	{
 		debug
 		{
-			return mDebugColor;
+			return mDebugMeshColor;
 		}
 		else
 		{
 			return Color();
 		}
 	}
-	mixin Signal!(Color) onDebugColorChanged;
+	mixin Signal!(Color) onDebugMeshColorChanged;
+
+	/// Color will be used to draw the rectangle that represent the GraphicItem's implicitSize
+	@property void	debugImplicitMeshColor(Color color)
+	{
+		debug
+		{
+			mRebuildDebugMeshes = true;
+			mDebugImplicitMeshColor = color;
+			onDebugImplicitMeshColorChanged.emit(color);
+		}
+	}
+	@property Color	debugImplicitMeshColor()
+	{
+		debug
+		{
+			return mDebugImplicitMeshColor;
+		}
+		else
+		{
+			return Color();
+		}
+	}
+	mixin Signal!(Color) onDebugImplicitMeshColorChanged;
 
 protected:
 	void	startPaint(bool transformationUpdated)
@@ -222,9 +246,12 @@ protected:
 
 		debug
 		{
-			if (mRebuildDebugMesh)
+			if (mRebuildDebugMeshes)
 				updateDebugMesh();
 			mDebugMesh.draw();
+			if ((implicitWidth != float.nan && implicitHeight != float.nan)
+				&& (implicitWidth != mSize.x && implicitHeight != mSize.y))
+				mDebugImplicitMesh.draw();
 		}
 	}
 
@@ -244,12 +271,11 @@ protected:
 
 	debug
 	{
-		void	createDebugMesh()	// Safe to call it if mesh is already created
+		void	createDebugMeshes()	// Safe to call it if mesh is already created
 		{
 			if (mDebugMesh)
 				return;
 
-			mDebugMesh = new Mesh();
 			mDebugShaderProgram = new ShaderProgram();
 
 			Variant[] options;
@@ -257,6 +283,9 @@ protected:
 			options ~= Variant(import("color.frag"));
 			mDebugShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("color", options);
 			mDebugShaderProgram.setProgram(mDebugShader.getProgram());
+
+			// Size
+			mDebugMesh = new Mesh();
 			mDebugMesh.setShader(mDebugShader);
 			mDebugMesh.setShaderProgram(mDebugShaderProgram);
 			mDebugMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
@@ -272,19 +301,43 @@ protected:
 											cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
 
 			mDebugMesh.colors.setArray(cast(GLfloat[])[
-				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
-				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
-				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
-				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w],
+				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w],
 										  cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
 
-			mRebuildDebugMesh = false;
+			// ImplicitSize
+			mDebugImplicitMesh = new Mesh();
+			mDebugImplicitMesh.setShader(mDebugShader);
+			mDebugImplicitMesh.setShaderProgram(mDebugShaderProgram);
+			mDebugImplicitMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
+
+			mDebugImplicitMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3],
+										cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
+
+			mDebugImplicitMesh.vertices.setArray(cast(GLfloat[])[
+				0.0f,			0.0f,			0.0f,
+				implicitWidth,	0.0f,			0.0f,
+				implicitWidth,	implicitHeight,	0.0f,
+				0.0f,			implicitHeight,	0.0f],
+										 cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+
+			mDebugImplicitMesh.colors.setArray(cast(GLfloat[])[
+				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w],
+									   cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+
+			mRebuildDebugMeshes = false;
 		}
 
 		void	updateDebugMesh()
 		{
-			createDebugMesh();	// TODO find a way to avoid update just after creation
+			createDebugMeshes();	// TODO find a way to avoid update just after creation
 
+			// Size
 			mDebugMesh.vertices.updateArray(cast(GLfloat[])[
 				0.0f,		0.0f,		0.0f,
 				mSize.x,	0.0f,		0.0f,
@@ -292,12 +345,25 @@ protected:
 				0.0f,		mSize.y,	0.0f]);
 
 			mDebugMesh.colors.updateArray(cast(GLfloat[])[
-				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
-				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
-				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
-				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w]);
+				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w]);
 
-			mRebuildDebugMesh = false;
+			// ImplicitSize
+			mDebugImplicitMesh.vertices.updateArray(cast(GLfloat[])[
+				0.0f,			0.0f,			0.0f,
+				implicitWidth,	0.0f,			0.0f,
+				implicitWidth,	implicitHeight,	0.0f,
+				0.0f,			implicitHeight,	0.0f]);
+
+			mDebugImplicitMesh.colors.updateArray(cast(GLfloat[])[
+				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w]);
+
+			mRebuildDebugMeshes = false;
 		}
 	}
 
@@ -308,9 +374,11 @@ protected:
 
 	debug
 	{
-		Color			mDebugColor;
-		bool			mRebuildDebugMesh;
+		bool			mRebuildDebugMeshes;
+		Color			mDebugMeshColor;
 		Mesh			mDebugMesh;
+		Color			mDebugImplicitMeshColor;
+		Mesh			mDebugImplicitMesh;
 		Shader			mDebugShader;
 		ShaderProgram	mDebugShaderProgram;
 	}
