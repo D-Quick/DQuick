@@ -51,6 +51,7 @@ public:
 		mShaderProgram = new ShaderProgram();
 		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
 		mShaderProgram.setProgram(mShader.getProgram());
+		debugColor(Color(255 / 255, 255 / 255, 0 / 255, 1.0f));
 	}
 
 	@property void	text(string text)

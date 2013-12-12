@@ -20,6 +20,20 @@ import std.variant;
 class Mesh
 {
 public:
+	enum PrimitiveType
+	{
+		Points = GL_POINTS,
+		LineStrip = GL_LINE_STRIP,
+		LineLoop = GL_LINE_LOOP,
+		Lines = GL_LINES,
+		TriangleStrip = GL_TRIANGLE_STRIP,
+		TriangleFan = GL_TRIANGLE_FAN,
+		Triangles = GL_TRIANGLES,
+		QuadStrip = GL_QUAD_STRIP,
+		Quads = GL_QUADS,
+		Polygon = GL_POLYGON
+	}
+
 	this()
 	{
 		create();
@@ -73,6 +87,7 @@ public:
 	VBO!GLfloat		vertices;
 	VBO!GLfloat		colors;
 	VBO!GLfloat		texCoords;
+	PrimitiveType	primitiveType = PrimitiveType.Triangles;		/// Default type is Triangles
 
 	void	draw()
 	{
@@ -80,9 +95,12 @@ public:
 
 		glUniformMatrix4fv(mMDVInvertedMatrixUniform, 1, false, (Renderer.currentCamera().inverse() * Renderer.currentMDVMatrix).inverse().value_ptr);*/
 
-		mShaderProgram.execute();
+		if (mShaderProgram)
+		{
+			mShaderProgram.execute();
 
-		glUniformMatrix4fv(mMDVMatrixUniform, 1, false, Renderer.currentMDVMatrix.value_ptr);
+			glUniformMatrix4fv(mMDVMatrixUniform, 1, false, Renderer.currentMDVMatrix.value_ptr);
+		}
 
 		// bind the texture and set the "tex" uniform in the fragment shader
 		if (mTexture)
@@ -101,13 +119,16 @@ public:
 			colors.bind();
 			checkgl!glEnableVertexAttribArray(mColorAttribute);
 			checkgl!glVertexAttribPointer(mColorAttribute, 4, GL_FLOAT, GL_FALSE, cast(GLsizei)(4 * GLfloat.sizeof), null + cast(GLvoid*)(0 * GLfloat.sizeof));
-			texCoords.bind();
-			checkgl!glEnableVertexAttribArray(mTexcoordAttribute);
-			checkgl!glVertexAttribPointer(mTexcoordAttribute, 2, GL_FLOAT, GL_FALSE, cast(GLsizei)(2 * GLfloat.sizeof), null + cast(GLvoid*)(0 * GLfloat.sizeof));
+			if (mTexture)
+			{
+				texCoords.bind();
+				checkgl!glEnableVertexAttribArray(mTexcoordAttribute);
+				checkgl!glVertexAttribPointer(mTexcoordAttribute, 2, GL_FLOAT, GL_FALSE, cast(GLsizei)(2 * GLfloat.sizeof), null + cast(GLvoid*)(0 * GLfloat.sizeof));
+			}
 		}
 
 		// draw the VBOs
-		checkgl!glDrawElements(GL_TRIANGLES, cast(GLsizei)indexes.length, GL_UNSIGNED_INT, null);
+		checkgl!glDrawElements(primitiveType, cast(GLsizei)indexes.length, GL_UNSIGNED_INT, null);
 
 		// unbind VBOs, the program and the texture
 		indexes.unbind();	// One unbind per type

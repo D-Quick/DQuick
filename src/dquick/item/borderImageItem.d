@@ -17,6 +17,10 @@ public:
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
+		debug
+		{
+			debugColor(Color(128 / 255, 0 / 255, 255 / 255, 1.0f));
+		}
 	}
 	
 	override

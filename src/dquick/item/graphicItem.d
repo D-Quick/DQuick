@@ -4,12 +4,17 @@ public import dquick.item.declarativeItem;
 public import dquick.maths.vector2f32;
 public import dquick.maths.vector4f32;
 public import dquick.maths.transformation;
+public import dquick.maths.color;
 
 public import dquick.renderer3D.openGL.renderer;
+import dquick.renderer3D.openGL.mesh;
+import dquick.renderer3D.openGL.shader;
+import dquick.renderer3D.openGL.shaderProgram;
 
 public import std.signals;
 import std.stdio;
 import std.math;
+import std.variant;
 
 // TODO Verifier la gestion des matrices, j'ai un doute sur la bonne application/restoration des transformation (Je crains que la matrice de la camera soit ecrasee)
 
@@ -22,6 +27,11 @@ public:
 		super(parent);
 		mSize = Vector2f32(0, 0);
 		mTransformationUpdated = true;
+		debug
+		{
+			mRebuildDebugMesh = true;
+			mDebugColor = [0.0f, 1.0f, 0.0f, 1.0f];
+		}
 	}
 
 	@property void	x(float x)
@@ -57,6 +67,11 @@ public:
 		mTransformationUpdated = true;
 		onWidthChanged.emit(mSize.x);
 		onHeightChanged.emit(mSize.y);
+
+		debug
+		{
+			mRebuildDebugMesh = true;
+		}
 	}
 	
 	Vector2f32	size() {return mSize;}
@@ -69,6 +84,11 @@ public:
 		mTransformation.origin.x = mSize.x / 2.0f;
 		mTransformationUpdated = true;
 		onWidthChanged.emit(width);
+
+		debug
+		{
+			mRebuildDebugMesh = true;
+		}
 	}
 	@property float	width() {return mSize.x;}
 	mixin Signal!(float) onWidthChanged;
@@ -81,6 +101,11 @@ public:
 		mTransformation.origin.y = mSize.y / 2.0f;
 		mTransformationUpdated = true;
 		onHeightChanged.emit(height);
+
+		debug
+		{
+			mRebuildDebugMesh = true;
+		}
 	}
 	@property float	height() {return mSize.y;}
 	mixin Signal!(float) onHeightChanged;
@@ -141,6 +166,29 @@ public:
 		endPaint();
 	}
 
+	/// Color will be used to draw the rectangle that represent the GraphicItem's size
+	@property void	debugColor(Color color)
+	{
+		debug
+		{
+			mRebuildDebugMesh = true;
+			mDebugColor = color;
+			onDebugColorChanged.emit(color);
+		}
+	}
+	@property Color	debugColor()
+	{
+		debug
+		{
+			return mDebugColor;
+		}
+		else
+		{
+			return Color();
+		}
+	}
+	mixin Signal!(Color) onDebugColorChanged;
+
 protected:
 	void	startPaint(bool transformationUpdated)
 	{
@@ -157,7 +205,7 @@ protected:
 
 		Renderer.currentMDVMatrix(switchMatrixRowsColumns(Renderer.currentCamera * mMatrix));
 
-		if (mClip)
+		if (mClip)	// TODO move that to the renderer (no gl commands have to be used here)
 		{
 			Vector4f32	pos = Vector4f32(x, y, 0.0f, 0.0f);
 			Vector4f32	size = Vector4f32(width, height, 0.0f, 0.0f);
@@ -170,6 +218,13 @@ protected:
 			float	invertedY = Renderer.viewportSize().y - pos.y - size.y;
 
 			glScissor(cast(int)round(pos.x), cast(int)round(invertedY), cast(int)round(size.x), cast(int)round(size.y));
+		}
+
+		debug
+		{
+			if (mRebuildDebugMesh)
+				updateDebugMesh();
+			mDebugMesh.draw();
 		}
 	}
 
@@ -187,8 +242,76 @@ protected:
 		return false;
 	}
 
+	debug
+	{
+		void	createDebugMesh()	// Safe to call it if mesh is already created
+		{
+			if (mDebugMesh)
+				return;
+
+			mDebugMesh = new Mesh();
+			mDebugShaderProgram = new ShaderProgram();
+
+			Variant[] options;
+			options ~= Variant(import("color.vert"));
+			options ~= Variant(import("color.frag"));
+			mDebugShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("color", options);
+			mDebugShaderProgram.setProgram(mDebugShader.getProgram());
+			mDebugMesh.setShader(mDebugShader);
+			mDebugMesh.setShaderProgram(mDebugShaderProgram);
+			mDebugMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
+
+			mDebugMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3],
+								   cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
+
+			mDebugMesh.vertices.setArray(cast(GLfloat[])[
+				0.0f,		0.0f,		0.0f,
+				mSize.x,	0.0f,		0.0f,
+				mSize.x,	mSize.y,	0.0f,
+				0.0f,		mSize.y,	0.0f],
+											cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+
+			mDebugMesh.colors.setArray(cast(GLfloat[])[
+				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
+				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
+				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
+				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w],
+										  cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+
+			mRebuildDebugMesh = false;
+		}
+
+		void	updateDebugMesh()
+		{
+			createDebugMesh();	// TODO find a way to avoid update just after creation
+
+			mDebugMesh.vertices.updateArray(cast(GLfloat[])[
+				0.0f,		0.0f,		0.0f,
+				mSize.x,	0.0f,		0.0f,
+				mSize.x,	mSize.y,	0.0f,
+				0.0f,		mSize.y,	0.0f]);
+
+			mDebugMesh.colors.updateArray(cast(GLfloat[])[
+				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
+				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
+				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w,
+				mDebugColor.x, mDebugColor.y, mDebugColor.z, mDebugColor.w]);
+
+			mRebuildDebugMesh = false;
+		}
+	}
+
 	bool			mClip = false;
 	Transformation	mTransformation;
 	Vector2f32		mSize;
 	float			mOrientation = 0.0f;
+
+	debug
+	{
+		Color			mDebugColor;
+		bool			mRebuildDebugMesh;
+		Mesh			mDebugMesh;
+		Shader			mDebugShader;
+		ShaderProgram	mDebugShaderProgram;
+	}
 }

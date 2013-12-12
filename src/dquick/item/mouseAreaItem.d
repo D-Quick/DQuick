@@ -20,6 +20,10 @@ public:
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
+		debug
+		{
+			debugColor(Color(0 / 255, 128 / 255, 255 / 255, 1.0f));
+		}
 	}
 
 	@property bool			containsMouse() {return mContainsMouse;}
