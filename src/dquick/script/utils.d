@@ -90,7 +90,7 @@ string	getLuaTypeName(lua_State* L, int index)
 
 void	valueFromLua(T)(lua_State* L, int index, ref T value)
 {
-	assert(isPointer!T == false);
+	static assert(isPointer!T == false);
 
 	static if (is(T == Variant))
 	{
@@ -149,7 +149,7 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 
 void	valueToLua(T)(lua_State* L, T value)
 {
-	assert(isPointer!T == false);
+	static assert(isPointer!T == false);
 
 	static if (is(T == Variant))
 	{
