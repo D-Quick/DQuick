@@ -26,8 +26,6 @@ version (Windows)
 
 	import dquick.system.win32.openglContextWin32;
 
-	import derelict.sdl2.sdl;
-	import derelict.sdl2.image;
 	import derelict.lua.lua;
 
 	shared static this()
