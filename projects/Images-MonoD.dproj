@@ -33,6 +33,7 @@
     <Externalconsole>True</Externalconsole>
     <Target>Executable</Target>
     <OutputName>../../../data/dquick-sample</OutputName>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -42,13 +43,14 @@
     <Externalconsole>True</Externalconsole>
     <Target>Executable</Target>
     <OutputName>../../../data/dquick-sample</OutputName>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="..\src\images\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\src\samples\images\main.d">
-      <Link>images\main.d</Link>
+    <Compile Include="..\src\samples\image\main.d">
+      <Link>main.d</Link>
     </Compile>
   </ItemGroup>
 </Project>
