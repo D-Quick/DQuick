@@ -28,6 +28,7 @@
     <DebugLevel>0</DebugLevel>
     <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL
 </ExtraCompilerArguments>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -39,6 +40,7 @@
     <DebugLevel>0</DebugLevel>
     <ExtraCompilerArguments>-J../src/dquick/renderer2D/openGL
 </ExtraCompilerArguments>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Unittest|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,6 +53,7 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Unittest|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -62,6 +65,7 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="..\src\dquick\maths\" />
@@ -546,6 +550,18 @@
     </Compile>
     <Compile Include="..\src\dquick\system\fontconfig\types.d">
       <Link>dquick\system\fontconfig\types.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\media\imageData.d">
+      <Link>dquick\media\imageData.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\script\dmlEngineCore.d">
+      <Link>dquick\script\dmlEngineCore.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\algorithms\scheduler.d">
+      <Link>dquick\algorithms\scheduler.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\algorithms\weak.d">
+      <Link>dquick\algorithms\weak.d</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
