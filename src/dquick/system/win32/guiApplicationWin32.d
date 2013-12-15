@@ -26,14 +26,10 @@ version (Windows)
 
 	import dquick.system.win32.openglContextWin32;
 
-	import derelict.sdl2.sdl;
-	import derelict.sdl2.image;
 	import derelict.lua.lua;
 
 	shared static this()
 	{
-		DerelictSDL2.load();
-		DerelictSDL2Image.load();
 		DerelictGL.load();
 		DerelictLua.load();
 	}
@@ -42,8 +38,6 @@ version (Windows)
 	{
 		DerelictLua.unload();
 		DerelictGL.unload();
-		DerelictSDL2Image.unload();
-		DerelictSDL2.unload();
 	}
 
 	class GuiApplication : IGuiApplication
