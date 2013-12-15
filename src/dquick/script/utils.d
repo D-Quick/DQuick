@@ -109,7 +109,7 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 			throw new Exception(format("Lua value at index %d is a \"%s\", a boolean was expected\n", index, getLuaTypeName(L, index)));
 		value = cast(bool)lua_toboolean(L, index);
 	}
-	else static if (is(T == int) || is(T == uint) || is(T == enum))
+	else static if (is(T == int) || is(T == uint) || is(T == enum) || is(T == size_t))
 	{
 		if (!lua_isnumber(L, index))
 			throw new Exception(format("Lua value at index %d is a \"%s\", a number was expected\n", index, getLuaTypeName(L, index)));
@@ -164,7 +164,7 @@ void	valueToLua(T)(lua_State* L, T value)
 		else
 			throw new Exception(format("Variant has type \"%s\", an int, double, bool or string was expected\n", value.type));
 	}
-	else static if (is(T == int) || is(T == uint) || is(T == enum))
+	else static if (is(T == int) || is(T == uint) || is(T == enum) || is(T == size_t))
 		lua_pushinteger(L, value);
 	else static if (is(T == float))
 		lua_pushnumber(L, value);
