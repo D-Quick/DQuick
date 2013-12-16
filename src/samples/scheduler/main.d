@@ -1,3 +1,5 @@
+module dquick.samples.scheduler.main;
+
 import dquick.algorithms.scheduler;
 import std.stdio;
 import core.time;

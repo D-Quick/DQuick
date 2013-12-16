@@ -193,9 +193,6 @@ private:
 	SkylineNode[]	mSkyLine;
 }
 
-import derelict.sdl2.sdl;
-import derelict.sdl2.image;
-
 import dquick.maths.color;
 import dquick.media.image;
 

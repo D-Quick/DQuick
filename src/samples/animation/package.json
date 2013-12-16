@@ -1,5 +1,5 @@
 {
-	"name": "image",
+	"name": "animation",
 	"description": "A GUI library written in D.",
 	"authors": ["Bruno Deligny", "Xavier Bigand", "Piotr Podsiadly"],
 	"homepage": "https://github.com/D-Quick/DQuick",

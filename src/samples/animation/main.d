@@ -1,3 +1,5 @@
+module dquick.samples.animation.main;
+
 import dquick.system.guiApplication;
 import dquick.item.windowItem;
 import dquick.item.imageItem;
