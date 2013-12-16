@@ -25,14 +25,7 @@ public:
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
-		mSize = Vector2f32(0, 0);
-		mTransformationUpdated = true;
-		debug
-		{
-			mRebuildDebugMeshes = true;
-			mDebugMeshColor = [0.0f, 1.0f, 0.0f, 1.0f];
-			mDebugImplicitMeshColor = [0.0f, 1.0f, 0.0f, 1.0f];
-		}
+		mTransformationUpdated = true;	// Override default value of DeclarativeItem
 	}
 
 	@property void	x(float x)
@@ -319,7 +312,7 @@ protected:
 				implicitWidth,	0.0f,			0.0f,
 				implicitWidth,	implicitHeight,	0.0f,
 				0.0f,			implicitHeight,	0.0f],
-										 cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+												 cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
 
 			mDebugImplicitMesh.colors.setArray(cast(GLfloat[])[
 				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
@@ -367,15 +360,15 @@ protected:
 
 	bool			mClip = false;
 	Transformation	mTransformation;
-	Vector2f32		mSize;
+	Vector2f32		mSize = Vector2f32(0, 0);
 	float			mOrientation = 0.0f;
 
 	debug
 	{
-		bool			mRebuildDebugMeshes;
-		Color			mDebugMeshColor;
+		bool			mRebuildDebugMeshes = true;
+		Color			mDebugMeshColor = Color(0.0f, 1.0f, 0.0f, 1.0f);
 		Mesh			mDebugMesh;
-		Color			mDebugImplicitMeshColor;
+		Color			mDebugImplicitMeshColor = Color(0.0f, 1.0f, 0.0f, 1.0f);
 		Mesh			mDebugImplicitMesh;
 		Shader			mDebugShader;
 		ShaderProgram	mDebugShaderProgram;
