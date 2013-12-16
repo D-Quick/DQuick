@@ -26,8 +26,6 @@
 					"src/dquick/system",
 					"src/dquick/utils"],
 
-	"sourcePaths-linux": ["src/dquick/etc/libX11/deimos/X11"],
-
 	"excludedSourceFiles": ["src/dquick/etc/derelict/build/build.d",
 							"src/dquick/etc/libX11/example.d"],
 	"buildRequirements": ["allowWarnings"],
