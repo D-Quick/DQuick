@@ -3,16 +3,7 @@ module dquick.system.win32.guiApplicationWin32;
 version (Windows)
 {
 	import dquick.system.guiApplication;
-	import dquick.item.declarativeItem;
-	import dquick.item.graphicItem;
-	import dquick.system.window;
-	import dquick.maths.vector2s32;
-	import dquick.item.imageItem;
-	import dquick.item.textItem;
-	import dquick.item.borderImageItem;
-	import dquick.item.mouseAreaItem;
-	import dquick.item.scrollViewItem;
-	import dquick.script.dmlEngine;
+	import dquick.system.win32.openglContextWin32;
 
 	import std.stdio;
 	import std.c.stdlib;
@@ -24,25 +15,14 @@ version (Windows)
 	import std.c.windows.windows;
 	pragma(lib, "gdi32.lib");
 
-	import dquick.system.win32.openglContextWin32;
-
-	import derelict.lua.lua;
-
-	shared static this()
-	{
-		DerelictGL.load();
-		DerelictLua.load();
-	}
-
-	shared static ~this()
-	{
-		DerelictLua.unload();
-		DerelictGL.unload();
-	}
-
-	class GuiApplication : IGuiApplication
+	final class GuiApplication : GuiApplicationBase, IGuiApplication
 	{
 	public:
+		shared static ~this()
+		{
+			mInstance = null;
+		}
+
 		static GuiApplication	instance()
 		{
 			if (mInstance is null)
@@ -50,19 +30,13 @@ version (Windows)
 			return mInstance;
 		}
 
-		void	setApplicationArguments(string[] args)
+		override
 		{
-			assert(mInitialized == false);
-
-			mApplicationDirectory = dirName(args[0]) ~ dirSeparator;
-
-			mInitialized = true;
+			void	setApplicationArguments(string[] args) {super.setApplicationArguments(args);}
+			void	setApplicationDisplayName(string name) {super.setApplicationDisplayName(name);}
+			string	applicationDisplayName() {return super.applicationDisplayName();}
+			void	quit() {super.quit();}
 		}
-
-		void	setApplicationDisplayName(string name) {mApplicationDisplayName = name;}
-		string	applicationDisplayName() {return mApplicationDisplayName;}
-
-		string	directoryPath() {return mApplicationDirectory;}	/// Return the path of this application
 
 		int	execute()
 		{
@@ -80,12 +54,8 @@ version (Windows)
 					foreach (Window window; mWindows)
 						window.onPaint();
 			}
+			terminateExecution();
 			return cast(int)msg.wParam;
-		}
-
-		void	quit()
-		{
-			mQuit = true;
 		}
 
 		//==========================================================================
@@ -94,42 +64,37 @@ version (Windows)
 	private:
 		this() {}
 
-		static void	registerWindow(Window window, HWND windowHandle)
+		void	registerWindow(Window window, HWND windowHandle)
 		{
 			mWindows[windowHandle] = window;
 		}
 
 		static GuiApplication	mInstance;
-		static bool				mQuit = false;
 
-		static string		mApplicationDisplayName = "DQuick - Application";
-		static string		mApplicationDirectory = ".";
-		static bool			mInitialized = false;
-		static Window[HWND]	mWindows;
+		Window[HWND]	mWindows;
 	}
 
 	//==========================================================================
 	//==========================================================================
 
-	class Window : IWindow
+	final class Window : WindowBase, IWindow
 	{
 		this()
 		{
 			mWindowId = mWindowsCounter++;
-			mScriptContext = new DMLEngine;
-			mScriptContext.create();
-			mScriptContext.addItemType!(DeclarativeItem, "Item")();
-			mScriptContext.addItemType!(GraphicItem, "GraphicItem")();
-			mScriptContext.addItemType!(ImageItem, "Image")();
-			mScriptContext.addItemType!(TextItem, "Text")();
-			mScriptContext.addItemType!(BorderImageItem, "BorderImage")();
-			mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
-			mScriptContext.addItemType!(ScrollViewItem, "ScrollView")();
 		}
 
 		~this()
 		{
-			destroy();
+			mWindowsCounter--;
+		}
+
+		override
+		{
+			void		setMainItem(GraphicItem item) {super.setMainItem(item);}
+			void		setMainItem(string filePath) {super.setMainItem(filePath);}
+			GraphicItem	mainItem() {return super.mainItem();}
+			DMLEngine	dmlEngine() {return super.dmlEngine();}
 		}
 
 		bool	create()
@@ -241,7 +206,7 @@ version (Windows)
 			Renderer.initialize();
 			mContext.resize(size().x, size().y);
 
-			GuiApplication.registerWindow(this, mhWnd);
+			GuiApplication.instance().registerWindow(this, mhWnd);
 
 			return true;
 		}
@@ -249,6 +214,11 @@ version (Windows)
 		bool	wasCreated() const
 		{
 			return mhWnd != null;
+		}
+
+		bool	isMainWindow() const
+		{
+			return (mWindowId == 0);
 		}
 
 		void	show()
@@ -263,41 +233,7 @@ version (Windows)
 			UpdateWindow(mhWnd);
 		}
 
-		void	destroy()
-		{
-			.destroy(mScriptContext);
-			.destroy(mContext);
-			mContext = null;
-			DestroyWindow(mhWnd);
-			if (mWindowId == 0)
-				GuiApplication.instance.quit();
-		}
-
-		/// Window will take size of this item
-		void	setMainItem(GraphicItem item)
-		{
-			mRootItem = item;
-			/*
-			GraphicItem	graphicItem = cast(GraphicItem)mRootItem;
-			if (graphicItem)
-			setSize(graphicItem.size);*/
-		}
-
-		/// Window will take size of this item
-		void	setMainItem(string filePath)
-		{
-			mScriptContext.executeFile(filePath);
-
-			mRootItem = mScriptContext.rootItem!GraphicItem();
-			if (mRootItem is null)
-				throw new Exception("There is no root item or it's not a GraphicItem");
-
-			mRootItem.setSize(Vector2f32(size()));
-		}
-
-		GraphicItem	mainItem() {return mRootItem;}
-
-		void		setPosition(Vector2s32 newPosition)
+		void	setPosition(Vector2s32 newPosition)
 		{
 			// TODO
 			if (fullScreen()/* || maximized()*/)	// Will put corrupted values
@@ -316,12 +252,11 @@ version (Windows)
 		}
 		Vector2s32	position() {return mPosition;}
 
-		void	setSize(Vector2s32 newSize)
+		override void	setSize(Vector2s32 newSize)
 		{
-			mSize = newSize;
+			super.setSize(newSize);
 
-			if (mRootItem)
-				mRootItem.setSize(Vector2f32(newSize));
+			mSize = newSize;
 
 			// Resizing Window
 			RECT	rcClient, rcWindow;
@@ -349,39 +284,38 @@ version (Windows)
 			return Vector2s32(rc.right - rc.left, rc.bottom - rc.top);
 		}
 
-		DMLEngine	dmlEngine() {return mScriptContext;}
+		//==========================================================================
+		//==========================================================================
 
-		//==========================================================================
-		//==========================================================================
+	protected:
+		override
+		{
+			void	destroy()
+			{
+				mContext = null;
+				DestroyWindow(mhWnd);
+				super.destroy();
+			}
+
+			void	onPaint()
+			{
+				Renderer.startFrame();
+
+				super.onPaint();
+
+				if (mContext)
+					mContext.swapBuffers();
+			}
+
+			void	onMouseEvent(MouseEvent mouseEvent) {super.onMouseEvent(mouseEvent);}
+		}
 
 	private:
-		void	onPaint()
-		{
-			Renderer.startFrame();
-
-			if (mRootItem)
-				mRootItem.paint(false);
-
-			if (mContext)
-				mContext.swapBuffers();
-		}
-
-		void	onMouseEvent(MouseEvent mouseEvent)
-		{
-			if (mRootItem)
-			{
-				mRootItem.mouseEvent(mouseEvent);
-			}
-		}
-
-		DMLEngine	mScriptContext;
-
 		static int	mWindowsCounter = 0;
 		int			mWindowId;
 
 		HWND		mhWnd = null;
 		string		mWindowName = "";
-		GraphicItem	mRootItem;
 		Vector2s32	mPosition;
 		Vector2s32	mSize = Vector2s32(640, 480);
 		bool		mFullScreen = false;
@@ -413,10 +347,10 @@ version (Windows)
 				case WM_MOVING:		// position de la fenetre
 					position.x = LOWORD(lParam);
 					position.y = HIWORD(lParam);
-					if (hWnd in GuiApplication.mWindows)
+					if (hWnd in GuiApplication.instance().mWindows)
 					{
-						GuiApplication.mWindows[hWnd].setPosition(position);
-						GuiApplication.mWindows[hWnd].onPaint();
+						GuiApplication.instance().mWindows[hWnd].setPosition(position);
+						GuiApplication.instance().mWindows[hWnd].onPaint();
 					}
 					return 0;
 				case WM_SIZE:
@@ -428,18 +362,18 @@ version (Windows)
 							GuiApplication.mWindows[hWnd].setMaximized(false);*/
 					size.x = LOWORD(lParam);
 					size.y = HIWORD(lParam);
-					if (hWnd in GuiApplication.mWindows)
-						GuiApplication.mWindows[hWnd].setSize(size);
+					if (hWnd in GuiApplication.instance().mWindows)
+						GuiApplication.instance().mWindows[hWnd].setSize(size);
 					return 0;
 				case WM_COMMAND:
 					break;
 				case WM_PAINT:
-					if (hWnd in GuiApplication.mWindows)
-						GuiApplication.mWindows[hWnd].onPaint();
+					if (hWnd in GuiApplication.instance().mWindows)
+						GuiApplication.instance().mWindows[hWnd].onPaint();
 					break;
 				case WM_DESTROY:
-					if (hWnd in GuiApplication.mWindows)
-						GuiApplication.mWindows[hWnd].destroy();
+					if (hWnd in GuiApplication.instance().mWindows)
+						GuiApplication.instance().mWindows[hWnd].destroy();
 					PostQuitMessage(0);
 					break;
 
@@ -449,31 +383,31 @@ version (Windows)
 					position.y = GET_Y_LPARAM(lParam);
 					mouseEvent.type = MouseEvent.Type.Motion;
 					mouseEvent.position = position;
-					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					GuiApplication.instance().mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_LBUTTONDOWN:
 					mouseEvent.type = MouseEvent.Type.ButtonPressed;
 					mouseEvent.buttons = MouseEvent.Buttons.Left;
 					SetCapture(hWnd);
-					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					GuiApplication.instance().mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_LBUTTONUP:
 					mouseEvent.type = MouseEvent.Type.ButtonReleased;
 					mouseEvent.buttons = MouseEvent.Buttons.Left;
 					ReleaseCapture();
-					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					GuiApplication.instance().mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONDOWN:
 					mouseEvent.type = MouseEvent.Type.ButtonPressed;
 					mouseEvent.buttons = MouseEvent.Buttons.Right;
 					SetCapture(hWnd);
-					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					GuiApplication.instance().mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 				case WM_RBUTTONUP:
 					mouseEvent.type = MouseEvent.Type.ButtonReleased;
 					mouseEvent.buttons = MouseEvent.Buttons.Right;
 					ReleaseCapture();
-					GuiApplication.mWindows[hWnd].onMouseEvent(mouseEvent);
+					GuiApplication.instance().mWindows[hWnd].onMouseEvent(mouseEvent);
 					return 0;
 
 				default:

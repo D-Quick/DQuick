@@ -1,64 +1,40 @@
 module dquick.system.sdl.guiApplicationSDL;
 
-// TODO voir comment partager plus de code avec la version windows, notamment le comptage des fenetres,...
 import dquick.system.guiApplication;
-import dquick.item.declarativeItem;
-import dquick.item.graphicItem;
-import dquick.system.window;
-import dquick.maths.vector2s32;
-import dquick.maths.vector2f32;
 import dquick.system.sdl.openglContextSDL;
-import dquick.renderer3D.openGL.renderer;
-import dquick.events.mouseEvent;
-import dquick.item.imageItem;
-import dquick.item.textItem;
-import dquick.item.borderImageItem;
-import dquick.item.mouseAreaItem;
-import dquick.item.scrollViewItem;
-import dquick.script.dmlEngine;
-import dquick.algorithms.scheduler;
+
+import derelict.sdl2.sdl;
 
 import std.string;
 import std.exception;
 import std.stdio;
 import std.path;
 
-import derelict.sdl2.sdl;
-import derelict.sdl2.image;
-import derelict.lua.lua;
-
 shared static this()
 {
+	writeln("dquick.system.sdl.guiApplicationSDL : shared static this()");
 	DerelictSDL2.load();
-	DerelictSDL2Image.load();
-	DerelictGL.load();
-	DerelictLua.load();
 }
 
 shared static ~this()
 {
-	DerelictLua.unload();
-	DerelictGL.unload();
-	DerelictSDL2Image.unload();
+	writeln("dquick.system.sdl.guiApplicationSDL : shared static ~this()");
 	DerelictSDL2.unload();
 }
 
-class GuiApplication : IGuiApplication
+final class GuiApplication : GuiApplicationBase, IGuiApplication
 {
 public:
 	shared static this()
 	{
 		if (SDL_Init(SDL_INIT_VIDEO) < 0)
 			throwError();
-		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 	}
 
 	shared static ~this()
 	{
-		destroy(resourceManager);	// Release latest resources because application is exiting
-		destroy(mInstance);
+		mInstance = null;
 
-		IMG_Quit();
 		SDL_Quit();
 	}
 
@@ -69,19 +45,13 @@ public:
 		return mInstance;
 	}
 
-	void	setApplicationArguments(string[] args)
+	override
 	{
-		assert(mInitialized == false);
-
-		mApplicationDirectory = dirName(args[0]) ~ dirSeparator;
-
-		mInitialized = true;
+		void	setApplicationArguments(string[] args) {super.setApplicationArguments(args);}
+		void	setApplicationDisplayName(string name) {super.setApplicationDisplayName(name);}
+		string	applicationDisplayName() {return super.applicationDisplayName();}
+		void	quit() {super.quit();}
 	}
-
-	void	setApplicationDisplayName(string name) {mApplicationDisplayName = name;}
-	string	applicationDisplayName() {return mApplicationDisplayName;}
-
-	string	directoryPath() {return mApplicationDirectory;}	/// Return the path of this application
 
 	int	execute()
 	{
@@ -184,14 +154,8 @@ public:
 				foreach (Window window; mWindows)
 					window.onPaint();
 		}
-		
-		Scheduler.terminateAll();		
+		terminateExecution();
 		return 0;
-	}
-
-	void	quit()
-	{
-		mQuit = true;
 	}
 
 	//==========================================================================
@@ -230,35 +194,29 @@ private:
 
 	static GuiApplication	mInstance;
 	static Window[Uint32]	mWindows;
-
-	bool			mQuit = false;
-	string			mApplicationDisplayName = "DQuick - Application";
-	string			mApplicationDirectory = ".";
-	bool			mInitialized = false;
 }
 
 //==========================================================================
 //==========================================================================
 
-class Window : IWindow
+final class Window : WindowBase, IWindow
 {
 	this()
 	{
 		mWindowId = mWindowsCounter++;
-		mScriptContext = new DMLEngine;
-		mScriptContext.create();
-		mScriptContext.addItemType!(DeclarativeItem, "Item")();
-		mScriptContext.addItemType!(GraphicItem, "GraphicItem")();
-		mScriptContext.addItemType!(ImageItem, "Image")();
-		mScriptContext.addItemType!(TextItem, "Text")();
-		mScriptContext.addItemType!(BorderImageItem, "BorderImage")();
-		mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
-		mScriptContext.addItemType!(ScrollViewItem, "ScrollView")();
 	}
 
 	~this()
 	{
-		destroy();
+		mWindowsCounter--;
+	}
+
+	override
+	{
+		void		setMainItem(GraphicItem item) {super.setMainItem(item);}
+		void		setMainItem(string filePath) {super.setMainItem(filePath);}
+		GraphicItem	mainItem() {return super.mainItem();}
+		DMLEngine	dmlEngine() {return super.dmlEngine();}
 	}
 
 	bool	create()
@@ -289,46 +247,14 @@ class Window : IWindow
 		return (mWindow !is null);
 	}
 
+	bool	isMainWindow() const
+	{
+		return (mWindowId == 0);
+	}
+
 	void	show()
 	{
 	}
-
-	void	destroy()
-	{
-		if (mWindow)
-		{
-			.destroy(mScriptContext);
-			.destroy(mContext);
-			SDL_DestroyWindow(mWindow);
-			mWindow = null;
-			if (mWindowId == 0)
-				GuiApplication.instance.quit();
-		}
-	}
-
-	/// Window will take size of this item
-	void	setMainItem(GraphicItem item)
-	{
-		mRootItem = item;
-/*
-		GraphicItem	graphicItem = cast(GraphicItem)mRootItem;
-		if (graphicItem)
-			setSize(graphicItem.size);*/
-	}
-
-	/// Window will take size of this item
-	void	setMainItem(string filePath)
-	{
-		mScriptContext.executeFile(filePath);
-
-		mRootItem = mScriptContext.rootItem!GraphicItem();
-		if (mRootItem is null)
-			throw new Exception("There is no root item or it's not a GraphicItem");
-
-		mRootItem.setSize(Vector2f32(size()));
-	}
-
-	GraphicItem	mainItem() {return mRootItem;}
 
 	void		setPosition(Vector2s32 newPosition)
 	{
@@ -340,13 +266,11 @@ class Window : IWindow
 	}
 	Vector2s32	position() {return mPosition;}
 
-	void		setSize(Vector2s32 newSize)
+	override void		setSize(Vector2s32 newSize)
 	{
+		super.setSize(newSize);
+
 		mSize = newSize;
-
-		if (mRootItem)
-			mRootItem.setSize(Vector2f32(newSize));
-
 		SDL_SetWindowSize(mWindow, mSize.x, mSize.y);
 
 		if (mContext)
@@ -369,33 +293,37 @@ class Window : IWindow
 	//==========================================================================
 	//==========================================================================
 
-private:
-	void	onPaint()
+protected:
+	override
 	{
-		Renderer.startFrame();
-
-		if (mRootItem)
-			mRootItem.paint(false);
-
-		if (mContext)
-			mContext.swapBuffers();
-	}
-
-	void	onMouseEvent(MouseEvent mouseEvent)
-	{
-		if (mRootItem)
+		void	destroy()
 		{
-			mRootItem.mouseEvent(mouseEvent);
+			if (mWindow)
+			{
+				mContext = null;
+				SDL_DestroyWindow(mWindow);
+				mWindow = null;
+			}
 		}
+
+		void	onPaint()
+		{
+			Renderer.startFrame();
+
+			super.onPaint();
+
+			if (mContext)
+				mContext.swapBuffers();
+		}
+
+		void	onMouseEvent(MouseEvent mouseEvent) {super.onMouseEvent(mouseEvent);}
 	}
 
-	DMLEngine	mScriptContext;
-
+private:
 	static int	mWindowsCounter = 0;
 	int			mWindowId;
 
 	string		mWindowName = "";
-	GraphicItem	mRootItem;
 	Vector2s32	mPosition;
 	Vector2s32	mSize = Vector2s32(640, 480);
 	bool		mFullScreen = false;

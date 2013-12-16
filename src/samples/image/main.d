@@ -23,8 +23,10 @@ int main(string[] args)
 		writeln("Current path: ", absolutePath("."));
 		GuiApplication.instance().setApplicationArguments(args);
 		GuiApplication.instance().setApplicationDisplayName("DQuick - Images sample");
-		chdir(GuiApplication.instance().directoryPath);
-		
+
+		writeln("Executable path: ", dirName(thisExePath()));
+		chdir(dirName(thisExePath()));
+
 		Window mainWindow = new Window();
 		mainWindow.setSize(Vector2s32(800, 600));
 		mainWindow.create();

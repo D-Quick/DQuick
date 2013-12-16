@@ -12,15 +12,17 @@ import std.stdio;
 
 ResourceManager	resourceManager;	// TODO check the release of resource when it's destroy (need to be destroy before the context) also check it for images
 
-static this()
+shared static this()
 {
+	writeln("dquick.renderer3D.openGL.renderer : shared static this()");
 	resourceManager = new ResourceManager();
 	resourceManager.maximumWeight(128 * 1000 * 1024);
 }
 
-static ~this()
+shared static ~this()
 {
-	destroy(resourceManager);
+	writeln("dquick.renderer3D.openGL.renderer : shared static ~this()");
+	resourceManager = null;
 }
 
 class Renderer
