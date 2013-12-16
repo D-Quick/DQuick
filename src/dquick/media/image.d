@@ -13,15 +13,18 @@ import dquick.utils.resourceManager;
 
 ResourceManager	resourceManager;
 
-static this()
+shared static this()
 {
+	writeln("dquick.media.image : shared static this()");
 	resourceManager = new ResourceManager();
 	resourceManager.maximumWeight(10 * 1024 * 1024 * 4);	// 10 RGBA images of 1024x1024
 	// Images are transformed to textures, only fonts will stay in RAM
 }
 
-static ~this()
+shared static ~this()
 {
+	writeln("dquick.media.image : shared static ~this()");
+	resourceManager = null;
 }
 
 class Image : IResource

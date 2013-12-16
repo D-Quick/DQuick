@@ -91,7 +91,6 @@ class PropertyBinding
 					throw new Exception(format("DMLEngine.IItemBinding.PropertyBinding.executeBinding: property binding loop detected, callstack:\n%s...", bindingLoopCallStack));
 				else
 					throw new Exception(format("DMLEngine.IItemBinding.PropertyBinding.executeBinding: error, binding stack overflow (more than 50):\n%s...", bindingLoopCallStack));
-				return;
 			}
 
 			static if (dquick.script.dmlEngineCore.DMLEngineCore.showDebug)

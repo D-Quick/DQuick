@@ -415,6 +415,7 @@ private FcConfig*	config;
 
 shared static this()
 {
+	writeln("dquick.media.font : shared static this()");
 /*	version (Windows)	// Set environment variables FONTCONFIG_FILE and FONTCONFIG_PATH, without fontconfig won't be able to locate default configuration
 	{	// Doesn't work
 		import std.process;
@@ -442,6 +443,7 @@ shared static this()
 
 shared static ~this()
 {
+	writeln("dquick.media.font : shared static ~this()");
 	DerelictFT.unload();
 	FcFini();
 	DerelictFontConfig.unload();

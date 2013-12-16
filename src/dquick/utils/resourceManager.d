@@ -166,6 +166,5 @@ unittest
 	ResourceTest	r1 = manager.getResource!ResourceTest("toto");
 
 	manager.dump();
-
-	int i = 0;
+	manager = null;
 }

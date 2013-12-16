@@ -1,5 +1,9 @@
 module dquick.media.imageData;
 
+import dquick.media.devil.devilLoaderWriter;
+
+import std.stdio;
+
 struct ImageData
 {
 	enum Format
@@ -90,10 +94,7 @@ private
 {
 	shared static this()
 	{
-		import std.stdio;
-		
-		import dquick.media.devil.devilLoaderWriter;
-
+		writeln("dquick.media.imageData : shared static this()");
 		DevilLoaderWriter devilLoaderWriter = new DevilLoaderWriter();
 
 		ImageLoader.addLoader(devilLoaderWriter);

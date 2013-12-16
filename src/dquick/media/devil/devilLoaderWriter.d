@@ -57,13 +57,10 @@ class DevilLoaderWriter : ImageLoader, ImageWriter
 		{
 			case ImageData.Format.Invalid:
 				throw new Exception("Image's format is invalid");
-				break;
 			case ImageData.Format.Gr:
 				throw new Exception("Image's format isn't supported for saving file.");
-				break;
 			case ImageData.Format.GrA:
 				throw new Exception("Image's format isn't supported for saving file.");
-				break;
 			case ImageData.Format.RGB:
 				ilTexImage(data.width, data.height, 1, data.nbBytesPerPixel(), IL_RGB, IL_UNSIGNED_BYTE, cast(void*)data.pixels.ptr);
 			   break;
