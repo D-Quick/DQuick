@@ -80,7 +80,7 @@ version (Windows)
 					foreach (Window window; mWindows)
 						window.onPaint();
 			}
-			return msg.wParam;
+			return cast(int)msg.wParam;
 		}
 
 		void	quit()
