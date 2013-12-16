@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{9BFFD08A-62C0-4D8C-B38B-F7AAEFB79794}</ProjectGuid>
+    <ProjectGuid>{EA7A7198-D991-4B9B-AA9E-0FF63420BE4E}</ProjectGuid>
     <UseDefaultCompiler>True</UseDefaultCompiler>
     <IncrementalLinking>True</IncrementalLinking>
     <PreferOneStepBuild>True</PreferOneStepBuild>
@@ -42,11 +42,11 @@
     <DebugLevel>0</DebugLevel>
     <Externalconsole>True</Externalconsole>
     <Target>Executable</Target>
-    <OutputName>../../../data/Animation</OutputName>
+    <OutputName>../../../data/MineSweeper</OutputName>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\src\samples\animation\main.d">
+    <Compile Include="..\src\samples\Minesweeper\main.d">
       <Link>main.d</Link>
     </Compile>
   </ItemGroup>
