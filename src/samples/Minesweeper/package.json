@@ -1,0 +1,16 @@
+{
+	"name": "image",
+	"description": "A GUI library written in D.",
+	"authors": ["Bruno Deligny", "Xavier Bigand", "Piotr Podsiadly"],
+	"homepage": "https://github.com/D-Quick/DQuick",
+	"license": "BSL-1.0",
+
+	"targetType": "executable",
+	"targetPath": "../../../data",
+	"dependencies": {
+		"dquick": {"version": "~master", "path": "../../../"}
+	},
+	"mainSourceFile": "main.d",
+	"sourcePaths": ["./"],
+	"importPaths": ["./"]
+}
