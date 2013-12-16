@@ -9,6 +9,12 @@ import std.file, std.stdio;
 import std.path;
 import core.time;
 
+version(Posix)
+{
+	// TODO remove that, it's normally linked with DQuick
+	pragma(lib, "dl");	// dl functions aren't linked by default with dmd
+}
+
 int main(string[] args)
 {
 	try

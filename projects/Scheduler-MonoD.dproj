@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{5E97499B-7F52-4782-A472-814AC4A1DBD5}</ProjectGuid>
+    <ProjectGuid>{CC275E80-4F9B-48F0-A63A-CB34D6303E9F}</ProjectGuid>
     <UseDefaultCompiler>True</UseDefaultCompiler>
     <IncrementalLinking>True</IncrementalLinking>
     <PreferOneStepBuild>True</PreferOneStepBuild>
@@ -25,28 +25,39 @@
     </Includes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
+    <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug</OutputPath>
-    <UnittestMode>False</UnittestMode>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
-    <DebugLevel>0</DebugLevel>
-    <Externalconsole>True</Externalconsole>
-    <Target>Executable</Target>
-    <OutputName>../../../data/dquick-sample</OutputName>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>Scheduler-MonoD</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
-    <UnittestMode>False</UnittestMode>
     <ObjectsDirectory>obj/Release</ObjectsDirectory>
-    <DebugLevel>0</DebugLevel>
-    <Externalconsole>True</Externalconsole>
-    <Target>Executable</Target>
-    <OutputName>../../../data/dquick-sample</OutputName>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>Scheduler-MonoD</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
+    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>true</UnittestMode>
+    <OutputName>Scheduler-MonoD</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\src\samples\image\main.d">
+    <Compile Include="..\src\samples\scheduler\main.d">
       <Link>main.d</Link>
     </Compile>
   </ItemGroup>

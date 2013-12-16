@@ -85,6 +85,7 @@
     <Folder Include="dquick\" />
     <Folder Include="dquick\system\fontconfig\" />
     <Folder Include="dquick\media\devil\" />
+    <Folder Include="dquick\animation\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\src\dquick\algorithms\atlas.d">
@@ -566,6 +567,9 @@
     </Compile>
     <Compile Include="..\src\dquick\media\devil\devilLoaderWriter.d">
       <Link>dquick\media\devil\devilLoaderWriter.d</Link>
+    </Compile>
+    <Compile Include="..\src\dquick\animation\animation.d">
+      <Link>dquick\animation\animation.d</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

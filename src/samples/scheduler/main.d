@@ -4,6 +4,12 @@ import dquick.algorithms.scheduler;
 import std.stdio;
 import core.time;
 
+version(Posix)
+{
+	// TODO remove that, it's normally linked with DQuick
+	pragma(lib, "dl");	// dl functions aren't linked by default with dmd
+}
+
 class SomeTask
 {
 	void execute(Duration time, Duration step, ulong iter)
