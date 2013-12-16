@@ -25,36 +25,25 @@
     </Includes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <OutputPath>bin\Debug</OutputPath>
+    <UnittestMode>False</UnittestMode>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
-    <UnittestMode>false</UnittestMode>
-    <OutputName>Scheduler-MonoD</OutputName>
-    <Target>Executable</Target>
-    <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <Externalconsole>True</Externalconsole>
+    <Target>Executable</Target>
+    <OutputName>../../../data/dquick-sample</OutputName>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
+    <UnittestMode>False</UnittestMode>
     <ObjectsDirectory>obj/Release</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
-    <UnittestMode>false</UnittestMode>
-    <OutputName>Scheduler-MonoD</OutputName>
-    <Target>Executable</Target>
-    <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Unittest</OutputPath>
-    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
-    <UnittestMode>true</UnittestMode>
-    <OutputName>Scheduler-MonoD</OutputName>
+    <Externalconsole>True</Externalconsole>
     <Target>Executable</Target>
-    <Externalconsole>true</Externalconsole>
-    <DebugLevel>0</DebugLevel>
+    <OutputName>../../../data/Scheduler</OutputName>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\src\samples\scheduler\main.d">

@@ -42,7 +42,7 @@
     <DebugLevel>0</DebugLevel>
     <Externalconsole>True</Externalconsole>
     <Target>Executable</Target>
-    <OutputName>../../../data/dquick-sample</OutputName>
+    <OutputName>../../../data/Images</OutputName>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
   </PropertyGroup>
   <ItemGroup>
