@@ -26,6 +26,8 @@
 					"src/dquick/system",
 					"src/dquick/utils"],
 
+    "libs-posix": ["dl"],
+
 	"excludedSourceFiles": ["src/dquick/etc/derelict/build/build.d",
 							"src/dquick/etc/libX11/example.d"],
 	"buildRequirements": ["allowWarnings"],
