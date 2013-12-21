@@ -81,7 +81,7 @@ static string	BASE_ITEM_BINDING()
 					return __itemBinding_env
 				end
 			)";
-			dmlEngine.load(lua, "");
+			dmlEngine.load(lua, "ItemBindingLuaEnv");
 
 			// Put component env
 			lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, dmlEngine.currentLuaEnv);
@@ -154,7 +154,7 @@ static string	BASE_ITEM_BINDING()
 		override void	valueFromLua(lua_State* L)
 		{
 			if (!lua_istable(L, -1))
-				throw new Exception("valueFromLua:: the lua value is not a table\n");
+				throw new Exception("the lua value is not a table\n");
 
 			mCreating = true;
 
@@ -193,7 +193,7 @@ static string	BASE_ITEM_BINDING()
 									lua_pushnil(L); // To compensate the value poped by luaL_ref
 								}
 								else
-									writefln("createLuaBind:: Attribute %s is not a function", key);
+									throw new Exception(format("attribute \"%s\" is a %s, a function was expected", key, getLuaTypeName(L, -1)));
 								break;
 							}
 						}
@@ -228,7 +228,7 @@ static string	BASE_ITEM_BINDING()
 								lua_pushnil(L); // To compensate the value poped by luaL_ref
 							}
 							else
-								throw new Exception(format("createLuaBind:: Attribute %s is not a function", key));
+								throw new Exception(format("attribute \"%s\" is a %s, a function was expected", key, getLuaTypeName(L, -1)));
 						}
 						else
 						{
@@ -249,25 +249,33 @@ static string	BASE_ITEM_BINDING()
 				}
 				else if (lua_type(L, -2) == LUA_TNUMBER)
 				{
-					void*	itemBindingPtr = *(cast(void**)lua_touserdata(L, -1));
-					auto	child = cast(dquick.script.iItemBinding.IItemBinding)(itemBindingPtr);
+					if (lua_isuserdata(L, -1) == false)
+						throw new Exception(format("attribute \"%d\" is a %s, an item was expected", lua_tointeger(L, -2), getLuaTypeName(L, -1)));
+
+					dquick.script.iItemBinding.IItemBinding	child;
+					dquick.script.utils.valueFromLua!(dquick.script.iItemBinding.IItemBinding)(L, -1, child);
 					if (child is null)
-						throw new Exception(format("createLuaBind:: can't find item at key \"%d\"\n", lua_type(L, -2)));
+						throw new Exception(format("attribute \"%d\" is not an item", lua_tointeger(L, -2)));
 
-					static if (__traits(hasMember, this, "addChild") == false)
-						throw new Exception(format("createLuaBind:: can't add item at key \"%d\" as child without addChild method\n", lua_type(L, -2)));
-
-					foreach (overload; __traits(getOverloads, this, "addChild")) 
+					static if (__traits(hasMember, this, "addChild") == true)
 					{
-						alias ParameterTypeTuple!(overload) MyParameterTypeTuple;
-						static if (MyParameterTypeTuple.length == 1)
+						foreach (overload; __traits(getOverloads, this, "addChild")) 
 						{
-							DeclarativeItem	test = cast(DeclarativeItem)child;
-							MyParameterTypeTuple[0]	castedItemBinding = cast(MyParameterTypeTuple[0])(child);
-							if (castedItemBinding !is null)
-								__traits(getMember, this, "addChild")(castedItemBinding);
+							alias ParameterTypeTuple!(overload) MyParameterTypeTuple;
+							static if (MyParameterTypeTuple.length == 1)
+							{
+								DeclarativeItem	test = cast(DeclarativeItem)child;
+								MyParameterTypeTuple[0]	castedItemBinding = cast(MyParameterTypeTuple[0])(child);
+								if (castedItemBinding !is null)
+								{
+									__traits(getMember, this, "addChild")(castedItemBinding);
+									goto AfterError;
+								}
+							}
 						}
 					}
+					throw new Exception(format("can't add item at key \"%d\" as child without an appropriate addChild method", lua_tointeger(L, -2)));
+					AfterError: {}
 				}
 
 				/* removes 'value'; keeps 'key' for next iteration */
@@ -522,7 +530,6 @@ class ItemBinding(T) : ItemBindingBase!(T) // Proxy that auto bind T
 	}
 
 	T	item;
-	DeclarativeItem	declarativeItem() {return item;}
 
 	dquick.script.dmlEngine.DMLEngine	dmlEngine2()
 	{

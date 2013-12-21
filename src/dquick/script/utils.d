@@ -84,8 +84,20 @@ string	getLuaTypeName(lua_State* L, int index)
 		return "boolean";
 	else
 	{
-		throw new Exception(format("Lua value at index %d is an unknown type, a number, string or boolean was expected\n", index));
+		throw new Exception(format("Lua value at index %d is an unknown type, a number, string or boolean was expected", index));
 	}
+}
+
+struct LuaUserData
+{
+	enum Type : byte
+	{
+		Item,
+		Method
+	}
+
+	Type										type;
+	dquick.script.iItemBinding.IItemBinding		iItemBinding;
 }
 
 void	valueFromLua(T)(lua_State* L, int index, ref T value)
@@ -101,30 +113,30 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 		else if (lua_isstring(L, index))
 			value = to!(string)(lua_tostring(L, index));
 		else
-			throw new Exception(format("Lua value at index %d is a \"%s\", a number, boolean or string was expected\n", index, getLuaTypeName(L, index)));
+			throw new Exception(format("Lua value at index %d is a %s, a number, boolean or string was expected", index, getLuaTypeName(L, index)));
 	}
 	else static if (is(T == bool))
 	{
 		if (!lua_isboolean(L, index))
-			throw new Exception(format("Lua value at index %d is a \"%s\", a boolean was expected\n", index, getLuaTypeName(L, index)));
+			throw new Exception(format("Lua value at index %d is a %s, a boolean was expected", index, getLuaTypeName(L, index)));
 		value = cast(bool)lua_toboolean(L, index);
 	}
 	else static if (is(T == int) || is(T == uint) || is(T == enum) || is(T == size_t))
 	{
 		if (!lua_isnumber(L, index))
-			throw new Exception(format("Lua value at index %d is a \"%s\", a number was expected\n", index, getLuaTypeName(L, index)));
+			throw new Exception(format("Lua value at index %d is a %s, a number was expected", index, getLuaTypeName(L, index)));
 		value = cast(typeof(value))lua_tointeger(L, index);
 	}
 	else static if (is(T == float))
 	{
 		if (!lua_isnumber(L, index))
-			throw new Exception(format("Lua value at index %d is a \"%s\", a number was expected\n", index, getLuaTypeName(L, index)));
+			throw new Exception(format("Lua value at index %d is a %s, a number was expected", index, getLuaTypeName(L, index)));
 		value = cast(float)lua_tonumber(L, index);
 	}
 	else static if (is(T == string))
 	{
 		if (!lua_isstring(L, index))
-			throw new Exception(format("Lua value at index %d is a \"%s\", a string was expected\n", index, getLuaTypeName(L, index)));
+			throw new Exception(format("Lua value at index %d is a %s, a string was expected", index, getLuaTypeName(L, index)));
 		value = to!(string)(lua_tostring(L, index));
 	}
 	else static if (is(T : dquick.script.iItemBinding.IItemBinding))
@@ -134,11 +146,14 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 		else
 		{
 			if (!lua_isuserdata(L, index))
-				throw new Exception(format("Lua value at index %d is a \"%s\", a userdata or nil was expected\n", index, getLuaTypeName(L, index)));
+				throw new Exception(format("Lua value at index %d is a %s, a userdata or nil was expected", index, getLuaTypeName(L, index)));
 
-			void*	itemBindingVoidPtr = *(cast(void**)lua_touserdata(L, index));
-			dquick.script.iItemBinding.IItemBinding	itemBindingPtr = cast(dquick.script.iItemBinding.IItemBinding)(itemBindingVoidPtr);
-			value = cast(T)(itemBindingPtr);
+			LuaUserData*	luaUserData = cast(LuaUserData*)lua_touserdata(L, index);
+
+			if (luaUserData.type != LuaUserData.Type.Item)
+				throw new Exception(format("Lua value at index %d is not an item", index));
+
+			value = cast(T)(luaUserData.iItemBinding);
 		}
 	}
 	else
@@ -162,7 +177,7 @@ void	valueToLua(T)(lua_State* L, T value)
 		else if (value.type == typeid(bool))
 			lua_pushboolean(L, value.get!bool);
 		else
-			throw new Exception(format("Variant has type \"%s\", an int, double, bool or string was expected\n", value.type));
+			throw new Exception(format("Variant has type %s, an int, double, bool or string was expected", value.type));
 	}
 	else static if (is(T == int) || is(T == uint) || is(T == enum) || is(T == size_t))
 		lua_pushinteger(L, value);
@@ -178,14 +193,11 @@ void	valueToLua(T)(lua_State* L, T value)
 			lua_pushnil(L);
 		else
 		{
-			DeclarativeItem	ditem = cast(DeclarativeItem)value;
-
 			// Create a userdata that contains instance ptr and make it a global for user access
 			// It also contains a metatable for the member read and write acces
-			dquick.script.iItemBinding.IItemBinding	iItemBinding = cast(dquick.script.iItemBinding.IItemBinding)value;
-			void*	iItemBindingVoidPtr = cast(void*)(iItemBinding);
-			void*	userData = lua_newuserdata(L, iItemBindingVoidPtr.sizeof);
-			memcpy(userData, &iItemBindingVoidPtr, iItemBindingVoidPtr.sizeof);
+			void*	userData = lua_newuserdata(L, LuaUserData.sizeof);
+			(cast(LuaUserData*)userData).type = LuaUserData.Type.Item;
+			(cast(LuaUserData*)userData).iItemBinding = value;
 
 			lua_newtable(L);
 
@@ -205,6 +217,69 @@ void	valueToLua(T)(lua_State* L, T value)
 	}
 }
 
+void	methodFromLua(T)(lua_State* L, int index, ref T object)
+{
+	assert(isPointer!T == false);
+
+	static if (is(T : dquick.script.iItemBinding.IItemBinding))
+	{
+		if (lua_isnil(L, index))
+			object = null;
+		else
+		{
+			if (!lua_isuserdata(L, index))
+				throw new Exception(format("Lua value at index %d is a %s, a userdata or nil was expected", index, getLuaTypeName(L, index)));
+
+			LuaUserData*	luaUserData = cast(LuaUserData*)lua_touserdata(L, index);
+
+			if (luaUserData.type != LuaUserData.Type.Method)
+				throw new Exception(format("Lua value at index %d is not a method", index));
+
+			object = cast(T)(luaUserData.iItemBinding);
+		}
+	}
+	else
+	{
+		static assert(false, fullyQualifiedName2!(T));
+	}
+}
+
+void	methodToLua(T, string methodName)(lua_State* L, T object)
+{
+	assert(isPointer!T == false);
+
+	static if (is(T : dquick.script.iItemBinding.IItemBinding))
+	{
+		// Create a userdata that contains instance ptr and return it to emulate a method
+		// It also contains a metatable for calling
+		void*	userData = lua_newuserdata(L, LuaUserData.sizeof);
+		(cast(LuaUserData*)userData).type = LuaUserData.Type.Method;
+		(cast(LuaUserData*)userData).iItemBinding = object;
+
+		// Create metatable
+		lua_newtable(L);
+		{
+			// Call metamethod to instanciate type
+			lua_pushstring(L, "__call");
+			lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.methodCallLuaBind!(methodName, typeof(object)));
+			lua_settable(L, -3);
+			// Index metamethod to warn user that it's a method
+			lua_pushstring(L, "__index");
+			lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.methodIndexLuaBind!(methodName, typeof(object)));
+			lua_settable(L, -3);
+			// newIndex metamethod to warn user that it's a method
+			lua_pushstring(L, "__newindex");
+			lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.methodNewIndexLuaBind!(methodName, typeof(object)));
+			lua_settable(L, -3);
+		}
+		lua_setmetatable(L, -2);
+	}
+	else
+	{
+		static assert(false);
+	}
+}
+
 void	luaCallD(alias func)(lua_State* L, int firstParamIndex)
 {			
 	//static assert(isSomeFunction!func, "func must be a function or a method");
@@ -213,6 +288,10 @@ void	luaCallD(alias func)(lua_State* L, int firstParamIndex)
 	// Collect all argument in a tuple
 	alias ParameterTypeTuple!func MyParameterTypeTuple;
 	MyParameterTypeTuple	parameterTuple;
+
+	if (lua_gettop(L) + 1 - firstParamIndex > parameterTuple.length)
+		throw new Exception(format("too many arguments, expected %d", parameterTuple.length));
+
 	foreach (index, paramType; MyParameterTypeTuple)
 		dquick.script.utils.valueFromLua!paramType(L, firstParamIndex + index, parameterTuple[index]);
 	lua_pop(L, parameterTuple.length);
@@ -240,6 +319,10 @@ void	luaCallThisD(string funcName, T)(T thisRef, lua_State* L, int firstParamInd
 	// Collect all argument in a tuple
 	alias ParameterTypeTuple!(__traits(getMember, T, funcName)) MyParameterTypeTuple;
 	MyParameterTypeTuple	parameterTuple;
+
+	if (lua_gettop(L) + 1 - firstParamIndex > parameterTuple.length)
+		throw new Exception(format("too many arguments, expected %d", parameterTuple.length));
+
 	foreach (index, paramType; MyParameterTypeTuple)
 		dquick.script.utils.valueFromLua!paramType(L, firstParamIndex + index, parameterTuple[index]);
 	lua_pop(L, parameterTuple.length);
@@ -302,6 +385,114 @@ unittest
 	}
 
 	static assert(is(PropertyType!(Test, "prop") == short));
+}
+
+/*
+** search for 'objidx' in table at index -1.
+** return 1 + string at top if find a good name.
+*/
+private static int findfield (lua_State *L, int objidx, int level) {
+	if (level == 0 || !lua_istable(L, -1))
+		return 0;  /* not found */
+	lua_pushnil(L);  /* start 'next' loop */
+	while (lua_next(L, -2)) {  /* for each pair in table */
+		if (lua_type(L, -2) == LUA_TSTRING) {  /* ignore non-string keys */
+			if (lua_rawequal(L, objidx, -1)) {  /* found object? */
+				lua_pop(L, 1);  /* remove value (but keep name) */
+				return 1;
+			}
+			else if (findfield(L, objidx, level - 1)) {  /* try recursively */
+				lua_remove(L, -2);  /* remove table (but keep name) */
+				lua_pushliteral(L, ".");
+				lua_insert(L, -2);  /* place '.' between the two names */
+				lua_concat(L, 3);
+				return 1;
+			}
+		}
+		lua_pop(L, 1);  /* remove value */
+	}
+	return 0;  /* not found */
+}
+
+
+private static int pushglobalfuncname(lua_State* L, lua_Debug* ar)
+{
+	int top = lua_gettop(L);
+	lua_getinfo(L, "f", ar);  /* push function */
+	lua_pushglobaltable(L);
+	if (findfield(L, top + 1, 2))
+	{
+		lua_copy(L, -1, top + 1);  /* move name to proper place */
+		lua_pop(L, 2);  /* remove pushed values */
+		return 1;
+	}
+	else
+	{
+		lua_settop(L, top);  /* remove function and global table */
+		return 0;
+	}
+}
+
+private static void pushfuncname(lua_State* L, lua_Debug* ar)
+{
+	if (ar.namewhat != null)  /* is there a name? */
+	{
+		lua_pushstring(L, "function ");
+		lua_pushstring(L, ar.name);
+	}
+	else if (ar.what[0] == 'm')  /* main? */
+		lua_pushstring(L, "main chunk");
+	else if (ar.what[0] == 'C')
+	{
+		if (pushglobalfuncname(L, ar))
+		{
+			lua_pushstring(L, "function ");
+			lua_pushstring(L, lua_tostring(L, -1));
+			lua_remove(L, -2);  /* remove name */
+		}
+		else
+			lua_pushliteral(L, "?");
+	}
+	else
+	{
+		lua_pushstring(L, "function <");
+		lua_pushstring(L, to!(string)(ar.short_src).toStringz);
+		lua_pushstring(L, ":");
+		lua_pushstring(L, to!(string)(ar.currentline).toStringz);
+		lua_pushstring(L, ">");
+	}
+}
+
+void	luaError(lua_State* L, string msg)
+{
+	int top = lua_gettop(L);
+	lua_pushstring(L, msg.toStringz());
+	lua_Debug ar;
+	for (int level = 0; lua_getstack(L, level, &ar); level++)
+	{
+		lua_getinfo(L, "Sln", &ar);  /* get info about it */
+		if (to!(string)(ar.source) != "ItemBindingLuaEnv" &&
+			to!(string)(ar.source) != "ComponentEnvChaining") /* is there info? */
+		{ 
+			lua_pushstring(L, "\n\t");
+			if (ar.short_src[0] == '[' && ar.short_src[1] == 'C' && ar.short_src[2] == ']')
+				lua_pushstring(L, "[D]");
+			else
+				lua_pushstring(L, to!(string)(ar.short_src).toStringz);
+			if (ar.currentline > 0)
+			{
+				lua_pushstring(L, ":");
+				lua_pushstring(L, to!(string)(ar.currentline).toStringz);
+			}
+			if (to!(string)(ar.name) != "")
+			{
+				lua_pushstring(L, " in ");
+				pushfuncname(L, &ar);
+			}
+			lua_concat(L, lua_gettop(L) - top);
+		}
+	}
+	lua_error(L);
 }
 
 
