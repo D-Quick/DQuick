@@ -1500,7 +1500,8 @@ public:
 		size_t	itemCount = mItems.length;
 
 		// Save _ENV
-		lua_getupvalue(luaState, -1, 1);
+		if (lua_getupvalue(luaState, -1, 1) == null)
+			throw new Exception("no _ENV upvalue");
 		mEnvStack ~= luaL_ref(luaState, LUA_REGISTRYINDEX);
 
 		static if (showDebug)
@@ -1959,7 +1960,9 @@ extern(C)
 			dquick.script.iItemBinding.IItemBinding	previousRootItem = dmlEngine.rootItemBinding!(dquick.script.iItemBinding.IItemBinding)();
 
 			// Set table to _ENV upvalue
-			lua_setupvalue(dmlEngine.luaState, -2, 1);
+			const char*	envUpvalue = lua_setupvalue(dmlEngine.luaState, -2, 1);
+			if (envUpvalue == null) // No access to env, env table is still on the stack so we need to pop it
+				lua_pop(dmlEngine.luaState, 1);
 			// Execute component code
 			dmlEngine.execute();
 
