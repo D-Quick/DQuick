@@ -24,6 +24,24 @@ import std.path;
 
 version(unittest)
 {
+	class SimpleItem : dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			readOnlyPropertyProperty = new typeof(readOnlyPropertyProperty)(this, this);
+		}
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SimpleItem, "id")	idProperty;
+		string	id() { return mId; }
+		void	id(string value) { mId = value; }
+		string	mId;
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SimpleItem, "readOnlyProperty")	readOnlyPropertyProperty;
+		string	readOnlyProperty() { return "readOnlyProperty"; }
+	}
 	interface Interface : dquick.script.iItemBinding.IItemBinding
 	{
 		int		nativeProperty();
@@ -181,6 +199,7 @@ unittest
 	DMLEngineCore	dmlEngine = new DMLEngineCore;
 	dmlEngine.create();
 	dmlEngine.addObjectBindingType!(Item, "Item");
+	dmlEngine.addObjectBindingType!(SimpleItem, "SimpleItem");
 
 	// Test basic item
 	string lua1 = q"(
@@ -237,6 +256,24 @@ unittest
 	dmlEngine.execute(lua4, "");
 	assert(dmlEngine.getLuaGlobal!Item("item4").nativeTotalProperty == 10500);
 
+	// Test signals 2 (slot call it's own binding)
+	{
+		string lua = q"(
+			Item {
+				id = "item4_1",
+				nativeTotalProperty = 500,
+				virtualProperty = function()
+					return 1000
+				end,
+				onVirtualPropertyChanged = function()
+					item4_1.nativeTotalProperty = item4_1.nativeTotalProperty + item4_1.virtualProperty
+				end,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		assert(dmlEngine.getLuaGlobal!Item("item4_1").nativeTotalProperty == 1500);
+	}
+
 	// Test property binding
 	string lua5 = q"(
 		Item {
@@ -276,27 +313,56 @@ unittest
 	}
 
 	// Test property binding loop detection
-	/*string lua6 = q"(
-		Item {
-			id = "item8",
-			nativeProperty = function()
-				return item10.nativeTotalProperty + 100
-			end
-		}
-		Item {
-			id = "item9",
-			virtualProperty = function()
-				return item8.nativeProperty + 50
-			end
-		}
-		Item {
-			id = "item10",
-			nativeTotalProperty = function()
-				return item9.virtualProperty + 25
-			end
-		}
-	)";
-	dmlEngine.execute(lua6, "");*/
+	try
+	{
+		uint	oldSize = dmlEngine.propertyBindingStackSize;
+		dmlEngine.propertyBindingStackSize = 10;
+		scope(exit) dmlEngine.propertyBindingStackSize = oldSize;
+		string lua6 = q"(
+			Item {
+				id = "item8",
+				nativeProperty = function()
+					return item10.nativeTotalProperty + 100
+				end
+			}
+			Item {
+				id = "item9",
+				virtualProperty = function()
+					return item8.nativeProperty + 50
+				end
+			}
+			Item {
+				id = "item10",
+				nativeTotalProperty = function()
+					return item9.virtualProperty + 25
+				end
+			}
+		)";
+		dmlEngine.execute(lua6, "Test property binding loop detection");
+	}
+	catch (Throwable e)
+	{
+		auto expected = "property binding loop detected, callstack:\n"
+			"item8.nativeProperty\n"
+			"item9.virtualProperty\n"
+			"item10.nativeTotalProperty\n"
+			"item8.nativeProperty\n"
+			"item9.virtualProperty\n"
+			"item10.nativeTotalProperty\n"
+			"...\n"
+			"\t[D] in function __index\n"
+			"\t[string \"Test property binding loop detection\"]:5\n"
+			"\t[D] in function __index\n"
+			"\t[string \"Test property binding loop detection\"]:11\n"
+			"\t[D] in function __index\n"
+			"\t[string \"Test property binding loop detection\"]:17\n"
+			"\t[D] in function __index\n"
+			"\t[string \"Test property binding loop detection\"]:5\n"
+			"\t[D] in function __index\n"
+			"\t[string \"Test property binding loop detection\"]:11\n";
+		auto m = mismatch(e.msg[0 .. min(e.msg.length, expected.length)], expected);
+		assert(m[0] == "" && m[1] == "");
+	}
 
 	// Test enums
 	string lua7 = q"(
@@ -545,6 +611,717 @@ unittest
 		assert(dmlEngine.getLuaGlobal!Item("item20").nativeProperty == 10);
 		assert(dmlEngine.getLuaGlobal!Item("item20").nativeTotalProperty == 10);
 	}
+
+	// Check error 1
+	try
+	{
+		string lua = q"(
+			Item()
+		)";
+		dmlEngine.execute(lua, "Check error 1");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a table was expected as argument, got none\n\t[D] in function Item\n\t[string \"Check error 1\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 2
+	try
+	{
+		string lua = q"(
+			getmetatable(Item).__call()
+		)";
+		dmlEngine.execute(lua, "Check error 2");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a table was expected as self, got none, the function was altered\n\t[D] in function __call\n\t[string \"Check error 2\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 3
+	try
+	{
+		string lua = q"(
+			getmetatable(Item).__call(1)
+		)";
+		dmlEngine.execute(lua, "Check error 3");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a table was expected as self, got number, the function was altered\n\t[D] in function __call\n\t[string \"Check error 3\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 4
+	try
+	{
+		string lua = q"(
+			getmetatable(Item).__call(1, 1)
+		)";
+		dmlEngine.execute(lua, "Check error 4");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a table was expected as self, got number, the function was altered\n\t[D] in function __call\n\t[string \"Check error 4\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 5
+	try
+	{
+		string lua = q"(
+			Item(1)
+		)";
+		dmlEngine.execute(lua, "Check error 5");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a table was expected as argument, got number\n\t[D] in function Item\n\t[string \"Check error 5\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 6
+	try
+	{
+		string lua = q"(
+			Item(1, 1)
+		)";
+		dmlEngine.execute(lua, "Check error 6");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a table was expected as argument, got number\n\t[D] in function Item\n\t[string \"Check error 6\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 7
+	try
+	{
+		string lua = q"(
+			Item({}, 1)
+		)";
+		dmlEngine.execute(lua, "Check error 7");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "too many arguments, only one table was expected as argument\n\t[D] in function Item\n\t[string \"Check error 7\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 8
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item21",
+			}
+			getmetatable(item21).__index()
+		)";
+		dmlEngine.execute(lua, "Check error 8");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a userdata was expected as self, got none, the function was altered\n\t[D] in function __index\n\t[string \"Check error 8\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 9
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item22",
+			}
+			getmetatable(item22).__index(1)
+		)";
+		dmlEngine.execute(lua, "Check error 9");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a userdata was expected as self, got number, the function was altered\n\t[D] in function __index\n\t[string \"Check error 9\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 10
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item23",
+			}
+			getmetatable(item23).__index(item23)
+		)";
+		dmlEngine.execute(lua, "Check error 10");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a string was expected as key, got none\n\t[D] in function __index\n\t[string \"Check error 10\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 11
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item24",
+			}
+			local test = item24[1]
+		)";
+		dmlEngine.execute(lua, "Check error 11");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a string was expected as key, got number\n\t[D] in function __index\n\t[string \"Check error 11\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 12
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item25",
+			}
+			getmetatable(item25).__index(item25, "test", 10)
+		)";
+		dmlEngine.execute(lua, "Check error 12");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "too many arguments, only a userdata as self and a string as key was expected as arguments\n\t[D] in function __index\n\t[string \"Check error 12\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 13
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item26",
+			}
+			getmetatable(item26).__newindex()
+		)";
+		dmlEngine.execute(lua, "Check error 13");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a userdata was expected as self, got none, the function was altered\n\t[D] in function __newindex\n\t[string \"Check error 13\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 14
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item27",
+			}
+			getmetatable(item27).__newindex(1)
+		)";
+		dmlEngine.execute(lua, "Check error 14");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a userdata was expected as self, got number, the function was altered\n\t[D] in function __newindex\n\t[string \"Check error 14\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 15
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item28",
+			}
+			getmetatable(item28).__newindex(item28)
+		)";
+		dmlEngine.execute(lua, "Check error 15");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a string was expected as key, got none\n\t[D] in function __newindex\n\t[string \"Check error 15\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 16
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item29",
+			}
+			getmetatable(item29).__newindex(item29, nil)
+		)";
+		dmlEngine.execute(lua, "Check error 16");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a string was expected as key, got nil\n\t[D] in function __newindex\n\t[string \"Check error 16\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 17
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item30",
+			}
+			getmetatable(item30).__newindex(item30, "test")
+		)";
+		dmlEngine.execute(lua, "Check error 17");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "an assignment value was expected, got none\n\t[D] in function __newindex\n\t[string \"Check error 17\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 18
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item31",
+			}
+			item31.test = nil
+		)";
+		dmlEngine.execute(lua, "Check error 18");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "property \"test\" doesn't exist on object \"item31\"\n\t[D] in function __newindex\n\t[string \"Check error 18\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 19
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item32",
+			}
+			getmetatable(item32).__newindex(item32, "test", 1, 0)
+		)";
+		dmlEngine.execute(lua, "Check error 19");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "too many arguments, only a userdata as self, a string as key and an assignment value was expected as arguments\n\t[D] in function __newindex\n\t[string \"Check error 19\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 20
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "item33",
+			}
+			item33.nativeProperty = "test"
+		)";
+		dmlEngine.execute(lua, "Check error 20");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "Lua value at index 1 is a string, a number was expected\n\t[D] in function __newindex\n\t[string \"Check error 20\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 21
+	try
+	{
+		dmlEngine.addFunction!(testSumFunctionBinding, "testSumFunctionBinding2")();
+		string lua = q"(
+			test = testSumFunctionBinding2("test", 200)
+		)";
+		dmlEngine.execute(lua, "Check error 21");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "Lua value at index 1 is a string, a number was expected\n\t[D] in function testSumFunctionBinding2\n\t[string \"Check error 21\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 22
+	try
+	{
+		dmlEngine.addFunction!(testSumFunctionBinding, "testSumFunctionBinding3")();
+		string lua = q"(
+			test = testSumFunctionBinding3(200)
+		)";
+		dmlEngine.execute(lua, "Check error 22");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "Lua value at index 2 is a none, a number was expected\n\t[D] in function testSumFunctionBinding3\n\t[string \"Check error 22\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 23
+	try
+	{
+		dmlEngine.addFunction!(testSumFunctionBinding, "testSumFunctionBinding4")();
+		string lua = q"(
+			test = testSumFunctionBinding4(200, 200, 0)
+		)";
+		dmlEngine.execute(lua, "Check error 23");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "too many arguments, expected 2\n\t[D] in function testSumFunctionBinding4\n\t[string \"Check error 23\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 24
+	try
+	{
+		Item	testObject3 = new Item;
+		dmlEngine.addObjectBinding(testObject3, "testObject3");
+		string lua = q"(
+			test = getmetatable(testObject3.testNormalMethod).__call()
+		)";
+		dmlEngine.execute(lua, "Check error 24");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a userdata was expected as self, got none, the function was altered\n\t[D] in function __call\n\t[string \"Check error 24\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 25
+	try
+	{
+		Item	testObject4 = new Item;
+		dmlEngine.addObjectBinding(testObject4, "testObject4");
+		string lua = q"(
+			test = testObject4.testNormalMethod(nil)
+		)";
+		dmlEngine.execute(lua, "Check error 25");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "Lua value at index 1 is a nil, a number was expected\n\t[D] in function testNormalMethod\n\t[string \"Check error 25\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 26
+	try
+	{
+		Item	testObject5 = new Item;
+		dmlEngine.addObjectBinding(testObject5, "testObject5");
+		string lua = q"(
+			test = testObject5.testNormalMethod(200, 200, 0)
+		)";
+		dmlEngine.execute(lua, "Check error 26");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "too many arguments, expected 2\n\t[D] in function testNormalMethod\n\t[string \"Check error 26\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 27
+	try
+	{
+		Item	testObject6 = new Item;
+		dmlEngine.addObjectBinding(testObject6, "testObject6");
+		string lua = q"(
+			test = testObject6.testNormalMethod.test
+		)";
+		dmlEngine.execute(lua, "Check error 27");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "attempt to index a method\n\t[D] in function __index\n\t[string \"Check error 27\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 28
+	try
+	{
+		Item	testObject7 = new Item;
+		dmlEngine.addObjectBinding(testObject7, "testObject7");
+		string lua = q"(
+			testObject7.testNormalMethod.test = nil
+		)";
+		dmlEngine.execute(lua, "Check error 28");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "attempt to assign a method\n\t[D] in function __newindex\n\t[string \"Check error 28\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 29
+	try
+	{
+		string lua = q"(
+			ImportComponent()
+		)";
+		dmlEngine.execute(lua, "Check error 29");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a string was expected as argument, got none\n\t[D] in function ImportComponent\n\t[string \"Check error 29\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 30
+	try
+	{
+		string lua = q"(
+			ImportComponent("Check error 30.lua", 0)
+		)";
+		dmlEngine.execute(lua, "Check error 30");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "too many arguments, only one string was expected as argument\n\t[D] in function ImportComponent\n\t[string \"Check error 30\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 31
+	try
+	{
+		string lua = q"(
+			ImportComponent("CheckError31.lua")
+			CheckError31()
+		)";
+		dmlEngine.execute(lua, "Check error 31");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "a table was expected as argument, got none\n\t[D] in function CheckError31\n\t[string \"Check error 31\"]:3");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 32
+	try
+	{
+		string lua = q"(
+			ImportComponent("CheckError32.lua")
+			CheckError32({}, 0)
+		)";
+		dmlEngine.execute(lua, "Check error 32");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "too many arguments, only one table was expected as argument\n\t[D] in function CheckError32\n\t[string \"Check error 32\"]:3");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 33
+	try
+	{
+		string	checkError33 = q"(
+		)";
+		std.file.write("CheckError33.lua", checkError33);
+
+		string lua = q"(
+			ImportComponent("CheckError33.lua")
+			CheckError33 {
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 33");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "\"CheckError33\" component has no root item\n\t[D] in function CheckError33\n\t[string \"Check error 33\"]:3");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 34
+	try
+	{
+		string	checkError34 = q"(
+			Item {
+			}
+		)";
+		std.file.write("CheckError34.lua", checkError34);
+		string lua = q"(
+			ImportComponent("CheckError34.lua")
+			Item {
+				id = "checkError34",
+
+				CheckError34 {
+					id = "checkError34"
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 34");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "an item with id \"checkError34\" already exist in that component\n\t[D] in function Item\n\t[string \"Check error 34\"]:3");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 35
+	try
+	{
+		string	checkError35 = q"(
+			Item {
+			}
+		)";
+		std.file.write("CheckError35.lua", checkError35);
+		string lua = q"(
+			ImportComponent("CheckError35.lua")
+			CheckError35 {
+				id = "checkError35",
+
+				Item {
+					id = "checkError35"
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 35");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "an item with id \"checkError35\" already exist in that component\n\t[D] in function CheckError35\n\t[string \"Check error 35\"]:3");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 36
+	try
+	{
+		string lua = q"(
+			Item {
+				onNativePropertyChanged = 10
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 36");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "attribute \"onNativePropertyChanged\" is a number, a function was expected\n\t[D] in function Item\n\t[string \"Check error 36\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 37
+	try
+	{
+		string lua = q"(
+			Item {
+				onVirtualPropertyChanged = 10
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 37");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "attribute \"onVirtualPropertyChanged\" is a number, a function was expected\n\t[D] in function Item\n\t[string \"Check error 37\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 38
+	try
+	{
+		string lua = q"(
+			Item {
+				10
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 38");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "attribute \"1\" is a number, an item was expected\n\t[D] in function Item\n\t[string \"Check error 38\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 39
+	try
+	{
+		Item	testObject7 = new Item;
+		dmlEngine.addObjectBinding(testObject7, "testObject7");
+		string lua = q"(
+			Item {
+				testObject7.testNormalMethod
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 39");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "Lua value at index -1 is not an item\n\t[D] in function Item\n\t[string \"Check error 39\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 40
+	try
+	{
+		string lua = q"(
+			Item {
+				SimpleItem {
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 40");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "can't add item at key \"1\" as child without an appropriate addChild method\n\t[D] in function Item\n\t[string \"Check error 40\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 41
+	try
+	{
+		string lua = q"(
+			SimpleItem {
+				Item {
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 41");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "can't add item at key \"1\" as child without an appropriate addChild method\n\t[D] in function SimpleItem\n\t[string \"Check error 41\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 42
+	try
+	{
+		string lua = q"(
+			SimpleItem {
+				id = "simpleItem1"
+			}
+			simpleItem1.readOnlyProperty = "test"
+		)";
+		dmlEngine.execute(lua, "Check error 42");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "property \"readOnlyProperty\" is read only\n\t[D] in function __newindex\n\t[string \"Check error 42\"]:5");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Check error 43
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "checkError43Item",
+				nativeProperty = function()
+					return 1, 3
+				end
+			}
+		)";
+		dmlEngine.execute(lua, "Check error 43");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "too few or too many return values on property binding checkError43Item.nativeProperty, got 2, expected 1");
+		assert(m[0] == "" && m[1] == "");
+	}
+
 	}
 	catch (Throwable e)
 	{
@@ -590,6 +1367,8 @@ public:
 		lua_getglobal(luaState, "_G");
 		assert(lua_istable(luaState, -1));
 		mEnvStack ~= luaL_ref(luaState, LUA_REGISTRYINDEX);
+
+		isLastPropertyAssignmentFromDMLEngine = false;
 	}
 
 	void	destroy()
@@ -717,6 +1496,7 @@ public:
 		assert(isCreated());
 
 		mReentrencyLevel++;
+		scope(exit) mReentrencyLevel--;
 		size_t	itemCount = mItems.length;
 
 		// Save _ENV
@@ -730,7 +1510,7 @@ public:
 		{
 			string error = to!(string)(lua_tostring(luaState, -1));
 			lua_pop(luaState, 1);
-			throw new Exception(format("lua_pcall error: %s", error));
+			throw new Exception(error);
 		}
 
 		luaL_unref(luaState, LUA_REGISTRYINDEX, mEnvStack[mEnvStack.length - 1]);
@@ -751,7 +1531,6 @@ public:
 				writeln("=======================================================================================================");
 			}
 		}
-		mReentrencyLevel--;
 	}
 
 	void	execute(string text, string filePath)
@@ -765,16 +1544,9 @@ public:
 		lua_rawgeti(luaState, LUA_REGISTRYINDEX, functionRef);
 		if (lua_pcall(luaState, 0, LUA_MULTRET, 0) != LUA_OK)
 		{
-			const char* error = lua_tostring(luaState, -1);
-			writeln("DMLEngineCore.execute: error: " ~ to!(string)(error));
+			string error = to!(string)(lua_tostring(luaState, -1));
 			lua_pop(luaState, 1);
-			assert(false);
-
-			version (release)
-			{
-				currentlyExecutedBindingRef = -1;
-				return;
-			}
+			throw new Exception(error);
 		}
 	}
 
@@ -798,7 +1570,7 @@ public:
 		lua_setglobal(luaState, name.toStringz());
 	}
 
-	static immutable bool showDebug = false;
+	static immutable bool showDebug = 0;
 
 	int		currentLuaEnv()
 	{
@@ -806,6 +1578,7 @@ public:
 		return mEnvStack[mEnvStack.length - 1];
 	}
 
+	uint	propertyBindingStackSize = 50;
 protected:
 	dquick.script.iItemBinding.IItemBinding[]		mItems;
 	dquick.script.iItemBinding.IItemBinding			mLastItemBindingCreated;
@@ -813,6 +1586,7 @@ protected:
 	package lua_State*	luaState;
 	IWindow		mWindow;
 	package dquick.script.propertyBinding.PropertyBinding[]		currentlyExecutedBindingStack;
+	package bool	isLastPropertyAssignmentFromDMLEngine;
 	string		itemTypeIds;
 	package int	mReentrencyLevel;
 	int[string]	mComponentLuaReferences;
@@ -842,12 +1616,12 @@ extern(C)
 	{
 		try
 		{
-			if (lua_gettop(L) != 2)
-				throw new Exception(format("too few or too many param, got %d, expected 1\n", lua_gettop(L)));
 			if (!lua_istable(L, 1))
-				throw new Exception(format("Lua value at index %d is a \"%s\", a table was expected\n", 1, getLuaTypeName(L, 1)));
+				throw new Exception(format("a table was expected as self, got %s, the function was altered", getLuaTypeName(L, 1)));
 			if (!lua_istable(L, 2))
-				throw new Exception(format("Lua value at index %d is a \"%s\", a table was expected\n", 2, getLuaTypeName(L, 2)));
+				throw new Exception(format("a table was expected as argument, got %s", getLuaTypeName(L, 2)));
+			if (lua_gettop(L) > 2)
+				throw new Exception("too many arguments, only one table was expected as argument");
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -874,7 +1648,7 @@ extern(C)
 					lua_pushvalue(L, -1);
 					lua_rawget(L, -3); // Raw get without calling index metamethod to not get parent components values
 					if (lua_isnil(L, -1) == false)
-						throw new Exception(format("An item with id \"%s\" already exist in that component", itemBinding.id));
+						throw new Exception(format("an item with id \"%s\" already exist in that component", itemBinding.id));
 					lua_pop(L, 1);
 				}
 
@@ -888,7 +1662,7 @@ extern(C)
 		}
 		catch (Throwable e)
 		{
-			luaL_error(L, e.msg.toStringz());
+			luaError(L, e.msg);
 			return 0;
 		}
 	}
@@ -897,12 +1671,12 @@ extern(C)
 	{
 		try
 		{
-			if (lua_gettop(L) != 2)
-				throw new Exception(format("too few or too many param, got %d, expected 1\n", lua_gettop(L)));
 			if (!lua_isuserdata(L, 1))
-				throw new Exception(format("Lua value at index %d is a \"%s\", a userdata was expected\n", 1, getLuaTypeName(L, 1)));
+				throw new Exception(format("a userdata was expected as self, got %s, the function was altered", getLuaTypeName(L, 1)));
 			if (!lua_isstring(L, 2))
-				throw new Exception(format("Lua value at index %d is a \"%s\", a string was expected\n", 2, getLuaTypeName(L, 2)));
+				throw new Exception(format("a string was expected as key, got %s", getLuaTypeName(L, 2)));
+			if (lua_gettop(L) > 2)
+				throw new Exception("too many arguments, only a userdata as self and a string as key was expected as arguments");
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -940,30 +1714,7 @@ extern(C)
 					{
 						if (propertyId == member)
 						{
-							// Create a userdata that contains instance void ptr and return it to emulate a method
-							// It also contains a metatable for calling
-							dquick.script.iItemBinding.IItemBinding	iItemBinding = cast(dquick.script.iItemBinding.IItemBinding)itemBinding;
-							void*	itemBindingVoidPtr = cast(void*)iItemBinding;
-							void*	userData = lua_newuserdata(L, itemBindingVoidPtr.sizeof);
-							memcpy(userData, &itemBindingVoidPtr, itemBindingVoidPtr.sizeof);
-
-							// Create metatable
-							lua_newtable(L);
-							{
-								// Call metamethod to instanciate type
-								lua_pushstring(L, "__call");
-								lua_pushcfunction(L, cast(lua_CFunction)&methodCallLuaBind!(member, typeof(itemBinding)));
-								lua_settable(L, -3);
-								// Index metamethod to warn user that it's a method
-								lua_pushstring(L, "__index");
-								lua_pushcfunction(L, cast(lua_CFunction)&methodIndexLuaBind!(member, typeof(itemBinding)));
-								lua_settable(L, -3);
-								// newIndex metamethod to warn user that it's a method
-								lua_pushstring(L, "__newindex");
-								lua_pushcfunction(L, cast(lua_CFunction)&methodNewIndexLuaBind!(member, typeof(itemBinding)));
-								lua_settable(L, -3);
-							}
-							lua_setmetatable(L, -2);
+							dquick.script.utils.methodToLua!(T, member)(L, itemBinding);
 							return 1;
 						}
 					}
@@ -980,7 +1731,7 @@ extern(C)
 		}
 		catch (Throwable e)
 		{
-			luaL_error(L, e.msg.toStringz());
+			luaError(L, e.msg);
 			return 0;
 		}
 	}
@@ -989,12 +1740,14 @@ extern(C)
 	{
 		try
 		{
-			if (lua_gettop(L) != 3)
-				throw new Exception(format("too few or too many param, got %d, expected 3\n", lua_gettop(L)));
 			if (!lua_isuserdata(L, 1))
-				throw new Exception(format("Lua value at index %d is a \"%s\", a userdata was expected\n", 1, getLuaTypeName(L, 1)));
+				throw new Exception(format("a userdata was expected as self, got %s, the function was altered", getLuaTypeName(L, 1)));
 			if (!lua_isstring(L, 2))
-				throw new Exception(format("Lua value at index %d is a \"%s\", a string was expected\n", 2, getLuaTypeName(L, 2)));
+				throw new Exception(format("a string was expected as key, got %s", getLuaTypeName(L, 2)));
+			if (lua_isnone(L, 3))
+				throw new Exception(format("an assignment value was expected, got %s", getLuaTypeName(L, 3)));
+			if (lua_gettop(L) > 3)
+				throw new Exception("too many arguments, only a userdata as self, a string as key and an assignment value was expected as arguments");
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -1030,12 +1783,11 @@ extern(C)
 				return 1;
 			}
 
-			writefln("newindexLuaBind:: Property %s doesn't exist on object %s", propertyId, itemBinding);
-			return 0;
+			throw new Exception(format("property \"%s\" doesn't exist on object \"%s\"", propertyId, itemBinding.id));
 		}
 		catch (Throwable e)
 		{
-			luaL_error(L, e.msg.toStringz());
+			luaError(L, e.msg);
 			return 0;
 		}
 	}
@@ -1053,7 +1805,7 @@ extern(C)
 		}
 		catch (Throwable e)
 		{
-			writeln(e.toString());
+			luaError(L, e.msg);
 			return 0;
 		}
 	}
@@ -1068,10 +1820,8 @@ extern(C)
 								!isDelegate!(__traits(getMember, T, methodName)),
 							"func must be a method");
 
-			if (lua_gettop(L) < 1)
-				throw new Exception(format("too few param, got %d, expected at least 1\n", lua_gettop(L)));
 			if (!lua_isuserdata(L, 1))
-				throw new Exception(format("Lua value at index %d is a \"%s\", a userdata was expected\n", 1, getLuaTypeName(L, 1)));
+				throw new Exception(format("a userdata was expected as self, got %s, the function was altered", getLuaTypeName(L, 1)));
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -1079,7 +1829,7 @@ extern(C)
 			lua_pop(L, 1);
 
 			T	itemBinding;
-			dquick.script.utils.valueFromLua!(T)(L, 1, itemBinding);
+			dquick.script.utils.methodFromLua!(T)(L, 1, itemBinding);
 			lua_remove(L, 1);
 			assert(itemBinding !is null);
 
@@ -1089,20 +1839,20 @@ extern(C)
 		}
 		catch (Throwable e)
 		{
-			luaL_error(L, e.msg.toStringz());
+			luaError(L, e.msg);
 			return 0;
 		}
 	}
 	// Index metamethod to warn user that it's a method
 	private int	methodIndexLuaBind(string methodName, T)(lua_State* L)
 	{
-		luaL_error(L, "methodIndexLuaBind: attempt to index a method");
+		luaError(L, "attempt to index a method");
 		return 0;
 	}
 	// newIndex metamethod to warn user that it's a method
 	private int	methodNewIndexLuaBind(string methodName, T)(lua_State* L)
 	{
-		luaL_error(L, "methodIndexLuaBind: attempt to assign a method");
+		luaError(L, "attempt to assign a method");
 		return 0;
 	}
 
@@ -1110,10 +1860,10 @@ extern(C)
 	{
 		try
 		{
-			if (lua_gettop(L) != 1)
-				throw new Exception(format("too few param, got %d, expected 1\n", lua_gettop(L)));
 			if (!lua_isstring(L, 1))
-				throw new Exception(format("Lua value at index %d is a \"%s\", a string was expected\n", 1, getLuaTypeName(L, 1)));
+				throw new Exception(format("a string was expected as argument, got %s", getLuaTypeName(L, 1)));
+			if (lua_gettop(L) > 1)
+				throw new Exception("too many arguments, only one string was expected as argument");
 
 			string	path = to!(string)(lua_tostring(L, 1));
 			lua_pop(L, 1);
@@ -1123,14 +1873,14 @@ extern(C)
 			DMLEngineCore	dmlEngine = cast(DMLEngineCore)lua_touserdata(L, -1);
 			lua_pop(L, 1);
 
-			string	varName = baseName(stripExtension(path));
-			lua_getglobal(L, varName.toStringz());
+			string	componentName = baseName(stripExtension(path));
+			lua_getglobal(L, componentName.toStringz());
 			if (lua_iscfunction(L, -1) == false)
 			{
 				lua_pushstring(dmlEngine.luaState, path.toStringz());
 				lua_pushcclosure(dmlEngine.luaState, cast(lua_CFunction)&createComponentLuaBind, 1);
 				// Add type to a global
-				lua_setglobal(dmlEngine.luaState, varName.toStringz());
+				lua_setglobal(dmlEngine.luaState, componentName.toStringz());
 			}
 
 			/*string	varName = baseName(stripExtension(path));
@@ -1147,7 +1897,7 @@ extern(C)
 		}
 		catch (Throwable e)
 		{
-			writeln(e.toString());
+			luaError(L, e.msg);
 			return 0;
 		}
 	}
@@ -1156,10 +1906,10 @@ extern(C)
 	{
 		try
 		{
-			if (lua_gettop(L) != 1)
-				throw new Exception(format("too few or too many param, got %d, expected 1\n", lua_gettop(L)));
 			if (!lua_istable(L, 1))
-				throw new Exception("the lua value is not a table\n");
+				throw new Exception(format("a table was expected as argument, got %s", getLuaTypeName(L, 1)));
+			if (lua_gettop(L) > 1)
+				throw new Exception("too many arguments, only one table was expected as argument");
 
 			lua_pushstring(L, "__This");
 			lua_gettable(L, LUA_REGISTRYINDEX);
@@ -1177,7 +1927,7 @@ extern(C)
 					end
 				end
 			)";
-			dmlEngine.load(lua, "");
+			dmlEngine.load(lua, "ComponentEnvChaining");
 			dmlEngine.execute();
 
 			// Get component code
@@ -1206,14 +1956,19 @@ extern(C)
 			}
 			lua_setmetatable(dmlEngine.luaState, -2);
 
+			dquick.script.iItemBinding.IItemBinding	previousRootItem = dmlEngine.rootItemBinding!(dquick.script.iItemBinding.IItemBinding)();
+
 			// Set table to _ENV upvalue
 			lua_setupvalue(dmlEngine.luaState, -2, 1);
 			// Execute component code
 			dmlEngine.execute();
 
 			dquick.script.iItemBinding.IItemBinding	iItemBinding = dmlEngine.rootItemBinding!(dquick.script.iItemBinding.IItemBinding)();
-			if (iItemBinding is null)
-				throw new Exception("\"Button\" component has no root item");
+			if (iItemBinding is null || iItemBinding == previousRootItem)
+			{
+				string	componentName = baseName(stripExtension(path));
+				throw new Exception(format("\"%s\" component has no root item", componentName));
+			}
 
 			string	componentId;
 			lua_pushstring(L, "id");
@@ -1236,7 +1991,7 @@ extern(C)
 					lua_pushvalue(L, -1);
 					lua_rawget(L, -3); // Raw get without calling index metamethod to not get parent components values
 					if (lua_isnil(L, -1) == false)
-						throw new Exception(format("An item with id \"%s\" already exist in that component", componentId));
+						throw new Exception(format("an item with id \"%s\" already exist in that component", componentId));
 					lua_pop(L, 1);
 				}
 
@@ -1250,7 +2005,7 @@ extern(C)
 		}
 		catch (Throwable e)
 		{
-			writeln(e.toString());
+			luaError(L, e.msg);
 			return 0;
 		}
 	}
