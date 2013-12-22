@@ -13,7 +13,9 @@ import dquick.utils.resourceManager;
 
 ResourceManager	resourceManager;
 
-shared static this()
+// TODO check potential issue with unload and the resources management (it's certainly possible to get a corrupted image)
+
+static this()
 {
 	writeln("dquick.media.image : shared static this()");
 	resourceManager = new ResourceManager();
@@ -21,7 +23,7 @@ shared static this()
 	// Images are transformed to textures, only fonts will stay in RAM
 }
 
-shared static ~this()
+static ~this()
 {
 	writeln("dquick.media.image : shared static ~this()");
 	resourceManager = null;
