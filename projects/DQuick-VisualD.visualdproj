@@ -1254,7 +1254,6 @@
      <File path="..\src\dquick\media\devil\devilLoaderWriter.d" />
     </Folder>
     <File path="..\src\dquick\media\font.d" />
-    <File path="..\src\dquick\media\geometry.d" />
     <File path="..\src\dquick\media\image.d" />
     <File path="..\src\dquick\media\imageData.d" />
    </Folder>
