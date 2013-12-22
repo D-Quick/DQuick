@@ -525,20 +525,6 @@ class ItemBinding(T) : ItemBindingBase!(T) // Proxy that auto bind T
 		this(item);
 	}
 
-	~this()
-	{
-		foreach (member; __traits(allMembers, typeof(this)))
-		{
-			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
-			{
-				assert(__traits(getMember, this, member) !is null);
-				.destroy(__traits(getMember, this, member));
-			}
-		}
-
-		.destroy(item);
-	}
-
 	T	item;
 
 	dquick.script.dmlEngine.DMLEngine	dmlEngine2()
