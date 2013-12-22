@@ -17,50 +17,44 @@ public:
 	@property void		id(string id) {mId = id;}
 	@property string	id() {return mId;}
 
-	@property void				parent(DeclarativeItem parent) {mParent = parent;}
+	@property void		parent(DeclarativeItem parent)
+	{
+		// detach item from its previous parent
+		if (mParent !is null)
+			mParent.removeChild(this);
+		if (parent !is null)
+			parent.addChild(this);
+	}
 	@property DeclarativeItem	parent() {return mParent;}
 	
 	this(DeclarativeItem parent = null)
 	{
-		if(parent !is null)
+		if (parent !is null)
 			parent.addChild(this);
 	}
 	
-	~this()
-	{
-		foreach(child; mChildren)
-			child.detach();
-	}
-
 	void	addChild(DeclarativeItem item)
 	{
 		// detach item from its previous parent
-		if(item.parent !is null)
+		if (item.parent !is null)
 			item.parent.removeChild(item);
 		
 		mChildren ~= item;
-		item.parent = this;
+		item.mParent = this;
 	}
 	
 	void	removeChild(DeclarativeItem item)
 	{
-		for(uint i = 0; i < mChildren.length; )
+		for (uint i = 0; i < mChildren.length; )
 		{
-			if(mChildren[i] is item)
+			if (mChildren[i] is item)
+			{
+				mChildren[i].mParent = null;
 				mChildren = mChildren[0..i] ~ mChildren[i+1..$];
+			}
 			else
 				++i;
 		}
-	}
-	
-	/* This function is called by parent/window when parent is destroyed.
-	 * Children should release resources here.
-	 */
-	void	detach()
-	{
-		foreach(child; mChildren)
-			child.detach();
-		mChildren = null;
 	}
 
 	void	paint(bool transformationUpdated)
