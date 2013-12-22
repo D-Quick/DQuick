@@ -2,12 +2,6 @@ module dquick.script.dmlEngineCore;
 
 import derelict.lua.lua;
 
-import dquick.item.declarativeItem;
-import dquick.item.graphicItem;
-import dquick.item.imageItem;
-
-import dquick.system.window;
-
 import dquick.script.propertyBinding;
 import dquick.script.utils;
 import dquick.script.itemBinding;
@@ -24,6 +18,8 @@ import std.path;
 
 version(unittest)
 {
+	import dquick.item.declarativeItem;
+	import std.signals;
 	class SimpleItem : dquick.script.iItemBinding.IItemBinding
 	{
 		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
@@ -1583,7 +1579,6 @@ protected:
 	dquick.script.iItemBinding.IItemBinding			mLastItemBindingCreated;
 	
 	package lua_State*	luaState;
-	IWindow		mWindow;
 	package dquick.script.propertyBinding.PropertyBinding[]		currentlyExecutedBindingStack;
 	package dquick.script.propertyBinding.PropertyBinding		propertyBindingBeeingSet;
 	string		itemTypeIds;

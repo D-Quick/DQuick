@@ -274,7 +274,6 @@ static string	BASE_ITEM_BINDING()
 							alias ParameterTypeTuple!(overload) MyParameterTypeTuple;
 							static if (MyParameterTypeTuple.length == 1)
 							{
-								DeclarativeItem	test = cast(DeclarativeItem)child;
 								MyParameterTypeTuple[0]	castedItemBinding = cast(MyParameterTypeTuple[0])(child);
 								if (castedItemBinding !is null)
 								{
@@ -320,12 +319,10 @@ static string	genProperties(T)()
 			alias PropertyType!(T, member)	MyPropertyType;
 			static if (is(MyPropertyType == void) == false) // Property
 			{
-				static if (__traits(compiles, fullyQualifiedName2!(MyPropertyType))) // Hack because of a bug in fullyQualifiedName
+				static if (__traits(compiles, fullyQualifiedName2!(MyPropertyType)) && // Hack because of a bug in fullyQualifiedName
+						   member != "__ctor") 
 				{
-					static if (member == "__ctor")
-						continue;
-
-					static if (is(MyPropertyType : dquick.item.declarativeItem.DeclarativeItem))
+					static if (is(MyPropertyType : Object))
 					{
 										
 						result ~= format("	void															__%s(%s value) {
