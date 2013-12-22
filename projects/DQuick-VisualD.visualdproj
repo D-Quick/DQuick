@@ -1133,7 +1133,6 @@
    <Folder name="algorithms">
     <File path="..\src\dquick\algorithms\atlas.d" />
     <File path="..\src\dquick\algorithms\scheduler.d" />
-    <File path="..\src\dquick\algorithms\textToGeometry.d" />
     <File path="..\src\dquick\algorithms\weak.d" />
    </Folder>
    <Folder name="animation">
