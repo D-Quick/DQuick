@@ -1,13 +1,6 @@
 module dquick.script.dmlEngine;
 
 import derelict.lua.lua;
-
-import dquick.item.declarativeItem;
-import dquick.item.graphicItem;
-import dquick.item.imageItem;
-
-import dquick.system.window;
-
 import dquick.script.propertyBinding;
 import dquick.script.utils;
 
@@ -22,6 +15,8 @@ import std.c.string;
 
 version(unittest)
 {
+	import dquick.item.declarativeItem;
+	import std.signals;
 	class SimpleItem
 	{
 		string	id() { return mId; }
@@ -1393,5 +1388,5 @@ private:
 		dquick.script.iItemBinding.IItemBinding	iItemBinding;
 		uint										count;
 	}
-	ItemRefCounting[DeclarativeItem]	mItemsToItemBindings;
+	ItemRefCounting[Object]	mItemsToItemBindings;
 }

@@ -10,7 +10,6 @@ import derelict.lua.lua;
 
 import dquick.script.dmlEngine;
 import dquick.script.iItemBinding;
-import dquick.item.declarativeItem;
 
 class PropertyBinding
 {
@@ -197,11 +196,6 @@ class PropertyBinding
 	void	valueToLua(lua_State* L)
 	{
 		executeBinding();
-		//writefln("id = %s", declarativeItem.id);
-		// Register acces to value for property binding auto update
-		//if (currentlyExecutedBindingStack.length > 100)
-		//	writefln("currentlyExecutedBindingStack.length = %d", currentlyExecutedBindingStack.length);
-
 		if (itemBinding.dmlEngine.currentlyExecutedBindingStack.length > 0)
 		{
 			assert(itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1] !is this);
