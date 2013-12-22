@@ -1367,8 +1367,6 @@ public:
 		lua_getglobal(luaState, "_G");
 		assert(lua_istable(luaState, -1));
 		mEnvStack ~= luaL_ref(luaState, LUA_REGISTRYINDEX);
-
-		isLastPropertyAssignmentFromDMLEngine = false;
 	}
 
 	void	destroy()
@@ -1587,7 +1585,7 @@ protected:
 	package lua_State*	luaState;
 	IWindow		mWindow;
 	package dquick.script.propertyBinding.PropertyBinding[]		currentlyExecutedBindingStack;
-	package bool	isLastPropertyAssignmentFromDMLEngine;
+	package dquick.script.propertyBinding.PropertyBinding		propertyBindingBeeingSet;
 	string		itemTypeIds;
 	package int	mReentrencyLevel;
 	int[string]	mComponentLuaReferences;

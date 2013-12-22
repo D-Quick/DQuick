@@ -140,10 +140,10 @@ class PropertyBinding
 					throw new Exception(format("too few or too many return values on property binding %s.%s, got %d, expected 1", itemBinding.id, propertyName, lua_gettop(itemBinding.dmlEngine.luaState) - top));
 			}
 
-			// Put this bool so that onChanged can detect it's a value change from binding or from D
-			itemBinding.dmlEngine.isLastPropertyAssignmentFromDMLEngine = true;
+			// Put this so that onChanged can detect it's a value change from binding or from D
+			itemBinding.dmlEngine.propertyBindingBeeingSet = this;
 			valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
-			itemBinding.dmlEngine.isLastPropertyAssignmentFromDMLEngine = false;
+			itemBinding.dmlEngine.propertyBindingBeeingSet = null;
 		}
 	}
 
@@ -155,7 +155,7 @@ class PropertyBinding
 		if (itemBinding.creating == false)
 		{
 			// Detect assignment from D that compete with his binding
-			if (itemBinding.dmlEngine.isLastPropertyAssignmentFromDMLEngine == false && luaReference != -1)
+			if (itemBinding.dmlEngine.propertyBindingBeeingSet !is this && luaReference != -1)
 			{
 				dirty = true;
 				executeBinding();
