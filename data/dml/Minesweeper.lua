@@ -42,13 +42,11 @@ function calculateStatus()
 end
 
 function calculateCheat()
-	local allFlipped = true
 	local row = 0	
 	while getTile(row, 0) do	
 		local col = 0
 		while getTile(row, col) do
 			if getTile(row, col).containsMouse and getTile(row, col).hasMine then
-				
 				return true
 			end
 			col = col + 1
@@ -59,7 +57,6 @@ function calculateCheat()
 end
 
 function init()
-	local allFlipped = true
 	local row = 0	
 	while getTile(row, 0) do	
 		local col = 0

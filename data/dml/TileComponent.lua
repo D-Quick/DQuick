@@ -17,7 +17,7 @@ Image {
 	source = "images/Minesweeper/back.png",
 	flipped = false,
 	onFlippedChanged = function()
-		if nearbyMineCount == 0 then
+		if flipped == true and nearbyMineCount == 0 then
 			if getTile(row-1, col-1) and getTile(row-1, col-1).hasMine == false then
 				getTile(row-1, col-1).flipped = true
 			end
@@ -157,9 +157,6 @@ Image {
 		onPressedChanged = function()
 			if pressed == false then
 				comproot.flipped = true
-				if comproot.hasMine then
-					root.status = "lost"
-				end
 			end
 		end,
 	}
