@@ -2,22 +2,12 @@ module dquick.media.devil.devilLoaderWriter;
 
 import dquick.media.imageData;
 import derelict.devil.il;
+
+import std.stdio;
 import std.string;
 
 class DevilLoaderWriter : ImageLoader, ImageWriter
 {	
-	static this()
-	{
-		DerelictIL.load();
-		ilInit();
-		ilEnable(IL_FILE_OVERWRITE);
-	}
-	
-	static ~this()
-	{
-		DerelictIL.unload();
-	}
-	
 	@property string name() const{ return "DevIL"; }
 
 	bool load(in string fileName, ref ImageData data) const
@@ -101,4 +91,18 @@ private
 			return ImageData.Format.Invalid;
 		}
 	}
+}
+
+static this()
+{
+	writeln("dquick.media.devil.devilLoaderWriter : static this()");
+	DerelictIL.load();
+	ilInit();
+	ilEnable(IL_FILE_OVERWRITE);
+}
+
+static ~this()
+{
+	writeln("dquick.media.devil.devilLoaderWriter : static this()");
+	DerelictIL.unload();
 }
