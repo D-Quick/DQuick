@@ -112,6 +112,36 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 			value = lua_tonumber(L, index);
 		else if (lua_isstring(L, index))
 			value = to!(string)(lua_tostring(L, index));
+		else if (lua_istable(L, index))
+		{
+			assert(false, "Unfinished");
+			/+int	count = 0;
+			/* table is in the stack at index 't' */
+			lua_pushnil(L);  /* first key */
+			while (lua_next(L, -2) != 0) {
+				/* uses 'key' (at index -2) and 'value' (at index -1) */
+
+				if (count == 0) // First element set the type of the array
+				{
+					if (lua_isboolean(L, -1))
+						value = new bool[0];
+					else if (lua_isnumber(L, index))
+						value = new ReturnType!(lua_tonumber)[0];
+					else if (lua_isstring(L, index))
+						value = new string[0];
+					else
+						throw new Exception(format("Lua value at index %d is a %s that contains a %s, only numbers, booleans or strings was expected", index, getLuaTypeName(L, -3), getLuaTypeName(L, -1)));
+				}
+
+				value ~= 10;
+				//value.length++;
+				Variant	subValue;
+				valueFromLua!(typeof(value[value.length - 1]))(L, -1, subValue);
+
+				/* removes 'value'; keeps 'key' for next iteration */
+				lua_pop(L, 1);
+			}+/
+		}
 		else
 			throw new Exception(format("Lua value at index %d is a %s, a number, boolean or string was expected", index, getLuaTypeName(L, index)));
 	}
@@ -154,6 +184,43 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 				throw new Exception(format("Lua value at index %d is not an item", index));
 
 			value = cast(T)(luaUserData.iItemBinding);
+		}
+	}
+	else static if (isArray!T)
+	{
+		static if (isDynamicArray!T == false && isStaticArray!T == false)
+			static assert(false);
+
+		if (!lua_istable(L, index))
+			throw new Exception(format("Lua value at index %d is a %s, a table was expected", index, getLuaTypeName(L, index)));
+
+		static if (isDynamicArray!T)
+			value.clear();
+
+		int	count = 0;
+		/* table is in the stack at index 't' */
+		lua_pushnil(L);  /* first key */
+		while (lua_next(L, -2) != 0) {
+			/* uses 'key' (at index -2) and 'value' (at index -1) */
+
+			static if (isDynamicArray!T)
+				value.length++;
+			else if (isStaticArray!T)
+			{
+				if (count >= value.length)
+					throw new Exception(format("Lua value at index %d is a %s that overflows", index, getLuaTypeName(L, -3)));
+			}
+			valueFromLua!(typeof(value[count]))(L, -1, value[count]);
+
+			/* removes 'value'; keeps 'key' for next iteration */
+			lua_pop(L, 1);
+
+			count++;
+		}
+		static if (isStaticArray!T)
+		{
+			if (count != value.length)
+				throw new Exception(format("Lua value at index %d is a %s that underflows", index, getLuaTypeName(L, -3)));
 		}
 	}
 	else
@@ -209,6 +276,16 @@ void	valueToLua(T)(lua_State* L, T value)
 			lua_settable(L, -3);
 
 			lua_setmetatable(L, -2);
+		}
+	}
+	else static if (isArray!T)
+	{
+		lua_newtable(L);
+		for (int index = 0; index < value.length; index++)
+		{
+			lua_pushnumber(L, index + 1);
+			valueToLua!(typeof(value[index]))(L, value[index]);
+			lua_settable(L, -3);
 		}
 	}
 	else

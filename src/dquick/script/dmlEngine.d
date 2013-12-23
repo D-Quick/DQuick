@@ -86,6 +86,7 @@ version(unittest)
 		{
 			enumVal1,
 			enumVal2,
+			enumVal3,
 		}
 		void	nativeEnumProperty(Enum value)
 		{
@@ -125,6 +126,51 @@ version(unittest)
 		}
 		mixin Signal!(SubItem) onNativeSubItemChanged;
 		SubItem		mNativeSubItem;
+
+		void	nativePropertyArray(int[] value)
+		{
+			if (mNativePropertyArray != value)
+			{
+				mNativePropertyArray = value;
+				onNativePropertyArrayChanged.emit(value);
+			}
+		}
+		int[]		nativePropertyArray()
+		{
+			return mNativePropertyArray;
+		}
+		mixin Signal!(int[]) onNativePropertyArrayChanged;
+		int[]		mNativePropertyArray;
+
+		void	nativePropertyDoubleArray(string[][] value)
+		{
+			if (mNativePropertyDoubleArray != value)
+			{
+				mNativePropertyDoubleArray = value;
+				onNativePropertyDoubleArrayChanged.emit(value);
+			}
+		}
+		string[][]		nativePropertyDoubleArray()
+		{
+			return mNativePropertyDoubleArray;
+		}
+		mixin Signal!(string[][]) onNativePropertyDoubleArrayChanged;
+		string[][]		mNativePropertyDoubleArray;
+
+		void	nativePropertyStaticDoubleArray(Enum[3][2] value)
+		{
+			if (mNativePropertyStaticDoubleArray != value)
+			{
+				mNativePropertyStaticDoubleArray = value;
+				onNativePropertyStaticDoubleArrayChanged.emit(value);
+			}
+		}
+		Enum[3][2]		nativePropertyStaticDoubleArray()
+		{
+			return mNativePropertyStaticDoubleArray;
+		}
+		mixin Signal!(Enum[3][2]) onNativePropertyStaticDoubleArrayChanged;
+		Enum[3][2]		mNativePropertyStaticDoubleArray;
 	}
 
 	int	testSumFunctionBinding(int a, int b)
@@ -1266,6 +1312,219 @@ unittest
 	{
 		auto m = mismatch(e.msg, "too few or too many return values on property binding checkError43Item.nativeProperty, got 2, expected 1");
 		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Simple array from lua to D
+	{
+		string lua = q"(
+			Item {
+				id = "array1",
+				nativePropertyArray = {10, 20, 30}
+			}
+		)";
+		dmlEngine.execute(lua, "Simple array from lua to D");
+		assert(dmlEngine.getLuaGlobal!Item("array1").nativePropertyArray == [10, 20, 30]);
+	}
+
+	// Array error 1
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "arrayError1",
+				nativePropertyArray = 10
+			}
+		)";
+		dmlEngine.execute(lua, "Array error 1");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "Lua value at index -1 is a number, a table was expected\n\t[D] in function Item\n\t[string \"Array error 1\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Array error 2
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "arrayError2",
+				nativePropertyArray = {10, "test", 30}
+			}
+		)";
+		dmlEngine.execute(lua, "Array error 2");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "Lua value at index -1 is a string, a number was expected\n\t[D] in function Item\n\t[string \"Array error 2\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Simple array from lua to D in virtual property
+	{
+		string lua = q"(
+			Item {
+				id = "array2",
+				virtualPropertyArray = {10, 20, 30 }
+			}
+			array2.nativePropertyArray = array2.virtualPropertyArray
+		)";
+		dmlEngine.execute(lua, "Simple array from lua to D in virtual property");
+		assert(dmlEngine.getLuaGlobal!Item("array2").nativePropertyArray == [10, 20, 30]);
+	}
+
+	// Simple array from D to lua
+	{
+		Item	array3 = new Item;
+		dmlEngine.addObject(array3, "array3");
+		array3.nativePropertyArray = [100, 200, 300];
+		string lua = q"(
+			test = array3.nativePropertyArray
+		)";
+		dmlEngine.execute(lua, "Simple array from D to lua");
+		assert(dmlEngine.getLuaGlobal!(int[])("test") == [100, 200, 300]);
+	}
+
+	// Double array from lua to D
+	{
+		string lua = q"(
+			Item {
+				id = "array4",
+				nativePropertyDoubleArray = {
+					{"10", "20", "30"},
+					{"100", "200", "300"}
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Double array from lua to D");
+		assert(dmlEngine.getLuaGlobal!Item("array4").nativePropertyDoubleArray == [["10", "20", "30"], ["100", "200", "300"]]);
+	}
+
+	// Double array from lua to D in virtual property
+	{
+		string lua = q"(
+			Item {
+				id = "array5",
+				virtualPropertyDoubleArray = {
+					{"10", "20", "30"},
+					{"100", "200", "300"}
+				}
+			}
+			array5.nativePropertyDoubleArray = array5.virtualPropertyDoubleArray
+		)";
+		dmlEngine.execute(lua, "Double array from lua to D in virtual property");
+		assert(dmlEngine.getLuaGlobal!Item("array5").nativePropertyDoubleArray == [["10", "20", "30"], ["100", "200", "300"]]);
+	}
+
+	// Double array from D to lua
+	{
+		Item	array6 = new Item;
+		dmlEngine.addObject(array6, "array6");
+		array6.nativePropertyDoubleArray = [["100", "200", "300"], ["1000", "2000", "3000"]];
+		string lua = q"(
+			test = array6.nativePropertyDoubleArray
+		)";
+		dmlEngine.execute(lua, "Double array from D to lua");
+		assert(dmlEngine.getLuaGlobal!(string[][])("test") == [["100", "200", "300"], ["1000", "2000", "3000"]]);
+	}
+
+	// Static double array from lua to D
+	{
+		string lua = q"(
+			Item {
+				id = "array7",
+				nativePropertyStaticDoubleArray = {
+					{Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3},
+					{Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3}
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Static double array from lua to D");
+		assert(dmlEngine.getLuaGlobal!Item("array7").nativePropertyStaticDoubleArray == [
+			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3],
+			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3]
+		]);
+	}
+
+	// Array error 3
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "arrayError3",
+				nativePropertyStaticDoubleArray = {
+					{Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3},
+					{Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3, Item.Enum.enumVal3}
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Array error 3");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "Lua value at index -1 is a table that overflows\n\t[D] in function Item\n\t[string \"Array error 3\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Array error 4
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "arrayError3",
+				nativePropertyStaticDoubleArray = {
+					{Item.Enum.enumVal1, Item.Enum.enumVal2},
+					{Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3}
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Array error 4");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "Lua value at index -1 is a table that underflows\n\t[D] in function Item\n\t[string \"Array error 4\"]:2");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Static double array from lua to D in virtual property
+	{
+		string lua = q"(
+			Item {
+				id = "array8",
+				virtualPropertyStaticDoubleArray = {
+					{Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3},
+					{Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3}
+				}
+			}
+			array8.nativePropertyStaticDoubleArray = array8.virtualPropertyStaticDoubleArray
+		)";
+		dmlEngine.execute(lua, "Static double array from lua to D in virtual property");
+		assert(dmlEngine.getLuaGlobal!Item("array8").nativePropertyStaticDoubleArray == [
+			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3],
+			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3]
+		]);
+	}
+
+	// Static double array from D to lua
+	{
+		Item	array9 = new Item;
+		dmlEngine.addObject(array9, "array9");
+		Item.Enum[3][2]	a;
+		a[0][0] = Item.Enum.enumVal1;
+		a[0][1] = Item.Enum.enumVal2;
+		a[0][2] = Item.Enum.enumVal3;
+		a[1][0] = Item.Enum.enumVal1;
+		a[1][1] = Item.Enum.enumVal2;
+		a[1][2] = Item.Enum.enumVal3;
+		array9.nativePropertyStaticDoubleArray = a;
+		string lua = q"(
+			test = array9.nativePropertyStaticDoubleArray
+		)";
+		dmlEngine.execute(lua, "Static double array from D to lua");
+		assert(dmlEngine.getLuaGlobal!(Item.Enum[3][2])("test") == [
+			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3],
+			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3]
+		]);
 	}
 }
 
