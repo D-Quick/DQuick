@@ -13,7 +13,7 @@ import dquick.script.iItemBinding;
 
 class VirtualPropertyBinding : PropertyBinding
 {
-	Variant	value;
+	int	valueRef = -1;
 
 	this(IItemBinding itemBinding, string propertyName)
 	{
@@ -22,13 +22,20 @@ class VirtualPropertyBinding : PropertyBinding
 
 	override void	valueFromLua(lua_State* L, int index, bool popFromStack = false)
 	{
-		Variant	newValue;
-		dquick.script.utils.valueFromLua!Variant(L, index, newValue);
-		if (popFromStack)
-			lua_remove(L, index);
-		if (newValue != value)
+		int	equal;
+		if (valueRef != -1)
 		{
-			value = newValue;
+			lua_rawgeti(L, LUA_REGISTRYINDEX, valueRef);
+			equal = lua_compare(L, -2, -1, LUA_OPWQ);
+			lua_pop(L, 1);
+		}
+		if (valueRef == -1 || equal != 1)
+		{
+			if (valueRef != -1)
+				luaL_unref(L, LUA_REGISTRYINDEX, valueRef);
+			if (popFromStack == false)
+				lua_pushvalue(L, -1); // Composensate luaL_ref's pop
+			valueRef = luaL_ref(L, LUA_REGISTRYINDEX);
 			onChanged();
 		}
 	}
@@ -36,6 +43,7 @@ class VirtualPropertyBinding : PropertyBinding
 	override void	valueToLua(lua_State* L)
 	{
 		super.valueToLua(L);
-		dquick.script.utils.valueToLua!Variant(L, value);
+		assert(valueRef != -1);
+		lua_rawgeti(L, LUA_REGISTRYINDEX, valueRef);
 	}
 }
