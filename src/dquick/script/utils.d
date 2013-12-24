@@ -186,11 +186,8 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 			value = cast(T)(luaUserData.iItemBinding);
 		}
 	}
-	else static if (isArray!T)
+	else static if (isDynamicArray!T || isStaticArray!T)
 	{
-		static if (isDynamicArray!T == false && isStaticArray!T == false)
-			static assert(false);
-
 		if (!lua_istable(L, index))
 			throw new Exception(format("Lua value at index %d is a %s, a table was expected", index, getLuaTypeName(L, index)));
 
@@ -221,6 +218,29 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 		{
 			if (count != value.length)
 				throw new Exception(format("Lua value at index %d is a %s that underflows", index, getLuaTypeName(L, -3)));
+		}
+	}
+	else static if (isAssociativeArray!T)
+	{
+		if (!lua_istable(L, index))
+			throw new Exception(format("Lua value at index %d is a %s, a table was expected", index, getLuaTypeName(L, index)));
+
+		value.clear();
+
+		KeyType!T	key;
+		typeof(value[key])	elemValue;
+
+		/* table is in the stack at index 't' */
+		lua_pushnil(L);  /* first key */
+		while (lua_next(L, -2) != 0) {
+			/* uses 'key' (at index -2) and 'value' (at index -1) */
+
+			valueFromLua!(typeof(key))(L, -2, key);
+			valueFromLua!(typeof(elemValue))(L, -1, elemValue);
+			value[key] = elemValue;
+
+			/* removes 'value'; keeps 'key' for next iteration */
+			lua_pop(L, 1);
 		}
 	}
 	else
@@ -278,13 +298,23 @@ void	valueToLua(T)(lua_State* L, T value)
 			lua_setmetatable(L, -2);
 		}
 	}
-	else static if (isArray!T)
+	else static if (isDynamicArray!T || isStaticArray!T)
 	{
 		lua_newtable(L);
 		for (int index = 0; index < value.length; index++)
 		{
 			lua_pushnumber(L, index + 1);
 			valueToLua!(typeof(value[index]))(L, value[index]);
+			lua_settable(L, -3);
+		}
+	}
+	else static if (isAssociativeArray!T)
+	{
+		lua_newtable(L);
+		foreach (key, elemValue; value)
+		{
+			valueToLua!(typeof(key))(L, key);
+			valueToLua!(typeof(elemValue))(L, elemValue);
 			lua_settable(L, -3);
 		}
 	}

@@ -101,6 +101,9 @@ version(unittest)
 
 			nativePropertyStaticDoubleArrayProperty = new typeof(nativePropertyStaticDoubleArrayProperty)(this, this);
 			onNativePropertyStaticDoubleArrayChanged.connect(&nativePropertyStaticDoubleArrayProperty.onChanged); // Signal
+
+			nativePropertyDoubleMapProperty = new typeof(nativePropertyDoubleMapProperty)(this, this);
+			onNativePropertyDoubleMapChanged.connect(&nativePropertyDoubleMapProperty.onChanged); // Signal
 		}
 
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, Item, "id")	idProperty;
@@ -233,6 +236,22 @@ version(unittest)
 		}
 		mixin Signal!(Enum[3][2]) onNativePropertyStaticDoubleArrayChanged;
 		Enum[3][2]		mNativePropertyStaticDoubleArray;
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(float[int][string], Item, "nativePropertyDoubleMap")	nativePropertyDoubleMapProperty;
+		void	nativePropertyDoubleMap(float[int][string] value)
+		{
+			if (mNativePropertyDoubleMap != value)
+			{
+				mNativePropertyDoubleMap = value;
+				onNativePropertyDoubleMapChanged.emit(value);
+			}
+		}
+		float[int][string]		nativePropertyDoubleMap()
+		{
+			return mNativePropertyDoubleMap;
+		}
+		mixin Signal!(float[int][string]) onNativePropertyDoubleMapChanged;
+		float[int][string]		mNativePropertyDoubleMap;
 	}
 
 	int	testSumFunctionBinding(int a, int b)
@@ -1586,6 +1605,74 @@ unittest
 		assert(dmlEngine.getLuaGlobal!(Item.Enum[3][2])("test") == [
 			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3],
 			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3]
+		]);
+	}
+
+	// Double map from lua to D
+	{
+		string lua = q"(
+			Item {
+				id = "array10",
+				nativePropertyDoubleMap = {
+					test1 = {
+						[10] = 100.0,
+						[20] = 200.0,
+						[30] = 300.0
+					},
+					test2 = {
+						[1000] = 10000.0,
+						[2000] = 20000.0,
+						[3000] = 30000.0
+					}
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Double map from lua to D");
+		assert(dmlEngine.getLuaGlobal!Item("array10").nativePropertyDoubleMap == [
+			"test1" : [
+				10 : 100.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
+		]);
+	}
+
+	// Double map from D to lua
+	{
+		Item	array11 = new Item;
+		dmlEngine.addObjectBinding(array11, "array11");
+		array11.nativePropertyDoubleMap = [
+			"test1" : [
+				10 : 100.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
+		];
+		string lua = q"(
+			test = array11.nativePropertyDoubleMap
+		)";
+		dmlEngine.execute(lua, "Double map from D to lua");
+		assert(dmlEngine.getLuaGlobal!(float[int][string])("test") == [
+			"test1" : [
+				10 : 100.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
 		]);
 	}
 
