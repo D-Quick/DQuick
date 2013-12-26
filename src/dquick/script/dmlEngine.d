@@ -171,6 +171,21 @@ version(unittest)
 		}
 		mixin Signal!(Enum[3][2]) onNativePropertyStaticDoubleArrayChanged;
 		Enum[3][2]		mNativePropertyStaticDoubleArray;
+
+		void	nativePropertyDoubleMap(float[int][string] value)
+		{
+			if (mNativePropertyDoubleMap != value)
+			{
+				mNativePropertyDoubleMap = value;
+				onNativePropertyDoubleMapChanged.emit(value);
+			}
+		}
+		float[int][string]		nativePropertyDoubleMap()
+		{
+			return mNativePropertyDoubleMap;
+		}
+		mixin Signal!(float[int][string]) onNativePropertyDoubleMapChanged;
+		float[int][string]		mNativePropertyDoubleMap;
 	}
 
 	int	testSumFunctionBinding(int a, int b)
@@ -1339,7 +1354,7 @@ unittest
 	}
 	catch (Throwable e)
 	{
-		auto m = mismatch(e.msg, "Lua value at index -1 is a number, a table was expected\n\t[D] in function Item\n\t[string \"Array error 1\"]:2");
+		auto m = mismatch(e.msg, "Lua value at index -1 is a number, a table or a userdata was expected\n\t[D] in function Item\n\t[string \"Array error 1\"]:2");
 		assert(m[0] == "" && m[1] == "");
 	}
 
@@ -1471,7 +1486,7 @@ unittest
 	{
 		string lua = q"(
 			Item {
-				id = "arrayError3",
+				id = "arrayError4",
 				nativePropertyStaticDoubleArray = {
 					{Item.Enum.enumVal1, Item.Enum.enumVal2},
 					{Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3}
@@ -1525,6 +1540,165 @@ unittest
 			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3],
 			[Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3]
 		]);
+	}
+
+	// Double map from lua to D
+	{
+		string lua = q"(
+			Item {
+				id = "array10",
+				nativePropertyDoubleMap = {
+					test1 = {
+						[10] = 100.0,
+						[20] = 200.0,
+						[30] = 300.0
+					},
+					test2 = {
+						[1000] = 10000.0,
+						[2000] = 20000.0,
+						[3000] = 30000.0
+					}
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "Double map from lua to D");
+		assert(dmlEngine.getLuaGlobal!Item("array10").nativePropertyDoubleMap == [
+			"test1" : [
+				10 : 100.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
+		]);
+	}
+
+	// Double map from D to lua
+	{
+		Item	array11 = new Item;
+		dmlEngine.addObject(array11, "array11");
+		array11.nativePropertyDoubleMap = [
+			"test1" : [
+				10 : 100.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
+		];
+		string lua = q"(
+			test = array11.nativePropertyDoubleMap
+		)";
+		dmlEngine.execute(lua, "Double map from D to lua");
+		assert(dmlEngine.getLuaGlobal!(float[int][string])("test") == [
+			"test1" : [
+				10 : 100.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
+		]);
+	}
+
+	// Check that double array from D to lua are passed by reference
+	{
+		Item	array12 = new Item;
+		dmlEngine.addObject(array12, "array12");
+		array12.nativePropertyDoubleMap = [
+			"test1" : [
+				10 : 100.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
+		];
+		string lua = q"(
+			test = array12.nativePropertyDoubleMap
+			test["test1"][10] = test["test2"][1000]
+		)";
+		dmlEngine.execute(lua, "Check that double map from D to lua are passed by reference");
+		assert(dmlEngine.getLuaGlobal!(float[int][string])("test") == [
+			"test1" : [
+				10 : 10000.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
+		]);
+	}
+
+	// Check that double map from D to lua are passed by reference
+	{
+		Item	array13 = new Item;
+		dmlEngine.addObject(array13, "array13");
+		array13.nativePropertyDoubleArray = [
+			["100", "200", "300"],
+			["10000", "20000", "30000"]
+		];
+		string lua = q"(
+			test = array13.nativePropertyDoubleArray
+			test[0][0] = test[1][0]
+		)";
+		dmlEngine.execute(lua, "Check that double map from D to lua are passed by reference");
+		assert(dmlEngine.getLuaGlobal!(string[][])("test") == [
+			["10000", "200", "300"],
+			["10000", "20000", "30000"]
+		]);
+	}
+
+	// Array error 5
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "arrayError5",
+			}
+			arrayError5.nativePropertyDoubleArray[0][0] = "10"
+		)";
+		dmlEngine.execute(lua, "Array error 5");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "[string \"Array error 5\"]:5: attempt to index field '?' (a nil value)");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Array error 6
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "arrayError6",
+			}
+			arrayError6.nativePropertyDoubleArray = {
+				{}
+			}
+			arrayError6.nativePropertyDoubleArray[0][0] = "10"
+		)";
+		dmlEngine.execute(lua, "Array error 6");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "the key value 0 is out of bound\n\t[D] in function __newindex\n\t[string \"Array error 6\"]:8");
+		assert(m[0] == "" && m[1] == "");
 	}
 }
 
