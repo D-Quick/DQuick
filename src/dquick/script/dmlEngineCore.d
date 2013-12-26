@@ -2213,7 +2213,7 @@ extern(C)
 					{
 						found = true;
 						__traits(getMember, itemBinding, member).bindingFromLua(L, 1);
-						return 1;
+						return 0;
 					}
 				}
 			}
@@ -2223,7 +2223,7 @@ extern(C)
 			{
 				virtualProperty.bindingFromLua(L, 1);
 				virtualProperty.executeBinding();
-				return 1;
+				return 0;
 			}
 
 			throw new Exception(format("property \"%s\" doesn't exist on object \"%s\"", propertyId, itemBinding.id));
@@ -2242,9 +2242,7 @@ extern(C)
 		{
 			static assert(__traits(isStaticFunction, func), "func must be a function");
 
-			luaCallD!(func)(L, 1);
-
-			return 1;
+			return luaCallD!(func)(L, 1);
 		}
 		catch (Throwable e)
 		{
@@ -2276,9 +2274,7 @@ extern(C)
 			lua_remove(L, 1);
 			assert(itemBinding !is null);
 
-			luaCallThisD!(methodName, T)(itemBinding, L, 1);
-
-			return 1;
+			return luaCallThisD!(methodName, T)(itemBinding, L, 1);
 		}
 		catch (Throwable e)
 		{
@@ -2336,7 +2332,7 @@ extern(C)
 				lua_setglobal(dmlEngine.luaState, varName.toStringz());
 			}*/
 
-			return 1;
+			return 0;
 		}
 		catch (Throwable e)
 		{

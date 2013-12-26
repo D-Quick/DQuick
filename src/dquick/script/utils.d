@@ -454,7 +454,7 @@ void	methodToLua(T, string methodName)(lua_State* L, T object)
 	}
 }
 
-void	luaCallD(alias func)(lua_State* L, int firstParamIndex)
+int	luaCallD(alias func)(lua_State* L, int firstParamIndex)
 {			
 	//static assert(isSomeFunction!func, "func must be a function or a method");
 	static assert(__traits(isStaticFunction, func), "func must be a static function");
@@ -473,17 +473,21 @@ void	luaCallD(alias func)(lua_State* L, int firstParamIndex)
 	// Call D function
 	alias ReturnType!func	returnType;
 	static if (is(returnType == void))
+	{
 		func(parameterTuple);
+		return 0;
+	}
 	else
 	{
 		returnType returnVal = func(parameterTuple);
 
 		// Write return value into lua stack
 		valueToLua(L, returnVal);
+		return 1;
 	}
 }
 
-void	luaCallThisD(string funcName, T)(T thisRef, lua_State* L, int firstParamIndex)
+int	luaCallThisD(string funcName, T)(T thisRef, lua_State* L, int firstParamIndex)
 {
 	static assert(isSomeFunction!(__traits(getMember, T, funcName)) &&
 				  !__traits(isStaticFunction, __traits(getMember, T, funcName)) &&
@@ -506,6 +510,7 @@ void	luaCallThisD(string funcName, T)(T thisRef, lua_State* L, int firstParamInd
 	static if (is(returnType == void))
 	{
 		__traits(getMember, thisRef, funcName)(parameterTuple);
+		return 0;
 	}
 	else
 	{
@@ -513,6 +518,7 @@ void	luaCallThisD(string funcName, T)(T thisRef, lua_State* L, int firstParamInd
 
 		// Write return value into lua stack
 		valueToLua(L, returnVal);
+		return 1;
 	}
 }
 
