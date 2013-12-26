@@ -88,16 +88,29 @@ string	getLuaTypeName(lua_State* L, int index)
 	}
 }
 
-struct LuaUserData
+enum LuaUserDataType : byte
 {
-	enum Type : byte
-	{
-		Item,
-		Method
-	}
+	Item,
+	Method,
+	Array
+}
 
-	Type										type;
+struct LuaUserDataItem
+{
+	LuaUserDataType								type = LuaUserDataType.Item;
 	dquick.script.iItemBinding.IItemBinding		iItemBinding;
+}
+
+struct LuaUserDataMethod
+{
+	LuaUserDataType								type = LuaUserDataType.Method;
+	dquick.script.iItemBinding.IItemBinding		iItemBinding;
+}
+
+struct LuaUserDataArray(T)
+{
+	LuaUserDataType								type = LuaUserDataType.Array;
+	T											array;
 }
 
 void	valueFromLua(T)(lua_State* L, int index, ref T value)
@@ -178,9 +191,9 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 			if (!lua_isuserdata(L, index))
 				throw new Exception(format("Lua value at index %d is a %s, a userdata or nil was expected", index, getLuaTypeName(L, index)));
 
-			LuaUserData*	luaUserData = cast(LuaUserData*)lua_touserdata(L, index);
+			LuaUserDataItem*	luaUserData = cast(LuaUserDataItem*)lua_touserdata(L, index);
 
-			if (luaUserData.type != LuaUserData.Type.Item)
+			if (luaUserData.type != LuaUserDataType.Item)
 				throw new Exception(format("Lua value at index %d is not an item", index));
 
 			value = cast(T)(luaUserData.iItemBinding);
@@ -188,60 +201,82 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 	}
 	else static if (isDynamicArray!T || isStaticArray!T)
 	{
-		if (!lua_istable(L, index))
-			throw new Exception(format("Lua value at index %d is a %s, a table was expected", index, getLuaTypeName(L, index)));
-
-		static if (isDynamicArray!T)
-			value.clear();
-
-		int	count = 0;
-		/* table is in the stack at index 't' */
-		lua_pushnil(L);  /* first key */
-		while (lua_next(L, -2) != 0) {
-			/* uses 'key' (at index -2) and 'value' (at index -1) */
-
-			static if (isDynamicArray!T)
-				value.length++;
-			else if (isStaticArray!T)
-			{
-				if (count >= value.length)
-					throw new Exception(format("Lua value at index %d is a %s that overflows", index, getLuaTypeName(L, -3)));
-			}
-			valueFromLua!(typeof(value[count]))(L, -1, value[count]);
-
-			/* removes 'value'; keeps 'key' for next iteration */
-			lua_pop(L, 1);
-
-			count++;
-		}
-		static if (isStaticArray!T)
+		if (lua_istable(L, index))
 		{
-			if (count != value.length)
-				throw new Exception(format("Lua value at index %d is a %s that underflows", index, getLuaTypeName(L, -3)));
+			static if (isDynamicArray!T)
+				value.clear();
+
+			int	count = 0;
+			/* table is in the stack at index 't' */
+			lua_pushnil(L);  /* first key */
+			while (lua_next(L, -2) != 0) {
+				/* uses 'key' (at index -2) and 'value' (at index -1) */
+
+				static if (isDynamicArray!T)
+					value.length++;
+				else if (isStaticArray!T)
+				{
+					if (count >= value.length)
+						throw new Exception(format("Lua value at index %d is a %s that overflows", index, getLuaTypeName(L, -3)));
+				}
+				valueFromLua!(typeof(value[count]))(L, -1, value[count]);
+
+				/* removes 'value'; keeps 'key' for next iteration */
+				lua_pop(L, 1);
+
+				count++;
+			}
+			static if (isStaticArray!T)
+			{
+				if (count != value.length)
+					throw new Exception(format("Lua value at index %d is a %s that underflows", index, getLuaTypeName(L, -3)));
+			}
 		}
+		else if (lua_isuserdata(L, index))
+		{
+			LuaUserDataArray!T*	luaUserData = cast(LuaUserDataArray!T*)lua_touserdata(L, index);
+
+			if (luaUserData.type != LuaUserDataType.Array)
+				throw new Exception(format("Lua value at index %d is not an array", index));
+
+			value = cast(T)(luaUserData.array);
+		}
+		else
+			throw new Exception(format("Lua value at index %d is a %s, a table or a userdata was expected", index, getLuaTypeName(L, index)));
 	}
 	else static if (isAssociativeArray!T)
 	{
-		if (!lua_istable(L, index))
-			throw new Exception(format("Lua value at index %d is a %s, a table was expected", index, getLuaTypeName(L, index)));
+		if (lua_istable(L, index))
+		{
+			value.clear();
 
-		value.clear();
+			KeyType!T	key;
+			typeof(value[key])	elemValue;
 
-		KeyType!T	key;
-		typeof(value[key])	elemValue;
+			/* table is in the stack at index 't' */
+			lua_pushnil(L);  /* first key */
+			while (lua_next(L, -2) != 0) {
+				/* uses 'key' (at index -2) and 'value' (at index -1) */
 
-		/* table is in the stack at index 't' */
-		lua_pushnil(L);  /* first key */
-		while (lua_next(L, -2) != 0) {
-			/* uses 'key' (at index -2) and 'value' (at index -1) */
+				valueFromLua!(typeof(key))(L, -2, key);
+				valueFromLua!(typeof(elemValue))(L, -1, elemValue);
+				value[key] = elemValue;
 
-			valueFromLua!(typeof(key))(L, -2, key);
-			valueFromLua!(typeof(elemValue))(L, -1, elemValue);
-			value[key] = elemValue;
-
-			/* removes 'value'; keeps 'key' for next iteration */
-			lua_pop(L, 1);
+				/* removes 'value'; keeps 'key' for next iteration */
+				lua_pop(L, 1);
+			}
 		}
+		else if (lua_isuserdata(L, index))
+		{
+			LuaUserDataArray!T*	luaUserData = cast(LuaUserDataArray!T*)lua_touserdata(L, index);
+
+			if (luaUserData.type != LuaUserDataType.Array)
+				throw new Exception(format("Lua value at index %d is not an array", index));
+
+			value = cast(T)(luaUserData.array);
+		}
+		else
+			throw new Exception(format("Lua value at index %d is a %s, a table or a userdata was expected", index, getLuaTypeName(L, index)));
 	}
 	else
 	{
@@ -282,9 +317,9 @@ void	valueToLua(T)(lua_State* L, T value)
 		{
 			// Create a userdata that contains instance ptr and make it a global for user access
 			// It also contains a metatable for the member read and write acces
-			void*	userData = lua_newuserdata(L, LuaUserData.sizeof);
-			(cast(LuaUserData*)userData).type = LuaUserData.Type.Item;
-			(cast(LuaUserData*)userData).iItemBinding = value;
+			void*	userData = lua_newuserdata(L, LuaUserDataItem.sizeof);
+			(cast(LuaUserDataItem*)userData).type = LuaUserDataType.Item;
+			(cast(LuaUserDataItem*)userData).iItemBinding = value;
 
 			lua_newtable(L);
 
@@ -300,23 +335,55 @@ void	valueToLua(T)(lua_State* L, T value)
 	}
 	else static if (isDynamicArray!T || isStaticArray!T)
 	{
-		lua_newtable(L);
+		// Pass array by value, unoptimized
+		/+lua_newtable(L);
 		for (int index = 0; index < value.length; index++)
 		{
 			lua_pushnumber(L, index + 1);
 			valueToLua!(typeof(value[index]))(L, value[index]);
 			lua_settable(L, -3);
-		}
+		}+/
+
+		void*	userData = lua_newuserdata(L, (LuaUserDataArray!T).sizeof);
+		(cast(LuaUserDataArray!T*)userData).type = LuaUserDataType.Array;
+		(cast(LuaUserDataArray!T*)userData).array = value;
+
+		lua_newtable(L);
+
+		lua_pushstring(L, "__index");
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.arrayIndexLuaBind!T);
+		lua_settable(L, -3);
+		lua_pushstring(L, "__newindex");
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.arrayNewindexLuaBind!T);
+		lua_settable(L, -3);
+
+		lua_setmetatable(L, -2);
 	}
 	else static if (isAssociativeArray!T)
 	{
-		lua_newtable(L);
+		// Pass array by value, unoptimized
+		/+lua_newtable(L);
 		foreach (key, elemValue; value)
 		{
 			valueToLua!(typeof(key))(L, key);
 			valueToLua!(typeof(elemValue))(L, elemValue);
 			lua_settable(L, -3);
-		}
+		}+/
+
+		void*	userData = lua_newuserdata(L, (LuaUserDataArray!T).sizeof);
+		(cast(LuaUserDataArray!T*)userData).type = LuaUserDataType.Array;
+		(cast(LuaUserDataArray!T*)userData).array = value;
+
+		lua_newtable(L);
+
+		lua_pushstring(L, "__index");
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.arrayIndexLuaBind!T);
+		lua_settable(L, -3);
+		lua_pushstring(L, "__newindex");
+		lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.arrayNewindexLuaBind!T);
+		lua_settable(L, -3);
+
+		lua_setmetatable(L, -2);
 	}
 	else
 	{
@@ -337,9 +404,9 @@ void	methodFromLua(T)(lua_State* L, int index, ref T object)
 			if (!lua_isuserdata(L, index))
 				throw new Exception(format("Lua value at index %d is a %s, a userdata or nil was expected", index, getLuaTypeName(L, index)));
 
-			LuaUserData*	luaUserData = cast(LuaUserData*)lua_touserdata(L, index);
+			LuaUserDataMethod*	luaUserData = cast(LuaUserDataMethod*)lua_touserdata(L, index);
 
-			if (luaUserData.type != LuaUserData.Type.Method)
+			if (luaUserData.type != LuaUserDataType.Method)
 				throw new Exception(format("Lua value at index %d is not a method", index));
 
 			object = cast(T)(luaUserData.iItemBinding);
@@ -359,9 +426,9 @@ void	methodToLua(T, string methodName)(lua_State* L, T object)
 	{
 		// Create a userdata that contains instance ptr and return it to emulate a method
 		// It also contains a metatable for calling
-		void*	userData = lua_newuserdata(L, LuaUserData.sizeof);
-		(cast(LuaUserData*)userData).type = LuaUserData.Type.Method;
-		(cast(LuaUserData*)userData).iItemBinding = object;
+		void*	userData = lua_newuserdata(L, LuaUserDataMethod.sizeof);
+		(cast(LuaUserDataMethod*)userData).type = LuaUserDataType.Method;
+		(cast(LuaUserDataMethod*)userData).iItemBinding = object;
 
 		// Create metatable
 		lua_newtable(L);

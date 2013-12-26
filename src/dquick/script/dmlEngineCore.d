@@ -1420,7 +1420,7 @@ unittest
 	}
 	catch (Throwable e)
 	{
-		auto m = mismatch(e.msg, "Lua value at index -1 is a number, a table was expected\n\t[D] in function Item\n\t[string \"Array error 1\"]:2");
+		auto m = mismatch(e.msg, "Lua value at index -1 is a number, a table or a userdata was expected\n\t[D] in function Item\n\t[string \"Array error 1\"]:2");
 		assert(m[0] == "" && m[1] == "");
 	}
 
@@ -1552,7 +1552,7 @@ unittest
 	{
 		string lua = q"(
 			Item {
-				id = "arrayError3",
+				id = "arrayError4",
 				nativePropertyStaticDoubleArray = {
 					{Item.Enum.enumVal1, Item.Enum.enumVal2},
 					{Item.Enum.enumVal1, Item.Enum.enumVal2, Item.Enum.enumVal3}
@@ -1674,6 +1674,97 @@ unittest
 				3000 : 30000.0f
 			]
 		]);
+	}
+
+	// Check that double array from D to lua are passed by reference
+	{
+		Item	array12 = new Item;
+		dmlEngine.addObjectBinding(array12, "array12");
+		array12.nativePropertyDoubleMap = [
+			"test1" : [
+				10 : 100.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
+		];
+		string lua = q"(
+			test = array12.nativePropertyDoubleMap
+			test["test1"][10] = test["test2"][1000]
+		)";
+		dmlEngine.execute(lua, "Check that double map from D to lua are passed by reference");
+		assert(dmlEngine.getLuaGlobal!(float[int][string])("test") == [
+			"test1" : [
+				10 : 10000.0f,
+				20 : 200.0f,
+				30 : 300.0f
+			],
+			"test2" : [
+				1000 : 10000.0f,
+				2000 : 20000.0f,
+				3000 : 30000.0f
+			]
+		]);
+	}
+
+	// Check that double map from D to lua are passed by reference
+	{
+		Item	array13 = new Item;
+		dmlEngine.addObjectBinding(array13, "array13");
+		array13.nativePropertyDoubleArray = [
+			["100", "200", "300"],
+			["10000", "20000", "30000"]
+		];
+		string lua = q"(
+			test = array13.nativePropertyDoubleArray
+			test[0][0] = test[1][0]
+		)";
+		dmlEngine.execute(lua, "Check that double map from D to lua are passed by reference");
+		assert(dmlEngine.getLuaGlobal!(string[][])("test") == [
+			["10000", "200", "300"],
+			["10000", "20000", "30000"]
+		]);
+	}
+
+	// Array error 5
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "arrayError5",
+			}
+			arrayError5.nativePropertyDoubleArray[0][0] = "10"
+		)";
+		dmlEngine.execute(lua, "Array error 5");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "[string \"Array error 5\"]:5: attempt to index field '?' (a nil value)");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Array error 6
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "arrayError6",
+			}
+			arrayError6.nativePropertyDoubleArray = {
+				{}
+			}
+			arrayError6.nativePropertyDoubleArray[0][0] = "10"
+		)";
+		dmlEngine.execute(lua, "Array error 6");
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "the key value 0 is out of bound\n\t[D] in function __newindex\n\t[string \"Array error 6\"]:8");
+		assert(m[0] == "" && m[1] == "");
 	}
 
 	}
@@ -2356,6 +2447,98 @@ extern(C)
 			}
 
 			return 1;
+		}
+		catch (Throwable e)
+		{
+			luaError(L, e.msg);
+			return 0;
+		}
+	}
+
+	private int	arrayIndexLuaBind(T)(lua_State* L)
+	{
+		try
+		{
+			if (!lua_isuserdata(L, 1))
+				throw new Exception(format("a userdata was expected as self, got %s, the function was altered", getLuaTypeName(L, 1)));
+			if (lua_isnone(L, 2) || lua_isnil(L, 2))
+				throw new Exception(format("a value was expected as key, got %s", getLuaTypeName(L, 2)));
+			if (lua_gettop(L) > 2)
+				throw new Exception("too many arguments, only a userdata as self and a string as key was expected as arguments");
+
+			T	array;
+			dquick.script.utils.valueFromLua!(T)(L, 1, array);
+			static if (isAssociativeArray!T)
+				KeyType!T	key;
+			else
+				uint	key;
+			dquick.script.utils.valueFromLua!(typeof(key))(L, 2, key);
+
+			static if (isAssociativeArray!T)
+			{
+				ForeachType!(T)*	valuePtr = key in array;
+				if (valuePtr == null)
+				{
+					lua_pushnil(L);
+					return 1;
+				}
+			}
+			else
+			{
+				if (key >= array.length)
+				{
+					lua_pushnil(L);
+					return 1;
+				}
+				ForeachType!(T)*	valuePtr = &array[key];
+			}
+			
+			dquick.script.utils.valueToLua!(typeof(array[key]))(L, *valuePtr);
+
+			return 1;
+		}
+		catch (Throwable e)
+		{
+			luaError(L, e.msg);
+			return 0;
+		}
+	}
+
+	private int	arrayNewindexLuaBind(T)(lua_State* L)
+	{
+		try
+		{
+			if (!lua_isuserdata(L, 1))
+				throw new Exception(format("a userdata was expected as self, got %s, the function was altered", getLuaTypeName(L, 1)));
+			if (lua_isnone(L, 2) || lua_isnil(L, 2))
+				throw new Exception(format("a value was expected as key, got %s", getLuaTypeName(L, 2)));
+			if (lua_isnone(L, 3))
+				throw new Exception(format("an assignment value was expected, got %s", getLuaTypeName(L, 3)));
+			if (lua_gettop(L) > 3)
+				throw new Exception("too many arguments, only a userdata as self, a string as key and an assignment value was expected as arguments");
+
+			T	array;
+			dquick.script.utils.valueFromLua!(T)(L, 1, array);
+			static if (isAssociativeArray!T)
+				KeyType!T	key;
+			else
+				uint	key;
+			dquick.script.utils.valueFromLua!(typeof(key))(L, 2, key);
+
+			static if (isAssociativeArray!T == false)
+			{
+				if (key >= array.length)
+				{
+					throw new Exception(format("the key value %d is out of bound", key));
+					return 0;
+				}
+			}
+
+			ForeachType!(T)	value = void;
+			dquick.script.utils.valueFromLua!(typeof(value))(L, 3, value);
+			array[key] = value;
+
+			return 0;
 		}
 		catch (Throwable e)
 		{
