@@ -91,9 +91,6 @@
     <Compile Include="..\src\dquick\algorithms\atlas.d">
       <Link>dquick\algorithms\atlas.d</Link>
     </Compile>
-    <Compile Include="..\src\dquick\algorithms\textToGeometry.d">
-      <Link>dquick\algorithms\textToGeometry.d</Link>
-    </Compile>
     <Compile Include="..\src\dquick\etc\derelict\import\derelict\alure\alure.d">
       <Link>dquick\etc\derelict\import\derelict\alure\alure.d</Link>
     </Compile>
@@ -456,9 +453,6 @@
     </Compile>
     <Compile Include="..\src\dquick\media\font.d">
       <Link>dquick\media\font.d</Link>
-    </Compile>
-    <Compile Include="..\src\dquick\media\geometry.d">
-      <Link>dquick\media\geometry.d</Link>
     </Compile>
     <Compile Include="..\src\dquick\media\image.d">
       <Link>dquick\media\image.d</Link>
