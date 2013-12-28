@@ -48,9 +48,8 @@ public:
 
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
-		mShaderProgram = new ShaderProgram();
 		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
-		mShaderProgram.setProgram(mShader.getProgram());
+		mShaderProgram.program = mShader.getProgram();
 		debugMeshColor(Color(255 / 255, 255 / 255, 0 / 255, 1.0f));
 		debugImplicitMeshColor(Color(255 / 255, 0 / 255, 0 / 255, 1.0f));
 	}

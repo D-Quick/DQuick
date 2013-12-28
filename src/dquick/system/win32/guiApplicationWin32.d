@@ -201,7 +201,6 @@ version (Windows)
 			// TODO
 //			SendMessage(mhWnd,WM_SETICON,ICON_BIG,(LPARAM)LoadIcon(hInstance, "IDR_MAINFRAME"));
 
-			mContext = new OpenGLContext();
 			mContext.initialize(mhWnd);
 			Renderer.initialize();
 			mContext.resize(size().x, size().y);
@@ -269,8 +268,7 @@ version (Windows)
 			MoveWindow(mhWnd, rcWindow.left, rcWindow.top, mSize.x + ptDiff.x, mSize.y + ptDiff.y, true);
 			// --
 
-			if (mContext)
-				mContext.resize(mSize.x, mSize.y);
+			mContext.resize(mSize.x, mSize.y);
 		}
 		Vector2s32	size() {return mSize;}
 
@@ -292,7 +290,7 @@ version (Windows)
 		{
 			void	destroy()
 			{
-				mContext = null;
+				mContext.release();
 				DestroyWindow(mhWnd);
 				super.destroy();
 			}
@@ -303,8 +301,7 @@ version (Windows)
 
 				super.onPaint();
 
-				if (mContext)
-					mContext.swapBuffers();
+				mContext.swapBuffers();
 			}
 
 			void	onMouseEvent(MouseEvent mouseEvent) {super.onMouseEvent(mouseEvent);}

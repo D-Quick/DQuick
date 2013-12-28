@@ -267,13 +267,11 @@ protected:
 			if (mDebugMesh)
 				return;
 
-			mDebugShaderProgram = new ShaderProgram();
-
 			Variant[] options;
 			options ~= Variant(import("color.vert"));
 			options ~= Variant(import("color.frag"));
 			mDebugShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("color", options);
-			mDebugShaderProgram.setProgram(mDebugShader.getProgram());
+			mDebugShaderProgram.program = mDebugShader.getProgram();
 
 			// Size
 			mDebugMesh = new Mesh();

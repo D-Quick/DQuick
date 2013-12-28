@@ -33,7 +33,7 @@ private:
 	{
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
-		.destroy(mShader);
+		mShader = null;
 	}
 
 	static const GLuint		mBadId = 0;

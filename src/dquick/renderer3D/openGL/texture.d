@@ -9,7 +9,7 @@ import derelict.opengl3.gl;
 
 import std.string;
 
-class Texture : IResource
+final class Texture : IResource
 {
 	mixin ResourceBase;
 

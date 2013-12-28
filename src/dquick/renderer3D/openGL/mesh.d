@@ -17,7 +17,7 @@ import derelict.opengl3.gl;
 import std.stdio;
 import std.variant;
 
-class Mesh
+final class Mesh
 {
 public:
 	enum PrimitiveType
@@ -36,8 +36,6 @@ public:
 
 	this()
 	{
-		create();
-
 		indexes = new VBO!GLuint();
 		vertices = new VBO!GLfloat();
 		colors = new VBO!GLfloat();
@@ -95,7 +93,7 @@ public:
 
 		glUniformMatrix4fv(mMDVInvertedMatrixUniform, 1, false, (Renderer.currentCamera().inverse() * Renderer.currentMDVMatrix).inverse().value_ptr);*/
 
-		if (mShaderProgram)
+		if (mShaderProgram.program != mShaderProgram.badId)
 		{
 			mShaderProgram.execute();
 
@@ -139,27 +137,20 @@ public:
 	}
 
 private:
-	void	create()
-	{
-/*		Variant[] options;
-
-		options ~= Variant(import("rectangle.vert"));
-		options ~= Variant(import("rectangle.frag"));
-		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
-
-		mMDVInvertedMatrixUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_modelViewProjectionInvertedMatrix"));*/
-	}
-
 	void	destroy()
 	{
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
-		clear(indexes);
-		clear(vertices);
-		clear(colors);
-		clear(texCoords);
-
-//		.destroy(mShader);
+		.destroy(indexes);
+		indexes = null;
+		.destroy(vertices);
+		vertices = null;
+		.destroy(colors);
+		colors = null;
+		.destroy(texCoords);
+		texCoords = null;
+		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mShader);
+		mShader = null;
 	}
 
 	static const GLuint		mBadId = 0;

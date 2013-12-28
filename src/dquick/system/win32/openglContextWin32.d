@@ -22,7 +22,7 @@ version (Windows)
 	import dquick.maths.matrix4x4;
 	import dquick.maths.vector2s32;
 
-	class OpenGLContext
+	struct OpenGLContext
 	{
 	public:
 		~this()

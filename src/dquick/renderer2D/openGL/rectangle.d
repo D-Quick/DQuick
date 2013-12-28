@@ -71,13 +71,12 @@ private:
 			return;
 
 		mMesh = new Mesh();
-		mShaderProgram = new ShaderProgram();
 
 		Variant[] options;
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
 		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
-		mShaderProgram.setProgram(mShader.getProgram());
+		mShaderProgram.program = mShader.getProgram();
 		mMesh.setShader(mShader);
 		mMesh.setShaderProgram(mShaderProgram);
 

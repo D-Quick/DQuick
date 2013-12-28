@@ -124,10 +124,9 @@ private:
 			return;
 
 		mMesh = new Mesh();
-		mShaderProgram = new ShaderProgram();
 
 		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("dquick/shaders/borderRectangle");
-		mShaderProgram.setProgram(mShader.getProgram());
+		mShaderProgram.program = mShader.getProgram();
 		mMesh.setShader(mShader);
 		mMesh.setShaderProgram(mShaderProgram);
 

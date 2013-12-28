@@ -7,7 +7,7 @@ import derelict.opengl3.gl;
 
 import std.stdio;
 
-class VBO(T) : IResource
+final class VBO(T) : IResource
 {
 	mixin ResourceBase;
 
