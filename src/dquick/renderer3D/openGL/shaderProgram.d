@@ -10,10 +10,13 @@ import std.string;
 // TODO add a management of the program resource
 
 /// This structure hold shader program parameters
-class ShaderProgram
+struct ShaderProgram
 {
 public:
-	void	setProgram(GLuint id) {mProgram = id;}
+	static const GLuint	badId = 0;
+
+	void	program(GLuint id) {mProgram = id;}
+	GLuint	program() {return mProgram;}
 
 	void	setParameter(string name, ParameterType type, void* values)
 	{
@@ -61,7 +64,7 @@ public:
 	}
 
 private:
-	GLuint				mProgram = 0;
+	GLuint				mProgram = badId;
 	Parameter[string]	mParameters;
 };
 

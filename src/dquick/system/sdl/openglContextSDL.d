@@ -19,7 +19,7 @@ import dquick.maths.vector2s32;
 
 import derelict.sdl2.sdl;
 
-class OpenGLContextSDL
+struct OpenGLContextSDL
 {
 public:
 	~this()

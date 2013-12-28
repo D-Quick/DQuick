@@ -25,7 +25,7 @@ shared static ~this()
 	resourceManager = null;
 }
 
-class Renderer
+struct Renderer
 {
 	static void	initialize()										// All Setup For OpenGL Goes Here
 	{

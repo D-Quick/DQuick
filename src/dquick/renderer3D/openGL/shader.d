@@ -9,7 +9,7 @@ import std.string;
 import std.stdio;
 import std.file;
 
-class Shader : IResource
+final class Shader : IResource
 {
 	mixin ResourceBase;
 
@@ -20,14 +20,14 @@ public:
 	
 	~this()
 	{
-		cleanup();
+		unload();
 	}
 	
 	/// Take a filePath of which correspond to the fragment and vertex shaders files without extention (extentions are "frag" and "vert")
 	/// Shader will be compiled and linked
 	void	load(string filePath, Variant[] options)
 	{
-		cleanup();
+		unload();
 
 		if (options == null)
 		{
@@ -59,25 +59,25 @@ public:
 	}
 
 private:
-	void	cleanup()
+	void	unload()
 	{
-		if (mVertexShader)
+		if (mVertexShader != mBadId)
 		{
 			checkgl!glDeleteShader(mVertexShader);
 			mVertexShader = mBadId;
 		}
-		if (mFragmentShader)
+		if (mFragmentShader != mBadId)
 		{
 			checkgl!glDeleteShader(mFragmentShader);
 			mFragmentShader = mBadId;
 		}
-		if (mShaderProgram)
+		if (mShaderProgram != mBadId)
 		{
 			checkgl!glDeleteProgram(mShaderProgram);
 			mShaderProgram = mBadId;
 		}
 	}
-	
+
 	uint	loadAndCompileShader(GLenum type, string source)
 	{
 		GLint	length;
@@ -116,7 +116,7 @@ private:
 	
 	void	compileAndLink()
 	{
-		scope(failure)cleanup();
+		scope(failure)unload();
 
 		mShaderProgram = checkgl!glCreateProgram();
 

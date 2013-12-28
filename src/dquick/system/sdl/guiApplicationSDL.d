@@ -221,8 +221,6 @@ final class Window : WindowBase, IWindow
 
 	bool	create()
 	{
-		mContext = new OpenGLContextSDL();
-
 		mContext.pushSettings();
 
 		mWindow = SDL_CreateWindow(GuiApplication.instance().applicationDisplayName.toStringz,
@@ -273,8 +271,7 @@ final class Window : WindowBase, IWindow
 		mSize = newSize;
 		SDL_SetWindowSize(mWindow, mSize.x, mSize.y);
 
-		if (mContext)
-			mContext.resize(mSize.x, mSize.y);
+		mContext.resize(mSize.x, mSize.y);
 	}
 	Vector2s32	size() {return mSize;}
 
@@ -300,7 +297,7 @@ protected:
 		{
 			if (mWindow)
 			{
-				mContext = null;
+				mContext.release();
 				SDL_DestroyWindow(mWindow);
 				mWindow = null;
 			}
@@ -312,8 +309,7 @@ protected:
 
 			super.onPaint();
 
-			if (mContext)
-				mContext.swapBuffers();
+			mContext.swapBuffers();
 		}
 
 		void	onMouseEvent(MouseEvent mouseEvent) {super.onMouseEvent(mouseEvent);}

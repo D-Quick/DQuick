@@ -14,7 +14,7 @@ else
 	pragma(lib, "dl");	// dl functions aren't linked by default with dmd
 }
 
-class DynamicLibrary
+struct DynamicLibrary
 {
 public:
 	~this()
