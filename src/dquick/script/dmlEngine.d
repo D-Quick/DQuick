@@ -186,6 +186,21 @@ version(unittest)
 		}
 		mixin Signal!(float[int][string]) onNativePropertyDoubleMapChanged;
 		float[int][string]		mNativePropertyDoubleMap;
+
+		void	delegateProperty(int delegate(int) value)
+		{
+			if (mDelegateProperty != value)
+			{
+				mDelegateProperty = value;
+				onDelegatePropertyChanged.emit(value);
+			}
+		}
+		int delegate(int)		delegateProperty()
+		{
+			return mDelegateProperty;
+		}
+		mixin Signal!(int delegate(int)) onDelegatePropertyChanged;
+		int delegate(int) mDelegateProperty;
 	}
 
 	int	testSumFunctionBinding(int a, int b)
@@ -1698,6 +1713,60 @@ unittest
 	catch (Throwable e)
 	{
 		auto m = mismatch(e.msg, "the key value 0 is out of bound\n\t[D] in function __newindex\n\t[string \"Array error 6\"]:8");
+		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Delegate
+	{
+		Item	dgItem = new Item;
+		dmlEngine.addObject(dgItem, "dgItem1");
+		string lua = q"(
+			dgItem1.delegateProperty = function(param)
+				return param + 300
+			end
+		)";
+		dmlEngine.execute(lua, "Delegate");
+		int	delegate(int)	dg = dgItem.delegateProperty;
+		assert(dg(300) == 600);
+	}
+
+	// Delegate to lua
+	{
+		string lua = q"(
+			Item {
+				id = "dgItem2",
+				delegateProperty = function(param)
+					return param + 300
+				end
+			}
+			dgItem2.delegateProperty = dgItem2.delegateProperty -- Test value from D to lua then from lua to D
+		)";
+		dmlEngine.execute(lua, "Delegate");
+		int	delegate(int)	dg = dmlEngine.getLuaGlobal!(Item)("dgItem2").delegateProperty;
+		assert(dg(300) == 600);
+		dmlEngine.execute("dgItem2.delegateProperty = nil", "Delegate");
+		dg = dmlEngine.getLuaGlobal!(Item)("dgItem2").delegateProperty;
+		assert(dg is null);
+	}
+
+	// Delegate error 1
+	try
+	{
+		string lua = q"(
+			Item {
+				id = "delegateError1Item",
+				delegateProperty = function(param)
+					return 1, 3
+				end
+			}
+		)";
+		dmlEngine.execute(lua, "Delegate error 1");
+		int	delegate(int)	dg = dmlEngine.getLuaGlobal!(Item)("delegateError1Item").delegateProperty;
+		dg(300);
+	}
+	catch (Throwable e)
+	{
+		auto m = mismatch(e.msg, "too few or too many return values on delegate delegateError1Item.delegateProperty, got 2, expected 1");
 		assert(m[0] == "" && m[1] == "");
 	}
 }

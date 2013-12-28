@@ -115,8 +115,6 @@ struct LuaUserDataArray(T)
 
 void	valueFromLua(T)(lua_State* L, int index, ref T value)
 {
-	static assert(isPointer!T == false);
-
 	static if (is(T == Variant))
 	{
 		if (lua_isboolean(L, index))
@@ -278,6 +276,10 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 		else
 			throw new Exception(format("Lua value at index %d is a %s, a table or a userdata was expected", index, getLuaTypeName(L, index)));
 	}
+	else static if (isDelegate!T)
+	{
+		assert(false);
+	}
 	else
 	{
 		static assert(false, fullyQualifiedName2!(T));
@@ -286,8 +288,6 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 
 void	valueToLua(T)(lua_State* L, T value)
 {
-	static assert(isPointer!T == false);
-
 	static if (is(T == Variant))
 	{
 		if (value.type == typeid(double))
@@ -384,6 +384,10 @@ void	valueToLua(T)(lua_State* L, T value)
 		lua_settable(L, -3);
 
 		lua_setmetatable(L, -2);
+	}
+	else static if (isDelegate!T)
+	{
+		assert(false);
 	}
 	else
 	{

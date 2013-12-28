@@ -11,6 +11,7 @@ import derelict.lua.lua;
 import dquick.item.declarativeItem;
 import dquick.script.nativePropertyBinding;
 import dquick.script.virtualPropertyBinding;
+import dquick.script.delegatePropertyBinding;
 import dquick.script.utils;
 
 static string	I_ITEM_BINDING()
@@ -385,8 +386,12 @@ static string	genProperties(T)()
 						result ~= format("	dquick.script.nativePropertyBinding.NativePropertyBinding!(dquick.script.itemBinding.ItemBinding!(%s), dquick.script.itemBinding.ItemBinding!T, \"__%sItemBinding\")	%s;\n", fullyQualifiedName2!(MyPropertyType), member, member~"Property");
 					}
 					else
-						result ~= format("	dquick.script.nativePropertyBinding.NativePropertyBinding!(%s, T, \"%s\")\t%s;\n", fullyQualifiedName2!(MyPropertyType), member, member~"Property");
-
+					{
+						static if (isDelegate!MyPropertyType)
+							result ~= format("	dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(%s, T, \"%s\")\t%s;\n", fullyQualifiedName2!(MyPropertyType), member, member~"Property");
+						else
+							result ~= format("	dquick.script.nativePropertyBinding.NativePropertyBinding!(%s, T, \"%s\")\t%s;\n", fullyQualifiedName2!(MyPropertyType), member, member~"Property");
+					}
 				}
 			}
 			static if (is(MyPropertyType == void) == true)

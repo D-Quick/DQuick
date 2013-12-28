@@ -222,7 +222,7 @@ class PropertyBinding
 			dirty = true;
 			executeBinding();
 		}
-		else // Binding is juste a value
+		else // Binding is just a value
 		{
 			luaReference = -1;
 			valueFromLua(L, index);

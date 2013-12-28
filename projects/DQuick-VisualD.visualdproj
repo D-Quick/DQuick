@@ -1283,6 +1283,7 @@
     </Folder>
    </Folder>
    <Folder name="script">
+    <File path="..\src\dquick\script\delegatePropertyBinding.d" />
     <File path="..\src\dquick\script\dmlEngine.d" />
     <File path="..\src\dquick\script\dmlEngineCore.d" />
     <File path="..\src\dquick\script\iItemBinding.d" />
