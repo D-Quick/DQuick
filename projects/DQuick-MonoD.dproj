@@ -490,6 +490,9 @@
     <Compile Include="..\src\dquick\renderer3D\openGL\util.d">
       <Link>dquick\renderer3D\openGL\util.d</Link>
     </Compile>
+	<Compile Include="..\src\dquick\script\delegatePropertyBinding.d">
+      <Link>dquick\script\delegatePropertyBinding.d</Link>
+    </Compile>
     <Compile Include="..\src\dquick\script\dmlEngine.d">
       <Link>dquick\script\dmlEngine.d</Link>
     </Compile>
