@@ -19,8 +19,7 @@ version(Posix)
 
 bool	randomBool()
 {
-	auto x = cast(bool)dice(0.8, 0.2);
-	return x;
+	return cast(bool)dice(0.8, 0.2);
 }
 
 int main(string[] args)
