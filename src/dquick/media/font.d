@@ -31,7 +31,6 @@ import std.conv;
 // http://forum.dlang.org/thread/kcqstrprmrzluvfoylqb@forum.dlang.org#post-fbojhpvgewysrrapfapw:40forum.dlang.org
 // registry DB : HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft \Windows NT\CurrentVersion\Fonts
 
-// TODO migrate FT_Library to FontManager (if it share memory)
 // TODO check kerning computation it doesn't seems working fine
 // TODO check glyph rendering quality
 
@@ -121,10 +120,23 @@ public:
 		Italic = 0x02
 	}
 
+	static this()
+	{
+		FT_Error	error;
+
+		error = FT_Init_FreeType(&mLibrary);
+		if (error)
+			throw new Exception(format("Failed to initialize FreeType mLibrary. Error : %d", error));
+	}
+
+	static ~this()
+	{
+		FT_Done_FreeType(mLibrary);
+	}
+
 	~this()
 	{
 		FT_Done_Face(mFace);
-		FT_Done_FreeType(mLibrary);
 	}
 
 	Tuple!(Glyph, bool)	loadGlyph(uint charCode)
@@ -310,10 +322,6 @@ private:
 		cast(int)((0.0) * 0x10000L),
 		cast(int)((1.0) * 0x10000L)};*/
 
-		error = FT_Init_FreeType(&mLibrary);
-		if (error)
-			throw new Exception(format("Failed to initialize FreeType mLibrary. Error : %d", error));
-
 		error = FT_New_Face(mLibrary, filePath.toStringz(), 0, &mFace);
 		if (error)
 			throw new Exception(format("Failed to load face \"%s\". Error : %d", filePath, error));
@@ -377,8 +385,8 @@ private:
 
 	Glyph[uint]	mGlyphs;
 
-	FT_Library		mLibrary;
-	FT_Face			mFace;
+	static FT_Library	mLibrary;
+	FT_Face				mFace;
 
     string	mFilePath;
 	string	mFamily;	// TODO Set it
