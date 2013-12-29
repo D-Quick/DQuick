@@ -33,6 +33,7 @@ public:
 
 	shared static ~this()
 	{
+		destroy(mInstance);
 		mInstance = null;
 
 		SDL_Quit();
@@ -293,7 +294,7 @@ final class Window : WindowBase, IWindow
 protected:
 	override
 	{
-		void	destroy()
+		void	close()
 		{
 			if (mWindow)
 			{
@@ -301,6 +302,7 @@ protected:
 				SDL_DestroyWindow(mWindow);
 				mWindow = null;
 			}
+			super.close();
 		}
 
 		void	onPaint()

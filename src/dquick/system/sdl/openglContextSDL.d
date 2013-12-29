@@ -91,6 +91,7 @@ public:
 		if (mWindow)
 		{
 			SDL_GL_DeleteContext(mContext);
+			mContext = null;
 			mWindow = null;
 		}
 	}

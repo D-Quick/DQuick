@@ -22,6 +22,7 @@ shared static this()
 shared static ~this()
 {
 	writeln("dquick.renderer3D.openGL.renderer : shared static ~this()");
+	destroy(resourceManager);
 	resourceManager = null;
 }
 

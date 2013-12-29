@@ -26,6 +26,7 @@ static this()
 static ~this()
 {
 	writeln("dquick.media.image : shared static ~this()");
+	resourceManager.destroy();
 	resourceManager = null;
 }
 

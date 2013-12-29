@@ -141,13 +141,13 @@ private:
 	{
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
-		.destroy(indexes);
+		destroy(indexes);
 		indexes = null;
-		.destroy(vertices);
+		destroy(vertices);
 		vertices = null;
-		.destroy(colors);
+		destroy(colors);
 		colors = null;
-		.destroy(texCoords);
+		destroy(texCoords);
 		texCoords = null;
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mShader);
 		mShader = null;
