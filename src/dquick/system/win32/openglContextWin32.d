@@ -159,7 +159,10 @@ version (Windows)
 		void	release()
 		{
 			if (mContext)
+			{
 				wglDeleteContext(mContext);
+				mContext = null;
+			}
 		}
 
 	private:

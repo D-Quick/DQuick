@@ -42,7 +42,7 @@ public:
 	void			show();
 
 protected:
-	void	destroy();	/// If call on main Window (first instancied) the application will exit. This method is only called by the destructor
+	void	close();	/// If call on main Window (first instancied) the application will exit. This method is only called by the destructor
 	void	onPaint();
 	void	onMouseEvent(MouseEvent mouseEvent);
 
@@ -67,8 +67,7 @@ public:
 
 	~this()
 	{
-		mScriptContext = null;
-		destroy();
+		close();
 	}
 
 	void	setMainItem(GraphicItem item)
@@ -102,11 +101,13 @@ public:
 	}
 
 protected:
-	void	destroy()
+	void	close()
 	{
+		mRootItem = null;
+		destroy(mScriptContext);
+		mScriptContext = null;
 		if (wasCreated())
 		{
-			mScriptContext = null;
 			if (isMainWindow())
 				GuiApplication.instance().quit();
 		}

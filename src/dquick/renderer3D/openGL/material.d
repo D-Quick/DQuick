@@ -33,6 +33,7 @@ private:
 	{
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
+		mShader.destroy();
 		mShader = null;
 	}
 

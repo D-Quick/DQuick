@@ -20,6 +20,7 @@ version (Windows)
 	public:
 		shared static ~this()
 		{
+			destroy(mInstance);
 			mInstance = null;
 		}
 
@@ -288,11 +289,11 @@ version (Windows)
 	protected:
 		override
 		{
-			void	destroy()
+			void	close()
 			{
 				mContext.release();
 				DestroyWindow(mhWnd);
-				super.destroy();
+				super.close();
 			}
 
 			void	onPaint()

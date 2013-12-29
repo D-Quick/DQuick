@@ -50,6 +50,7 @@ public:
 			if (mChildren[i] is item)
 			{
 				mChildren[i].mParent = null;
+				mChildren[i].destroy();
 				mChildren = mChildren[0..i] ~ mChildren[i+1..$];
 			}
 			else
