@@ -44,7 +44,7 @@ public:
 
 	~this()
 	{
-		destroy();
+		release();
 	}
 
 	bool	setTexture(string filePath)
@@ -137,7 +137,7 @@ public:
 	}
 
 private:
-	void	destroy()
+	void	release()
 	{
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
