@@ -182,6 +182,8 @@ private:
 	void	rebuildMesh()
 	{
 		mNeedRebuild = false;
+		if (mMesh)
+			mMesh.destroy();
 		mMesh = null;
 		if (!mText.length)
 		{
