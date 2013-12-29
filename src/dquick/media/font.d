@@ -31,6 +31,7 @@ import std.conv;
 // http://forum.dlang.org/thread/kcqstrprmrzluvfoylqb@forum.dlang.org#post-fbojhpvgewysrrapfapw:40forum.dlang.org
 // registry DB : HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft \Windows NT\CurrentVersion\Fonts
 
+// TODO share the FT_Face between Font (struct depend on size) using same family (font name)
 // TODO check kerning computation it doesn't seems working fine
 // TODO check glyph rendering quality
 
