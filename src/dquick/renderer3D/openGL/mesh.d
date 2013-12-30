@@ -73,10 +73,10 @@ public:
 	void			setShaderProgram(ShaderProgram program) {mShaderProgram = program;}
 	ShaderProgram	shaderProgram() {return mShaderProgram;}
 
-	VBO!GLuint		indexes/* = new VBO!GLuint()*/;
-	VBO!GLfloat		vertices/* = new VBO!GLfloat()*/;
-	VBO!GLfloat		colors/* = new VBO!GLfloat()*/;
-	VBO!GLfloat		texCoords/* = new VBO!GLfloat()*/;
+	VBO!GLuint		indexes = null;
+	VBO!GLfloat		vertices = null;
+	VBO!GLfloat		colors = null;
+	VBO!GLfloat		texCoords = null;
 	PrimitiveType	primitiveType = PrimitiveType.Triangles;		/// Default type is Triangles
 
 	void	draw()
@@ -130,7 +130,8 @@ public:
 
 	void	construct()
 	{
-		clear();
+		if (vertices)
+			clear();
 		indexes = new VBO!GLuint();
 		vertices = new VBO!GLfloat();
 		colors = new VBO!GLfloat();

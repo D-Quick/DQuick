@@ -264,7 +264,7 @@ protected:
 	{
 		void	createDebugMeshes()	// Safe to call it if mesh is already created
 		{
-			if (mDebugMesh.vertices.length)
+			if (mDebugMesh.vertices)
 				return;
 
 			Variant[] options;

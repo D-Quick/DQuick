@@ -120,7 +120,7 @@ public:
 private:
 	void	create()	// Safe to call it if mesh is already created
 	{
-		if (mMesh.vertices.length)
+		if (mMesh.vertices)
 			return;
 
 		mMesh.construct();

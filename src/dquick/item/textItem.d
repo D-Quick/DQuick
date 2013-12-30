@@ -118,7 +118,7 @@ public:
 		startPaint(transformationUpdated);
 		if (mNeedRebuild)
 			rebuildMesh();
-		if (mMesh.vertices.length)
+		if (mMesh.vertices)
 		{
 			if (mText == "")
 				int toto = 10;
@@ -182,7 +182,7 @@ private:
 	void	rebuildMesh()
 	{
 		mNeedRebuild = false;
-		if (mMesh.vertices.length)
+		if (mMesh.vertices)
 			mMesh.clear();
 
 		if (!mText.length)
