@@ -50,7 +50,6 @@ public:
 		mSource = filePath;
 		if (filePath != "" && !mRectangle.setTexture(filePath))
 			writeln("ImageItem::source:: Warning : can't load image \"" ~ filePath ~"\"");
-		// TODO If this item is root, update the window size (only when item has to repect the image size)
 		updateSize(mSize);
 		onSourceChanged.emit(filePath);
 		if (mRectangle.textureSize.x != oldSourceSize.x)
@@ -92,9 +91,9 @@ public:
 
 	override
 	{
-		@property void	width(float width) {updateSize(Vector2f32(width, GraphicItem.height));}
+		@property void	width(float width) {GraphicItem.width = width; updateSize(Vector2f32(width, height));}
 		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height) {updateSize(Vector2f32(GraphicItem.width, height));}
+		@property void	height(float height) {GraphicItem.height = height; updateSize(Vector2f32(width, height));}
 		@property float	height() {return GraphicItem.height;}
 		@property float	implicitWidth() {return mImplicitSize.x;}
 		@property float	implicitHeight() {return mImplicitSize.y;}
@@ -150,7 +149,6 @@ protected:
 		}
 
 		mRectangle.setSize(implicitSize);
-		GraphicItem.setSize(size);
 
 		if (implicitSize == mImplicitSize)
 			return;

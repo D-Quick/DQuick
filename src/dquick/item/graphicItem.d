@@ -60,30 +60,6 @@ public:
 	@property float	y() {return mTransformation.position.y;}
 	mixin Signal!(float) onYChanged;
 
-	/// Have to be called only on rootItem by window
-	void	setSize(Vector2f32 size)
-	{
-		Vector2f32	oldSize = mSize;
-
-		if (size == oldSize)
-			return;
-		mSize = size;
-		mTransformation.origin.x = mSize.x / 2.0f;
-		mTransformation.origin.y = mSize.y / 2.0f;
-		mTransformationUpdated = true;
-		if (size.x != oldSize.x)
-			onWidthChanged.emit(mSize.x);
-		if (size.y != oldSize.y)
-			onHeightChanged.emit(mSize.y);
-
-		debug
-		{
-			mRebuildDebugMeshes = true;
-		}
-	}
-	
-	Vector2f32	size() {return mSize;}
-
 	@property void	width(float width)
 	{
 		if (width == mSize.x)

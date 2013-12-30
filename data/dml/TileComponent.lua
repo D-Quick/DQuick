@@ -8,7 +8,8 @@ Image {
 	y = function()
 		return row * (height + 5)
 	end,	
-	width = function()
+---	fillMode = Image.FillMode.PreserveAspectFit,
+    width = function()
 		return height * implicitWidth/implicitHeight
 	end,
 	height = function()
