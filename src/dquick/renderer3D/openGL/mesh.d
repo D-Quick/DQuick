@@ -17,7 +17,7 @@ import derelict.opengl3.gl;
 import std.stdio;
 import std.variant;
 
-final class Mesh
+struct Mesh
 {
 public:
 	enum PrimitiveType
@@ -34,17 +34,9 @@ public:
 		Polygon = GL_POLYGON
 	}
 
-	this()
-	{
-		indexes = new VBO!GLuint();
-		vertices = new VBO!GLfloat();
-		colors = new VBO!GLfloat();
-		texCoords = new VBO!GLfloat();
-	}
-
 	~this()
 	{
-		release();
+		clear();
 	}
 
 	bool	setTexture(string filePath)
@@ -81,10 +73,10 @@ public:
 	void			setShaderProgram(ShaderProgram program) {mShaderProgram = program;}
 	ShaderProgram	shaderProgram() {return mShaderProgram;}
 
-	VBO!GLuint		indexes;
-	VBO!GLfloat		vertices;
-	VBO!GLfloat		colors;
-	VBO!GLfloat		texCoords;
+	VBO!GLuint		indexes/* = new VBO!GLuint()*/;
+	VBO!GLfloat		vertices/* = new VBO!GLfloat()*/;
+	VBO!GLfloat		colors/* = new VBO!GLfloat()*/;
+	VBO!GLfloat		texCoords/* = new VBO!GLfloat()*/;
 	PrimitiveType	primitiveType = PrimitiveType.Triangles;		/// Default type is Triangles
 
 	void	draw()
@@ -136,8 +128,16 @@ public:
 		checkgl!glUseProgram(mBadId);
 	}
 
-private:
-	void	release()
+	void	construct()
+	{
+		clear();
+		indexes = new VBO!GLuint();
+		vertices = new VBO!GLfloat();
+		colors = new VBO!GLfloat();
+		texCoords = new VBO!GLfloat();
+	}
+
+	void	clear()
 	{
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
@@ -153,6 +153,7 @@ private:
 		mShader = null;
 	}
 
+private:
 	static const GLuint		mBadId = 0;
 
 	GLint					mPositionAttribute;

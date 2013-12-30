@@ -111,14 +111,14 @@ public:
 private:
 	void	create()	// Safe to call it if mesh is already created
 	{
-		if (mMesh)
+		if (mMesh.vertices.length)
 			return;
 
 		Variant[] options;
 
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
-		mMesh = new Mesh();
+		mMesh.construct();
 		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
 		mShaderProgram.program = mShader.getProgram();
 		mMesh.setShader(mShader);

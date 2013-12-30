@@ -266,7 +266,7 @@ protected:
 	{
 		void	createDebugMeshes()	// Safe to call it if mesh is already created
 		{
-			if (mDebugMesh)
+			if (mDebugMesh.vertices.length)
 				return;
 
 			Variant[] options;
@@ -276,7 +276,7 @@ protected:
 			mDebugShaderProgram.program = mDebugShader.getProgram();
 
 			// Size
-			mDebugMesh = new Mesh();
+			mDebugMesh.construct();
 			mDebugMesh.setShader(mDebugShader);
 			mDebugMesh.setShaderProgram(mDebugShaderProgram);
 			mDebugMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
@@ -299,7 +299,7 @@ protected:
 										  cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
 
 			// ImplicitSize
-			mDebugImplicitMesh = new Mesh();
+			mDebugImplicitMesh.construct();
 			mDebugImplicitMesh.setShader(mDebugShader);
 			mDebugImplicitMesh.setShaderProgram(mDebugShaderProgram);
 			mDebugImplicitMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
