@@ -59,7 +59,7 @@ public:
 
 	@property Vector2s32	textureSize()
 	{
-		if (mMesh is null || mMesh.texture is null)
+		if (mMesh.texture is null)
 			return Vector2s32(0, 0);
 		return mMesh.texture.size;
 	}
@@ -67,10 +67,10 @@ public:
 private:
 	void	create()	// Safe to call it if mesh is already created
 	{
-		if (mMesh)
+		if (mMesh.vertices.length)
 			return;
 
-		mMesh = new Mesh();
+		mMesh.construct();
 
 		Variant[] options;
 		options ~= Variant(import("rectangle.vert"));

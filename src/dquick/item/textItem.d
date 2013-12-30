@@ -118,7 +118,7 @@ public:
 		startPaint(transformationUpdated);
 		if (mNeedRebuild)
 			rebuildMesh();
-		if (mMesh !is null)
+		if (mMesh.vertices.length)
 		{
 			if (mText == "")
 				int toto = 10;
@@ -182,9 +182,9 @@ private:
 	void	rebuildMesh()
 	{
 		mNeedRebuild = false;
-		if (mMesh)
-			mMesh.destroy();
-		mMesh = null;
+		if (mMesh.vertices.length)
+			mMesh.clear();
+
 		if (!mText.length)
 		{
 			setImplicitSize(Vector2f32(0.0f, 0.0f));
@@ -351,7 +351,7 @@ private:
 				implicitSize.y = lines[$ - 1].verticalCursor + lines[$ - 1].maxHeightUnderOrigin;
 
 			// Building the Mesh
-			mMesh = new Mesh();
+			mMesh.construct();
 			mMesh.setShader(mShader);
 			mMesh.setShaderProgram(mShaderProgram);
 

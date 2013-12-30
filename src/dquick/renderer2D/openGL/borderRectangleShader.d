@@ -120,10 +120,10 @@ public:
 private:
 	void	create()	// Safe to call it if mesh is already created
 	{
-		if (mMesh)
+		if (mMesh.vertices.length)
 			return;
 
-		mMesh = new Mesh();
+		mMesh.construct();
 
 		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("dquick/shaders/borderRectangle");
 		mShaderProgram.program = mShader.getProgram();
