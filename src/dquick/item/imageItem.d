@@ -160,6 +160,7 @@ protected:
 			onImplicitWidthChanged.emit(mImplicitSize.x);
 		if (mImplicitSize.y != oldImplicitSize.y)
 			onImplicitHeightChanged.emit(mImplicitSize.y);
+		mTransformationUpdated = true;
 	}
 
 private:

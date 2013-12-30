@@ -446,11 +446,13 @@ private:
 		{
 			mImplicitSize.x = implicitSize.x;
 			onImplicitWidthChanged.emit(mImplicitSize.x);
+			mTransformationUpdated = true;
 		}
 		if (implicitSize.y != mImplicitSize.y)
 		{
 			mImplicitSize.y = implicitSize.y;
 			onImplicitHeightChanged.emit(mImplicitSize.y);
+			mTransformationUpdated = true;
 		}
 	}
 
