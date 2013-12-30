@@ -10,7 +10,7 @@ Image {
 	end,	
 ---	fillMode = Image.FillMode.PreserveAspectFit,
     width = function()
-		return height * implicitWidth/implicitHeight
+		return height * implicitWidth / implicitHeight
 	end,
 	height = function()
 		return (grid.height - total * 5) / total

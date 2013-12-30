@@ -50,7 +50,7 @@ public:
 		mSource = filePath;
 		if (filePath != "" && !mRectangle.setTexture(filePath))
 			writeln("ImageItem::source:: Warning : can't load image \"" ~ filePath ~"\"");
-		updateSize(mSize);
+		updateSize(Vector2f32(width, height));
 		onSourceChanged.emit(filePath);
 		if (mRectangle.textureSize.x != oldSourceSize.x)
 			onSourceWidthChanged.emit(mRectangle.textureSize.x);
