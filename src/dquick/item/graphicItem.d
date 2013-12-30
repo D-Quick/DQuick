@@ -53,14 +53,18 @@ public:
 	/// Have to be called only on rootItem by window
 	void	setSize(Vector2f32 size)
 	{
-		if (size == mSize)
+		Vector2f32	oldSize = mSize;
+
+		if (size == oldSize)
 			return;
 		mSize = size;
 		mTransformation.origin.x = mSize.x / 2.0f;
 		mTransformation.origin.y = mSize.y / 2.0f;
 		mTransformationUpdated = true;
-		onWidthChanged.emit(mSize.x);
-		onHeightChanged.emit(mSize.y);
+		if (size.x != oldSize.x)
+			onWidthChanged.emit(mSize.x);
+		if (size.y != oldSize.y)
+			onHeightChanged.emit(mSize.y);
 
 		debug
 		{
@@ -209,8 +213,7 @@ public:
 protected:
 	void	startPaint(bool transformationUpdated)
 	{
-		if (transformationUpdated)
-			mTransformationUpdated = true;
+		mTransformationUpdated = transformationUpdated | mTransformationUpdated;	// Don't alter mTransformationUpdated if already true
 		
 		if (mTransformationUpdated)
 		{
