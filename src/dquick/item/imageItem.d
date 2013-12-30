@@ -86,9 +86,6 @@ public:
 	@property FillMode	fillMode() {return mFillMode;}
 	mixin Signal!(FillMode)	onFillModeChanged;
 
-	@property FillMode	fillMode() {return mFillMode;}
-	mixin Signal!(FillMode)	onFillModeChanged;
-
 	override
 	{
 		@property void	width(float width) {GraphicItem.width = width; updateSize(Vector2f32(width, height));}
