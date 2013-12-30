@@ -26,6 +26,8 @@ public:
 	override
 	void	paint(bool transformationUpdated)
 	{
+		if (!visible)
+			return;
 		startPaint(transformationUpdated);
 		mRectangle.draw();
 		paintChildren();

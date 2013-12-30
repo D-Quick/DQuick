@@ -115,6 +115,8 @@ public:
 	override
 	void	paint(bool transformationUpdated)
 	{
+		if (!visible)
+			return;
 		startPaint(transformationUpdated);
 		if (mNeedRebuild)
 			rebuildMesh();

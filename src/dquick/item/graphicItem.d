@@ -28,6 +28,16 @@ public:
 		mTransformationUpdated = true;	// Override default value of DeclarativeItem
 	}
 
+	@property void	visible(bool visible)
+	{
+		if (visible == mVisible)
+			return;
+		mVisible = visible;
+		onVisibleChanged.emit(visible);
+	}
+	@property bool	visible() {return mVisible;}
+	mixin Signal!(bool) onVisibleChanged;
+
 	@property void	x(float x)
 	{
 		if (x == mTransformation.position.x)
@@ -159,6 +169,8 @@ public:
 	override
 	void	paint(bool transformationUpdated)
 	{
+		if (!mVisible)
+			return;
 		startPaint(transformationUpdated);
 		paintChildren();
 		endPaint();
@@ -361,6 +373,7 @@ protected:
 		}
 	}
 
+	bool			mVisible = true;
 	bool			mClip = false;
 	Transformation	mTransformation;
 	Vector2f32		mSize = Vector2f32(0, 0);
