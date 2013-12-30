@@ -21,7 +21,7 @@ public:
 		TileHorizontally,		// the image is stretched vertically and tiled horizontally
 		Pad,					// the image is not transformed
 	}
-	
+
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
@@ -49,7 +49,7 @@ public:
 		if (filePath != "" && !mRectangle.setTexture(filePath))
 			writeln("ImageItem::source:: Warning : can't load image \"" ~ filePath ~"\"");
 		// TODO If this item is root, update the window size (only when item has to repect the image size)
-		setSize(mRectangle.size);
+		updateSize(mSize);
 		onSourceChanged.emit(filePath);
 		if (mRectangle.textureSize.x != oldSourceSize.x)
 			onSourceWidthChanged.emit(mRectangle.textureSize.x);
@@ -79,7 +79,7 @@ public:
 
 		mFillMode = mode;
 		onFillModeChanged.emit(mode);
-		setSize(mSize);
+		updateSize(mSize);
 	}
 
 	@property FillMode	fillMode() {return mFillMode;}
@@ -90,65 +90,74 @@ public:
 
 	override
 	{
-		void	setSize(Vector2f32 size)
+		@property void	width(float width) {updateSize(Vector2f32(width, GraphicItem.height));}
+		@property float	width() {return GraphicItem.width;}
+		@property void	height(float height) {updateSize(Vector2f32(GraphicItem.width, height));}
+		@property float	height() {return GraphicItem.height;}
+		@property float	implicitWidth() {return mImplicitSize.x;}
+		@property float	implicitHeight() {return mImplicitSize.y;}
+	}
+
+protected:
+	void	updateSize(Vector2f32 size)
+	{
+		Vector2f32	oldImplicitSize = mImplicitSize;
+		Vector2f32	implicitSize;
+
+		final switch (mFillMode)
 		{
-			Vector2f32	oldImplicitSize = mImplicitSize;
-			Vector2f32	implicitSize;
-
-			final switch (mFillMode)
-			{
-				case FillMode.Stretch:
-					implicitSize = size;
-					break;
-				case FillMode.PreserveAspectFit:
-					if (sourceWidth / sourceHeight < size.x / size.y)
-					{
-						implicitSize.x = size.x * (sourceHeight / sourceWidth);
-						implicitSize.y = size.y;
-					}
-					else
-					{
-						implicitSize.x = size.x;
-						implicitSize.y = size.y * (sourceHeight / sourceWidth);
-					}
-					break;
-				case FillMode.PreserveAspectCrop:
+			case FillMode.Stretch:
+				implicitSize = size;
+				break;
+			case FillMode.PreserveAspectFit:
+				if (sourceWidth / sourceHeight < size.x / size.y)
+				{
+					implicitSize.x = size.x * (sourceHeight / sourceWidth) * (size.y / size.x);
+					implicitSize.y = size.y;
+				}
+				else
+				{
 					implicitSize.x = size.x;
-					implicitSize.y = size.y * (sourceWidth / sourceHeight);
-					break;
-				case FillMode.Tile:
-					implicitSize = size;
-					break;
-				case FillMode.TileVertically:
-					implicitSize = size;
-					break;
-				case FillMode.TileHorizontally:
-					implicitSize = size;
-					break;
-				case FillMode.Pad:
-					implicitSize = Vector2f32(sourceWidth, sourceHeight);
-					break;
-			}
-
-			mRectangle.setSize(implicitSize);
-			GraphicItem.setSize(size);
-
-			if (implicitSize == mImplicitSize)
-				return;
-
-			mImplicitSize = implicitSize;
-			if (mImplicitSize.x != oldImplicitSize.x)
-				onImplicitWidthChanged.emit(mImplicitSize.x);
-			if (mImplicitSize.y != oldImplicitSize.y)
-				onImplicitHeightChanged.emit(mImplicitSize.y);
+					implicitSize.y = size.y * (sourceHeight / sourceWidth) * (size.x / size.y);
+				}
+				break;
+			case FillMode.PreserveAspectCrop:
+				if (sourceWidth / sourceHeight < size.x / size.y)
+				{
+					implicitSize.x = size.x;
+					implicitSize.y = size.y * (sourceHeight / sourceWidth) * (size.x / size.y);
+				}
+				else
+				{
+					implicitSize.x = size.x * (sourceHeight / sourceWidth) * (size.y / size.x);
+					implicitSize.y = size.y;
+				}
+				break;
+			case FillMode.Tile:
+				implicitSize = size;
+				break;
+			case FillMode.TileVertically:
+				implicitSize = size;
+				break;
+			case FillMode.TileHorizontally:
+				implicitSize = size;
+				break;
+			case FillMode.Pad:
+				implicitSize = Vector2f32(sourceWidth, sourceHeight);
+				break;
 		}
 
-		@property void	width(float width) {mRectangle.width = width; GraphicItem.width = width;}
-		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height) {mRectangle.height = height; GraphicItem.height = height;}
-		@property float	height() {return GraphicItem.height;}
-		@property float	implicitWidth() {return mRectangle.textureSize.x;}
-		@property float	implicitHeight() {return mRectangle.textureSize.y;}
+		mRectangle.setSize(implicitSize);
+		GraphicItem.setSize(size);
+
+		if (implicitSize == mImplicitSize)
+			return;
+
+		mImplicitSize = implicitSize;
+		if (mImplicitSize.x != oldImplicitSize.x)
+			onImplicitWidthChanged.emit(mImplicitSize.x);
+		if (mImplicitSize.y != oldImplicitSize.y)
+			onImplicitHeightChanged.emit(mImplicitSize.y);
 	}
 
 private:
@@ -156,8 +165,4 @@ private:
 	Rectangle	mRectangle;
 	FillMode	mFillMode = FillMode.Stretch;
 	string		mSource;
-}
-
-unittest
-{
 }
