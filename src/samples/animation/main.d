@@ -100,10 +100,11 @@ int main(string[] args)
 		
 		return GuiApplication.instance.execute();
 	}
-	catch(Exception exc)
+	catch (Throwable e)
 	{
-		writeln("Exception!");
-		writeln(exc.toString);
+		writeln(e.toString());
+		writeln("Press Enter to quit.");
+		readln();
 		return 1;
 	}
 }

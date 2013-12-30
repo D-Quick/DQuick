@@ -41,6 +41,8 @@ int main(string[] args)
 	catch (Throwable e)
 	{
 		writeln(e.toString());
+		writeln("Press Enter to quit.");
+		readln();
 		return 1;
 	}
 }
