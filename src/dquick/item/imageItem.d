@@ -45,33 +45,27 @@ public:
 
 	@property void	source(string filePath)
 	{
-		Vector2s32	oldSourceSize = mRectangle.textureSize;
+		Vector2s32	oldImplicitSize = mRectangle.textureSize;
 
 		mSource = filePath;
 		if (filePath != "" && !mRectangle.setTexture(filePath))
 			writeln("ImageItem::source:: Warning : can't load image \"" ~ filePath ~"\"");
 		updateSize(Vector2f32(width, height));
 		onSourceChanged.emit(filePath);
-		if (mRectangle.textureSize.x != oldSourceSize.x)
-			onSourceWidthChanged.emit(mRectangle.textureSize.x);
-		if (mRectangle.textureSize.y != oldSourceSize.y)
-			onSourceHeightChanged.emit(mRectangle.textureSize.y);
+		if (mRectangle.textureSize.x != oldImplicitSize.x)
+			onImplicitWidthChanged.emit(mRectangle.textureSize.x);
+		if (mRectangle.textureSize.y != oldImplicitSize.y)
+			onImplicitHeightChanged.emit(mRectangle.textureSize.y);
 	}
+
+	@property float	paintedWidth() {return mPaintedSize.x;}
+	mixin Signal!(float)	onPaintedWidthChanged;
+
+	@property float	paintedHeight() {return mPaintedSize.y;}
+	mixin Signal!(float)	onPaintedHeightChanged;
 
 	@property string		source() {return mSource;}
 	mixin Signal!(string)	onSourceChanged;
-
-	@property float	sourceWidth()
-	{
-		return mRectangle.textureSize.x;
-	}
-	mixin Signal!(float)	onSourceWidthChanged;
-
-	@property float	sourceHeight()
-	{
-		return mRectangle.textureSize.y;
-	}
-	mixin Signal!(float)	onSourceHeightChanged;
 
 	@property void	fillMode(FillMode mode)
 	{
@@ -92,74 +86,82 @@ public:
 		@property float	width() {return GraphicItem.width;}
 		@property void	height(float height) {GraphicItem.height = height; updateSize(Vector2f32(width, height));}
 		@property float	height() {return GraphicItem.height;}
-		@property float	implicitWidth() {return mImplicitSize.x;}
-		@property float	implicitHeight() {return mImplicitSize.y;}
+		@property float	implicitWidth()
+		{
+			return mRectangle.textureSize.x;
+		}
+
+		@property float	implicitHeight()
+		{
+			return mRectangle.textureSize.y;
+		}
+
 	}
 
 protected:
 	void	updateSize(Vector2f32 size)
 	{
-		Vector2f32	oldImplicitSize = mImplicitSize;
-		Vector2f32	implicitSize;
+		Vector2f32	oldPaintedSize = mPaintedSize;
+		Vector2f32	paintedSize;
 
 		final switch (mFillMode)
 		{
 			case FillMode.Stretch:
-				implicitSize = size;
+				paintedSize = size;
 				break;
 			case FillMode.PreserveAspectFit:
-				if (sourceWidth / sourceHeight < size.x / size.y)
+				if (implicitWidth / implicitHeight < size.x / size.y)
 				{
-					implicitSize.x = size.x * (sourceHeight / sourceWidth) * (size.y / size.x);
-					implicitSize.y = size.y;
+					paintedSize.x = size.x * (implicitHeight / implicitWidth) * (size.y / size.x);
+					paintedSize.y = size.y;
 				}
 				else
 				{
-					implicitSize.x = size.x;
-					implicitSize.y = size.y * (sourceHeight / sourceWidth) * (size.x / size.y);
+					paintedSize.x = size.x;
+					paintedSize.y = size.y * (implicitHeight / implicitWidth) * (size.x / size.y);
 				}
 				break;
 			case FillMode.PreserveAspectCrop:
-				if (sourceWidth / sourceHeight < size.x / size.y)
+				if (implicitWidth / implicitHeight < size.x / size.y)
 				{
-					implicitSize.x = size.x;
-					implicitSize.y = size.y * (sourceHeight / sourceWidth) * (size.x / size.y);
+					paintedSize.x = size.x;
+					paintedSize.y = size.y * (implicitHeight / implicitWidth) * (size.x / size.y);
 				}
 				else
 				{
-					implicitSize.x = size.x * (sourceHeight / sourceWidth) * (size.y / size.x);
-					implicitSize.y = size.y;
+					paintedSize.x = size.x * (implicitHeight / implicitWidth) * (size.y / size.x);
+					paintedSize.y = size.y;
 				}
 				break;
 			case FillMode.Tile:
-				implicitSize = size;
+				paintedSize = size;
 				break;
 			case FillMode.TileVertically:
-				implicitSize = size;
+				paintedSize = size;
 				break;
 			case FillMode.TileHorizontally:
-				implicitSize = size;
+				paintedSize = size;
 				break;
 			case FillMode.Pad:
-				implicitSize = Vector2f32(sourceWidth, sourceHeight);
+				paintedSize = Vector2f32(implicitWidth, implicitHeight);
 				break;
 		}
 
-		mRectangle.setSize(implicitSize);
+		mRectangle.setSize(paintedSize);
 
-		if (implicitSize == mImplicitSize)
+		if (paintedSize == mPaintedSize)
 			return;
 
-		mImplicitSize = implicitSize;
-		if (mImplicitSize.x != oldImplicitSize.x)
-			onImplicitWidthChanged.emit(mImplicitSize.x);
-		if (mImplicitSize.y != oldImplicitSize.y)
-			onImplicitHeightChanged.emit(mImplicitSize.y);
+		mPaintedSize = paintedSize;
+		if (mPaintedSize.x != oldPaintedSize.x)
+			onPaintedWidthChanged.emit(mPaintedSize.x);
+		if (mPaintedSize.y != oldPaintedSize.y)
+			onPaintedHeightChanged.emit(mPaintedSize.y);
 		mTransformationUpdated = true;
 	}
 
 private:
-	Vector2f32	mImplicitSize = Vector2f32(0.0f, 0.0f);
+	Vector2f32	mPaintedSize = Vector2f32(0.0f, 0.0f);
 	Rectangle	mRectangle;
 	FillMode	mFillMode = FillMode.Stretch;
 	string		mSource;
