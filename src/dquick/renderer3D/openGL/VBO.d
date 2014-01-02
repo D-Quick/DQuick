@@ -14,7 +14,7 @@ final class VBO(T) : IResource
 public:
 	~this()
 	{
-		unload();
+		assert(mId == 0, "unload method wasn't called.");
 	}
 
 	void	load(string filePath, Variant[] options)

@@ -24,7 +24,7 @@ struct OpenGLContextSDL
 public:
 	~this()
 	{
-		release;
+		assert(mContext == null, "release method wasn't called.");
 	}
 
 	void	pushSettings()

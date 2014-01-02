@@ -20,7 +20,7 @@ public:
 	
 	~this()
 	{
-		unload();
+		assert(mVertexShader == mBadId, "unload method wasn't called.");
 	}
 	
 	/// Take a filePath of which correspond to the fragment and vertex shaders files without extention (extentions are "frag" and "vert")

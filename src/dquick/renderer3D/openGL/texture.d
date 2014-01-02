@@ -16,7 +16,7 @@ final class Texture : IResource
 public:
 	~this()
 	{
-		unload();
+		assert(mId == mBadId, "unload method wasn't called.");
 	}
 
 	void	load(string filePath, Variant[] options = null)

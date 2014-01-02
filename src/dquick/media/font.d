@@ -42,6 +42,11 @@ import std.conv;
 class FontManager
 {
 public:
+	~this()
+	{
+		assert(mFonts.length == 0, "clear method wasn't called.");
+	}
+
 	ref Font	getFont(in string family, in Font.Style style, in int size)
 	{
 		string	fontKey;
@@ -80,13 +85,15 @@ public:
 		return mAtlases.length;
 	}
 
-private:
 	void	clear()	// used by unnitest to avoid conflict with applications
 	{
 		mAtlases.length = 0;
+		foreach(Font font; mFonts)
+			font.release();
 		mFonts.clear();
 	}
 
+private:
 	Atlas	lastAtlas()
 	{
 		if (mAtlases.length)
@@ -137,7 +144,7 @@ public:
 
 	~this()
 	{
-		FT_Done_Face(mFace);
+		assert(!mLoaded, "release method wasn't called.");
 	}
 
 	Tuple!(Glyph, bool)	loadGlyph(uint charCode)
@@ -313,6 +320,7 @@ public:
 private:
 	void	load(in string filePath, in Font.Style style, in int size)
 	{
+		debug mLoaded = true;
 		mFilePath = filePath;
 		mSize = size;
 
@@ -354,6 +362,12 @@ private:
 		mLinegap = mHeight /* - mAscender + mDescender*/;
 	}
 
+	void	release()
+	{
+		debug mLoaded = false;
+		FT_Done_Face(mFace);
+	}
+
 	void	blitGlyph(const ref FT_Bitmap ftBitmap, ref Glyph glyph)
 	{
 		glyph.image = new Image;
@@ -383,6 +397,8 @@ private:
 					   color.sizeof);
 			}
 	}
+
+	debug bool	mLoaded = false;
 
 	Glyph[uint]	mGlyphs;
 

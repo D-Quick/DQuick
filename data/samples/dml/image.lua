@@ -8,7 +8,7 @@ GraphicItem {
 		source = "samples/images/Qt/qt-logo.png",
 		width = 150,
 		height = 110,
-		
+
 		Text {
 			wrapMode = Text.WrapMode.WordWrap,
 		

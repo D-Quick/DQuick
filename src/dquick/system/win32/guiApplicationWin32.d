@@ -80,14 +80,9 @@ version (Windows)
 
 	final class Window : WindowBase, IWindow
 	{
-		this()
-		{
-			mWindowId = mWindowsCounter++;
-		}
-
 		~this()
 		{
-			mWindowsCounter--;
+			assert(!wasCreated, "close method wasn't called.");
 		}
 
 		override
@@ -206,6 +201,7 @@ version (Windows)
 			Renderer.initialize();
 			mContext.resize(size().x, size().y);
 
+			mWindowId = mWindowsCounter++;
 			GuiApplication.instance().registerWindow(this, mhWnd);
 
 			return true;
@@ -283,19 +279,21 @@ version (Windows)
 			return Vector2s32(rc.right - rc.left, rc.bottom - rc.top);
 		}
 
+		override void	close()
+		{
+			mWindowsCounter--;
+			mContext.release();
+			DestroyWindow(mhWnd);
+			mhWnd = null;
+			super.close();
+		}
+
 		//==========================================================================
 		//==========================================================================
 
 	protected:
 		override
 		{
-			void	close()
-			{
-				mContext.release();
-				DestroyWindow(mhWnd);
-				super.close();
-			}
-
 			void	onPaint()
 			{
 				Renderer.startFrame();

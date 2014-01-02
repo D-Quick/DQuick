@@ -19,7 +19,7 @@ struct DynamicLibrary
 public:
 	~this()
 	{
-		unload();
+		assert(mLibrary is null, "unload method wasn't called.");
 	}
 
 	bool	load(string name)

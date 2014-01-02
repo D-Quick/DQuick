@@ -67,7 +67,7 @@ public:
 
 	~this()
 	{
-		close();
+		assert(!wasCreated, "close method wasn't called.");
 	}
 
 	void	setMainItem(GraphicItem item)
@@ -104,7 +104,6 @@ public:
 		}
 	}
 
-protected:
 	void	close()
 	{
 		mRootItem = null;
@@ -117,6 +116,7 @@ protected:
 		}
 	}
 
+protected:
 	void	onPaint()
 	{
 		if (mRootItem)

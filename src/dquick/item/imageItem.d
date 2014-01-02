@@ -95,7 +95,6 @@ public:
 		{
 			return mRectangle.textureSize.y;
 		}
-
 	}
 
 protected:

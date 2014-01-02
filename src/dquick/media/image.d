@@ -39,7 +39,7 @@ public:
 
 	~this()
 	{
-		unload();
+		assert(mData.pixels == null, "unload method wasn't called.");
 	}
 
 	void	load(string filePath, Variant[] options = null)

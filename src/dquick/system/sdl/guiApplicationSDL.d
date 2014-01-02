@@ -202,14 +202,9 @@ private:
 
 final class Window : WindowBase, IWindow
 {
-	this()
-	{
-		mWindowId = mWindowsCounter++;
-	}
-
 	~this()
 	{
-		mWindowsCounter--;
+		assert(!wasCreated, "close method wasn't called.");
 	}
 
 	override
@@ -237,6 +232,7 @@ final class Window : WindowBase, IWindow
 		mContext.initialize(mWindow);
 		Renderer.initialize();
 
+		mWindowId = mWindowsCounter++;
 		GuiApplication.registerWindow(this, SDL_GetWindowID(mWindow));	// Call it just after window creation validation
 		return true;
 	}
@@ -255,7 +251,7 @@ final class Window : WindowBase, IWindow
 	{
 	}
 
-	void		setPosition(Vector2s32 newPosition)
+	void	setPosition(Vector2s32 newPosition)
 	{
 		// TODO
 		if (fullScreen()/* || maximized()*/)	// Will put corrupted values
@@ -265,7 +261,7 @@ final class Window : WindowBase, IWindow
 	}
 	Vector2s32	position() {return mPosition;}
 
-	override void		setSize(Vector2s32 newSize)
+	override void	setSize(Vector2s32 newSize)
 	{
 		super.setSize(newSize);
 
@@ -288,23 +284,24 @@ final class Window : WindowBase, IWindow
 		return Vector2s32(0, 0);
 	}
 
+	override void	close()
+	{
+		if (mWindow)
+		{
+			mWindowsCounter--;
+			mContext.release();
+			SDL_DestroyWindow(mWindow);
+			mWindow = null;
+		}
+		super.close();
+	}
+
 	//==========================================================================
 	//==========================================================================
 
 protected:
 	override
 	{
-		void	close()
-		{
-			if (mWindow)
-			{
-				mContext.release();
-				SDL_DestroyWindow(mWindow);
-				mWindow = null;
-			}
-			super.close();
-		}
-
 		void	onPaint()
 		{
 			Renderer.startFrame();

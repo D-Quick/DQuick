@@ -19,7 +19,7 @@ struct Material
 public:
 	~this()
 	{
-		destroy();
+		assert(mTexture is null, "unload method wasn't called.");
 	}
 
 	bool	setTexture(string filePath)
@@ -28,8 +28,7 @@ public:
 		return true;
 	}
 
-private:
-	void	destroy()
+	void	unload()
 	{
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
@@ -37,6 +36,7 @@ private:
 		mShader = null;
 	}
 
+private:
 	static const GLuint		mBadId = 0;
 
 	Texture					mTexture;

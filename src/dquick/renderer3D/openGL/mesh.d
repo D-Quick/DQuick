@@ -36,7 +36,7 @@ public:
 
 	~this()
 	{
-		clear();
+		assert(vertices is null, "clear method wasn't called.");
 	}
 
 	bool	setTexture(string filePath)
