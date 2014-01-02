@@ -28,6 +28,16 @@ public:
 		mTransformationUpdated = true;	// Override default value of DeclarativeItem
 	}
 
+	@property void	visible(bool visible)
+	{
+		if (visible == mVisible)
+			return;
+		mVisible = visible;
+		onVisibleChanged.emit(visible);
+	}
+	@property bool	visible() {return mVisible;}
+	mixin Signal!(bool) onVisibleChanged;
+
 	@property void	x(float x)
 	{
 		if (x == mTransformation.position.x)
@@ -49,24 +59,6 @@ public:
 	}
 	@property float	y() {return mTransformation.position.y;}
 	mixin Signal!(float) onYChanged;
-
-	/// Have to be called only on rootItem by window
-	void	setSize(Vector2f32 size)
-	{
-		if (size == mSize)
-			return;
-		mSize = size;
-		mTransformation.origin.x = mSize.x / 2.0f;
-		mTransformation.origin.y = mSize.y / 2.0f;
-		mTransformationUpdated = true;
-		onWidthChanged.emit(mSize.x);
-		onHeightChanged.emit(mSize.y);
-
-		debug
-		{
-			mRebuildDebugMeshes = true;
-		}
-	}
 
 	@property void	width(float width)
 	{
@@ -153,6 +145,8 @@ public:
 	override
 	void	paint(bool transformationUpdated)
 	{
+		if (!mVisible)
+			return;
 		startPaint(transformationUpdated);
 		paintChildren();
 		endPaint();
@@ -207,8 +201,7 @@ public:
 protected:
 	void	startPaint(bool transformationUpdated)
 	{
-		if (transformationUpdated)
-			mTransformationUpdated = true;
+		mTransformationUpdated = transformationUpdated | mTransformationUpdated;	// Don't alter mTransformationUpdated if already true
 		
 		if (mTransformationUpdated)
 		{
@@ -356,6 +349,7 @@ protected:
 		}
 	}
 
+	bool			mVisible = true;
 	bool			mClip = false;
 	Transformation	mTransformation;
 	Vector2f32		mSize = Vector2f32(0, 0);

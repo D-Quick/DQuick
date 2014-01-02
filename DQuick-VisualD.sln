@@ -6,6 +6,11 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Image", "projects\Image-Vis
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB} = {5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}
 	EndProjectSection
 EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Text", "projects\Text-VisualD.visualdproj", "{A02DE709-932A-4DC4-9964-E8A551410AAC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB} = {5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}
+	EndProjectSection
+EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "DQuick", "projects\DQuick-VisualD.visualdproj", "{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}"
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Animation", "projects\Animation-VisualD.visualdproj", "{C14FA60F-A580-4B9F-A1BC-3253548C37E2}"
@@ -50,6 +55,21 @@ Global
 		{A02DE709-944A-4DC4-9964-E8A551410AAC}.ReleaseUnittest|Win32.Build.0 = Release|Win32
 		{A02DE709-944A-4DC4-9964-E8A551410AAC}.ReleaseUnittest|x64.ActiveCfg = Release|x64
 		{A02DE709-944A-4DC4-9964-E8A551410AAC}.ReleaseUnittest|x64.Build.0 = Release|x64
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.Debug|Win32.Build.0 = Debug|Win32
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.Debug|x64.ActiveCfg = Debug|x64
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.Debug|x64.Build.0 = Debug|x64
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.DebugUnittest|Win32.ActiveCfg = Debug|Win32
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.DebugUnittest|x64.ActiveCfg = Debug|x64
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.DebugUnittest|x64.Build.0 = Debug|x64
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.Release|Win32.ActiveCfg = Release|Win32
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.Release|Win32.Build.0 = Release|Win32
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.Release|x64.ActiveCfg = Release|x64
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.Release|x64.Build.0 = Release|x64
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.ReleaseUnittest|Win32.ActiveCfg = Release|Win32
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.ReleaseUnittest|Win32.Build.0 = Release|Win32
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.ReleaseUnittest|x64.ActiveCfg = Release|x64
+		{A02DE709-932A-4DC4-9964-E8A551410AAC}.ReleaseUnittest|x64.Build.0 = Release|x64
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Debug|Win32.ActiveCfg = Debug|Win32
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Debug|Win32.Build.0 = Debug|Win32
 		{5B7AA8CE-9010-4B2B-95CF-D01AC9170FEB}.Debug|x64.ActiveCfg = Debug|x64

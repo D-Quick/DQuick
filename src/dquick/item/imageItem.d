@@ -13,14 +13,15 @@ class ImageItem : GraphicItem
 public:
 	enum	FillMode
 	{
-		Stretch,
-		PreserveAspectFit,
-		PreserveAspectCrop,
-		Tile,
-		TileVertically,
-		TileHorizontally,
+		Stretch,				// (default) the image is scaled to fit
+		PreserveAspectFit,		// the image is scaled uniformly to fit without cropping
+		PreserveAspectCrop,		// the image is scaled uniformly to fill, cropping if necessary
+		Tile,					// the image is duplicated horizontally and vertically
+		TileVertically,			// the image is stretched horizontally and tiled vertically
+		TileHorizontally,		// the image is stretched vertically and tiled horizontally
+		Pad,					// the image is not transformed
 	}
-	
+
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
@@ -33,6 +34,8 @@ public:
 	override
 	void	paint(bool transformationUpdated)
 	{
+		if (!visible)
+			return;
 		startPaint(transformationUpdated);
 		if (mSource != "")
 			mRectangle.draw();
@@ -42,44 +45,124 @@ public:
 
 	@property void	source(string filePath)
 	{
+		Vector2s32	oldImplicitSize = mRectangle.textureSize;
+
 		mSource = filePath;
 		if (filePath != "" && !mRectangle.setTexture(filePath))
 			writeln("ImageItem::source:: Warning : can't load image \"" ~ filePath ~"\"");
-		// TODO If this item is root, update the window size (only when item has to repect the image size)
-		setSize(mRectangle.size);
+		updateSize(Vector2f32(width, height));
 		onSourceChanged.emit(filePath);
-		onImplicitWidthChanged.emit(implicitWidth);
-		onImplicitHeightChanged.emit(implicitHeight);
+		if (mRectangle.textureSize.x != oldImplicitSize.x)
+			onImplicitWidthChanged.emit(mRectangle.textureSize.x);
+		if (mRectangle.textureSize.y != oldImplicitSize.y)
+			onImplicitHeightChanged.emit(mRectangle.textureSize.y);
 	}
 
-	@property string	source() {return mSource;}
-	mixin Signal!(string) onSourceChanged;
+	@property float	paintedWidth() {return mPaintedSize.x;}
+	mixin Signal!(float)	onPaintedWidthChanged;
 
-	void	setFillMode(FillMode newMode)
+	@property float	paintedHeight() {return mPaintedSize.y;}
+	mixin Signal!(float)	onPaintedHeightChanged;
+
+	@property string		source() {return mSource;}
+	mixin Signal!(string)	onSourceChanged;
+
+	@property void	fillMode(FillMode mode)
 	{
-		mFillMode = newMode;
+		if (mode == mFillMode)
+			return;
+
+		mFillMode = mode;
+		onFillModeChanged.emit(mode);
+		updateSize(mSize);
 	}
+
+	@property FillMode	fillMode() {return mFillMode;}
+	mixin Signal!(FillMode)	onFillModeChanged;
 
 	override
 	{
-		void	setSize(Vector2f32 size)
+		@property void	width(float width) {GraphicItem.width = width; updateSize(Vector2f32(width, height));}
+		@property float	width() {return GraphicItem.width;}
+		@property void	height(float height) {GraphicItem.height = height; updateSize(Vector2f32(width, height));}
+		@property float	height() {return GraphicItem.height;}
+		@property float	implicitWidth()
 		{
-			mRectangle.setSize(size);
-			GraphicItem.setSize(size);
+			return mRectangle.textureSize.x;
 		}
 
-		@property void	width(float width) {mRectangle.width = width; GraphicItem.width = width;}
-		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height) {mRectangle.height = height; GraphicItem.height = height;}
-		@property float	height() {return GraphicItem.height;}
+		@property float	implicitHeight()
+		{
+			return mRectangle.textureSize.y;
+		}
 
-		@property float	implicitWidth() {return mRectangle.textureSize.x;}
+	}
 
-		@property float	implicitHeight() {return mRectangle.textureSize.y;}
+protected:
+	void	updateSize(Vector2f32 size)
+	{
+		Vector2f32	oldPaintedSize = mPaintedSize;
+		Vector2f32	paintedSize;
+
+		final switch (mFillMode)
+		{
+			case FillMode.Stretch:
+				paintedSize = size;
+				break;
+			case FillMode.PreserveAspectFit:
+				if (implicitWidth / implicitHeight < size.x / size.y)
+				{
+					paintedSize.x = size.x * (implicitHeight / implicitWidth) * (size.y / size.x);
+					paintedSize.y = size.y;
+				}
+				else
+				{
+					paintedSize.x = size.x;
+					paintedSize.y = size.y * (implicitHeight / implicitWidth) * (size.x / size.y);
+				}
+				break;
+			case FillMode.PreserveAspectCrop:
+				if (implicitWidth / implicitHeight < size.x / size.y)
+				{
+					paintedSize.x = size.x;
+					paintedSize.y = size.y * (implicitHeight / implicitWidth) * (size.x / size.y);
+				}
+				else
+				{
+					paintedSize.x = size.x * (implicitHeight / implicitWidth) * (size.y / size.x);
+					paintedSize.y = size.y;
+				}
+				break;
+			case FillMode.Tile:
+				paintedSize = size;
+				break;
+			case FillMode.TileVertically:
+				paintedSize = size;
+				break;
+			case FillMode.TileHorizontally:
+				paintedSize = size;
+				break;
+			case FillMode.Pad:
+				paintedSize = Vector2f32(implicitWidth, implicitHeight);
+				break;
+		}
+
+		mRectangle.setSize(paintedSize);
+
+		if (paintedSize == mPaintedSize)
+			return;
+
+		mPaintedSize = paintedSize;
+		if (mPaintedSize.x != oldPaintedSize.x)
+			onPaintedWidthChanged.emit(mPaintedSize.x);
+		if (mPaintedSize.y != oldPaintedSize.y)
+			onPaintedHeightChanged.emit(mPaintedSize.y);
+		mTransformationUpdated = true;
 	}
 
 private:
+	Vector2f32	mPaintedSize = Vector2f32(0.0f, 0.0f);
 	Rectangle	mRectangle;
-	FillMode	mFillMode;
+	FillMode	mFillMode = FillMode.Stretch;
 	string		mSource;
 }

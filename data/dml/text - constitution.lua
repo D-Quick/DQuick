@@ -171,6 +171,8 @@ GraphicItem
 		width = 300,
 		height = 50,
 
+        fillMode = Image.FillMode.PreserveAspectFit,
+
 		MouseArea {
 			id = "kerningButton",
 			width = function()

@@ -1,12 +1,11 @@
 {
-	"name": "minesweeper",
+	"name": "text",
 	"description": "A GUI library written in D.",
 	"authors": ["Bruno Deligny", "Xavier Bigand"],
 	"homepage": "https://github.com/D-Quick/DQuick",
 	"license": "BSL-1.0",
 
 	"targetType": "executable",
-	"targetName": "Mine Sweeper",
 	"targetPath": "../../../data",
 	"dependencies": {
 		"dquick": {"version": "~master", "path": "../../../"}

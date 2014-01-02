@@ -26,6 +26,8 @@ public:
 	override
 	void	paint(bool transformationUpdated)
 	{
+		if (!visible)
+			return;
 		startPaint(transformationUpdated);
 		mRectangle.draw();
 		paintChildren();
@@ -34,25 +36,36 @@ public:
 
 	@property void	source(string filePath)
 	{
+		Vector2s32	oldSourceSize = mRectangle.textureSize;
+
 		mSource = filePath;
-		if (!mRectangle.setTexture(filePath))
+		if (filePath != "" && !mRectangle.setTexture(filePath))
 			writeln("ImageItem::source:: Warning : can't load image \"" ~ filePath ~"\"");
-		// TODO If this item is root, update the window size (only when item has to repect the image size)
-		setSize(mRectangle.size);
+		updateSize(mSize);
 		onSourceChanged.emit(filePath);
+		if (mRectangle.textureSize.x != oldSourceSize.x)
+			onSourceWidthChanged.emit(mRectangle.textureSize.x);
+		if (mRectangle.textureSize.y != oldSourceSize.y)
+			onSourceHeightChanged.emit(mRectangle.textureSize.y);
 	}
 
 	@property string	source() {return mSource;}
 	mixin Signal!(string) onSourceChanged;
 
+	@property float	sourceWidth()
+	{
+		return mRectangle.textureSize.x;
+	}
+	mixin Signal!(float)	onSourceWidthChanged;
+
+	@property float	sourceHeight()
+	{
+		return mRectangle.textureSize.y;
+	}
+	mixin Signal!(float)	onSourceHeightChanged;
+
 	override
 	{
-		void	setSize(Vector2f32 size)
-		{
-			mRectangle.setSize(size);
-			GraphicItem.setSize(size);
-		}
-
 		@property void	width(float width) {mRectangle.width = width; GraphicItem.width = width;}
 		@property float	width() {return GraphicItem.width;}
 		@property void	height(float height) {mRectangle.height = height; GraphicItem.height = height;}
@@ -78,6 +91,14 @@ public:
 	// TODO
 	@property void	horizontalTileMode(TileMode mode) {mRectangle.horizontalTileMode(mode);}
 	@property void	verticalTileMode(TileMode mode) {mRectangle.verticalTileMode(mode);}
+
+protected:
+	void	updateSize(Vector2f32 size)
+	{
+		mRectangle.setSize(size);
+		GraphicItem.width = size.x;
+		GraphicItem.height = size.y;
+	}
 
 private:
 	BorderRectangle	mRectangle;

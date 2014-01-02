@@ -87,7 +87,8 @@ public:
 		if (mRootItem is null)
 			throw new Exception("There is no root item or it's not a GraphicItem");
 
-		mRootItem.setSize(Vector2f32(size()));
+		mRootItem.width = size().x;
+		mRootItem.height = size().y;
 	}
 
 	GraphicItem	mainItem() {return mRootItem;}
@@ -97,7 +98,10 @@ public:
 	void	setSize(Vector2s32 newSize)
 	{
 		if (mRootItem)
-			mRootItem.setSize(Vector2f32(newSize));
+		{
+			mRootItem.width = newSize.x;
+			mRootItem.height = newSize.y;
+		}
 	}
 
 protected:

@@ -115,6 +115,8 @@ public:
 	override
 	void	paint(bool transformationUpdated)
 	{
+		if (!visible)
+			return;
 		startPaint(transformationUpdated);
 		if (mNeedRebuild)
 			rebuildMesh();
@@ -130,14 +132,6 @@ public:
 
 	override
 	{
-		// TODO put mNeedRebuild at true only when wrapping is activated
-		void	setSize(Vector2f32 size)
-		{
-			GraphicItem.setSize(size);
-			if (mWrapMode != WrapMode.NoWrap)
-				mNeedRebuild = true;
-		}
-
 		@property void	width(float width)
 		{
 			GraphicItem.width = width;
@@ -444,11 +438,13 @@ private:
 		{
 			mImplicitSize.x = implicitSize.x;
 			onImplicitWidthChanged.emit(mImplicitSize.x);
+			mTransformationUpdated = true;
 		}
 		if (implicitSize.y != mImplicitSize.y)
 		{
 			mImplicitSize.y = implicitSize.y;
 			onImplicitHeightChanged.emit(mImplicitSize.y);
+			mTransformationUpdated = true;
 		}
 	}
 

@@ -1,5 +1,5 @@
 <DProject>
- <ProjectGuid>{A02DE709-944A-4DC4-9964-E8A551410AAC}</ProjectGuid>
+ <ProjectGuid>{A02DE709-932A-4DC4-9964-E8A551410AAC}</ProjectGuid>
  <Config name="Debug" platform="Win32">
   <obj>0</obj>
   <link>0</link>
@@ -376,12 +376,15 @@
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
- <Folder name="Image">
+ <Folder name="Text">
   <Folder name="data">
    <Folder name="dml">
-    <File path="..\data\samples\dml\image.lua" />
+    <File path="..\data\dml\button.lua" />
+    <File path="..\data\dml\image.lua" />
+    <File path="..\data\dml\text - constitution.lua" />
+    <File path="..\data\dml\transformations.lua" />
    </Folder>
   </Folder>
-  <File path="..\src\samples\image\main.d" />
+  <File path="..\src\samples\text\main.d" />
  </Folder>
 </DProject>
