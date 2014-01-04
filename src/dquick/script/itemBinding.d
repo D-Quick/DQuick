@@ -330,9 +330,9 @@ static string	genProperties(T)()
 												if (!(value is null && ____%sItemBinding is null) && !(____%sItemBinding && value is ____%sItemBinding.item))
 												{
 													if (____%sItemBinding)
-														dmlEngine2.unregisterItem!(%s)(____%sItemBinding.item);
+														(cast(dquick.script.dmlEngine.DMLEngine)dmlEngine).unregisterItem!(%s)(____%sItemBinding.item);
 													if (value)
-														____%sItemBinding = dmlEngine2.registerItem!(%s)(value);
+														____%sItemBinding = (cast(dquick.script.dmlEngine.DMLEngine)dmlEngine).registerItem!(%s)(value);
 													else
 														____%sItemBinding = null;
 													__%s.emit(____%sItemBinding);
@@ -356,11 +356,11 @@ static string	genProperties(T)()
 												if (value != ____%sItemBinding)
 												{
 													if (____%sItemBinding !is null)
-														dmlEngine2.unregisterItem!(%s)(____%sItemBinding.item);
+														(cast(dquick.script.dmlEngine.DMLEngine)dmlEngine).unregisterItem!(%s)(____%sItemBinding.item);
 														____%sItemBinding = value;
 													if (____%sItemBinding !is null)
 													{
-														dmlEngine2.registerItem!(%s)(____%sItemBinding.item);
+														(cast(dquick.script.dmlEngine.DMLEngine)dmlEngine).registerItem!(%s)(____%sItemBinding.item);
 														item.%s = value.item;
 													}
 													else
@@ -524,16 +524,6 @@ class ItemBinding(T) : ItemBindingBase!(T) // Proxy that auto bind T
 	}
 
 	T	item;
-
-	dquick.script.dmlEngine.DMLEngine	dmlEngine2()
-	{
-		return cast(dquick.script.dmlEngine.DMLEngine)(mDMLEngine);
-	}
-
-	//dquick.script.dmlEngine.DMLEngine	dmlEngine()
-	//{
-	//	return dmlEngine;
-	//}
 
 	Object	itemObject() { return item;}
 
