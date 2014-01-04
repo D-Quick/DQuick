@@ -504,8 +504,6 @@ class ItemBinding(T) : ItemBindingBase!(T) // Proxy that auto bind T
 				static if (__traits(hasMember, this, "____"~propertyName~"ItemBinding")) // Instanciate subitem binding
 				{
 					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, this);  // Instantiate property binding linked to __propertyName inside this
-					static if (__traits(hasMember, this.item, getSignalNameFromPropertyName(propertyName)))
-						__traits(getMember, this, "__"~getSignalNameFromPropertyName(propertyName~"ItemBinding")).connect(&__traits(getMember, this, member).onChanged); // Signal
 
 					static if (__traits(hasMember, this.item, getSignalNameFromPropertyName(propertyName)))
 						__traits(getMember, this.item, getSignalNameFromPropertyName(propertyName)).connect(&__traits(getMember, this, "__"~getSignalNameFromPropertyName(propertyName))); // Signal
@@ -514,8 +512,6 @@ class ItemBinding(T) : ItemBindingBase!(T) // Proxy that auto bind T
 				else // Simple type
 				{
 					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, item);  // Instantiate property binding linked to member inside item
-					static if (__traits(hasMember, this.item, getSignalNameFromPropertyName(propertyName)))
-						__traits(getMember, this.item, getSignalNameFromPropertyName(propertyName)).connect(&__traits(getMember, this, member).onChanged); // Signal
 				}
 			}
 		}

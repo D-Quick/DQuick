@@ -19,6 +19,8 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 	{
 		this.item = item;
 		super(itemBinding, PropertyName);
+		static if (__traits(hasMember, item, getSignalNameFromPropertyName(PropertyName)))
+			__traits(getMember, item, getSignalNameFromPropertyName(PropertyName)).connect(&onChanged);
 	}
 
 	void	onChanged(ValueType t)

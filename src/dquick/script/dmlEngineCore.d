@@ -50,7 +50,6 @@ version(unittest)
 		{
 			idProperty = new typeof(idProperty)(this, this);
 			nativePropertyProperty = new typeof(nativePropertyProperty)(this, this);
-			onNativePropertyChanged.connect(&nativePropertyProperty.onChanged); // Signal
 		}
 
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SubItem, "id")	idProperty;
@@ -80,33 +79,15 @@ version(unittest)
 		this()
 		{
 			idProperty = new typeof(idProperty)(this, this);
-
 			nativePropertyProperty = new typeof(nativePropertyProperty)(this, this);
-			onNativePropertyChanged.connect(&nativePropertyProperty.onChanged); // Signal
-
 			nativeTotalPropertyProperty = new typeof(nativeTotalPropertyProperty)(this, this);
-			onNativeTotalPropertyChanged.connect(&nativeTotalPropertyProperty.onChanged); // Signal
-
 			nativeEnumPropertyProperty = new typeof(nativeEnumPropertyProperty)(this, this);
-			onNativeEnumPropertyChanged.connect(&nativeEnumPropertyProperty.onChanged); // Signal
-
 			nativeSubItemProperty = new typeof(nativeSubItemProperty)(this, this);
-			onNativeSubItemChanged.connect(&nativeSubItemProperty.onChanged); // Signal
-
 			nativePropertyArrayProperty = new typeof(nativePropertyArrayProperty)(this, this);
-			onNativePropertyArrayChanged.connect(&nativePropertyArrayProperty.onChanged); // Signal
-
 			nativePropertyDoubleArrayProperty = new typeof(nativePropertyDoubleArrayProperty)(this, this);
-			onNativePropertyDoubleArrayChanged.connect(&nativePropertyDoubleArrayProperty.onChanged); // Signal
-
 			nativePropertyStaticDoubleArrayProperty = new typeof(nativePropertyStaticDoubleArrayProperty)(this, this);
-			onNativePropertyStaticDoubleArrayChanged.connect(&nativePropertyStaticDoubleArrayProperty.onChanged); // Signal
-
 			nativePropertyDoubleMapProperty = new typeof(nativePropertyDoubleMapProperty)(this, this);
-			onNativePropertyDoubleMapChanged.connect(&nativePropertyDoubleMapProperty.onChanged); // Signal
-
 			delegatePropertyProperty = new typeof(delegatePropertyProperty)(this, this);
-			onDelegatePropertyChanged.connect(&delegatePropertyProperty.onChanged); // Signal
 		}
 
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, Item, "id")	idProperty;
