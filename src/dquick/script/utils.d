@@ -471,7 +471,7 @@ int	luaCallD(alias func)(lua_State* L, int firstParamIndex)
 		throw new Exception(format("too many arguments, expected %d", parameterTuple.length));
 
 	foreach (index, paramType; MyParameterTypeTuple)
-		dquick.script.utils.valueFromLua!paramType(L, firstParamIndex + index, parameterTuple[index]);
+		dquick.script.utils.valueFromLua!paramType(L, firstParamIndex + cast(int)index, parameterTuple[index]);
 	lua_pop(L, parameterTuple.length);
 
 	// Call D function
