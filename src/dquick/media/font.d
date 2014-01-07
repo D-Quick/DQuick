@@ -10,6 +10,8 @@ import dquick.maths.vector2f32;
 import dquick.maths.rect2s32;
 import dquick.maths.color;
 
+import dquick.utils.utils;
+
 import std.stdio;
 import std.string;
 import std.typecons;
@@ -44,7 +46,7 @@ class FontManager
 public:
 	~this()
 	{
-		assert(mFonts.length == 0, "clear method wasn't called.");
+		destructorAssert(mFonts.length == 0, "FontManager.clear method wasn't called.");
 	}
 
 	ref Font	getFont(in string family, in Font.Style style, in int size)
@@ -144,7 +146,7 @@ public:
 
 	~this()
 	{
-		assert(!mLoaded, "release method wasn't called.");
+		destructorAssert(!mLoaded, "Font.release method wasn't called.");
 	}
 
 	Tuple!(Glyph, bool)	loadGlyph(uint charCode)

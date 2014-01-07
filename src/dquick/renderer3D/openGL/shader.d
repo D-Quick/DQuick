@@ -3,6 +3,8 @@ module dquick.renderer3D.openGL.shader;
 import dquick.renderer3D.openGL.util;
 import dquick.utils.resourceManager;
 
+import dquick.utils.utils;
+
 import derelict.opengl3.gl;
 
 import std.string;
@@ -20,7 +22,7 @@ public:
 	
 	~this()
 	{
-		assert(mVertexShader == mBadId, "unload method wasn't called.");
+		destructorAssert(mVertexShader == mBadId, "Shader.unload method wasn't called.");
 	}
 	
 	/// Take a filePath of which correspond to the fragment and vertex shaders files without extention (extentions are "frag" and "vert")

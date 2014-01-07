@@ -17,6 +17,8 @@ import dquick.renderer3D.openGL.renderer;
 import dquick.maths.matrix4x4;
 import dquick.maths.vector2s32;
 
+import dquick.utils.utils;
+
 import derelict.sdl2.sdl;
 
 struct OpenGLContextSDL
@@ -24,7 +26,7 @@ struct OpenGLContextSDL
 public:
 	~this()
 	{
-		assert(mContext == null, "release method wasn't called.");
+		destructorAssert(mContext == null, "OpenGLContextSDL.release method wasn't called.");
 	}
 
 	void	pushSettings()

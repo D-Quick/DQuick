@@ -11,6 +11,8 @@ import dquick.maths.color;
 import dquick.maths.vector2s32;
 import dquick.utils.resourceManager;
 
+import dquick.utils.utils;
+
 ResourceManager	resourceManager;
 
 // TODO check potential issue with unload and the resources management (it's certainly possible to get a corrupted image)
@@ -39,7 +41,7 @@ public:
 
 	~this()
 	{
-		assert(mData.pixels == null, "unload method wasn't called.");
+		destructorAssert(mData.pixels == null, "Image.unload method wasn't called.");
 	}
 
 	void	load(string filePath, Variant[] options = null)

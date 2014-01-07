@@ -1,5 +1,7 @@
 module dquick.system.dynamic_library;
 
+import dquick.utils.utils;
+
 import core.runtime;
 import std.string;
 import std.stdio;
@@ -19,7 +21,7 @@ struct DynamicLibrary
 public:
 	~this()
 	{
-		assert(mLibrary is null, "unload method wasn't called.");
+		destructorAssert(mLibrary is null, "DynamicLibrary.unload method wasn't called.");
 	}
 
 	bool	load(string name)

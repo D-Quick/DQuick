@@ -12,6 +12,8 @@ import dquick.maths.color;
 
 import dquick.media.image;
 
+import dquick.utils.utils;
+
 import derelict.opengl3.gl;
 
 import std.stdio;
@@ -36,7 +38,7 @@ public:
 
 	~this()
 	{
-		assert(vertices is null, "clear method wasn't called.");
+		destructorAssert(vertices is null, "Mesh.clear method wasn't called.");
 	}
 
 	bool	setTexture(string filePath)

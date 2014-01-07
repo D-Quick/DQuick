@@ -5,6 +5,8 @@ version (Windows)
 	import dquick.system.guiApplication;
 	import dquick.system.win32.openglContextWin32;
 
+	import dquick.utils.utils;
+
 	import std.stdio;
 	import std.c.stdlib;
 	import std.c.string;	// for memset
@@ -82,7 +84,7 @@ version (Windows)
 	{
 		~this()
 		{
-			assert(!wasCreated, "close method wasn't called.");
+			destructorAssert(!wasCreated, "Window.close method wasn't called.");
 		}
 
 		override

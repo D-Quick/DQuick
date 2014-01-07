@@ -5,6 +5,8 @@ import dquick.media.image;
 import dquick.maths.vector2s32;
 import dquick.utils.resourceManager;
 
+import dquick.utils.utils;
+
 import derelict.opengl3.gl;
 
 import std.string;
@@ -16,7 +18,7 @@ final class Texture : IResource
 public:
 	~this()
 	{
-		assert(mId == mBadId, "unload method wasn't called.");
+		destructorAssert(mId == mBadId, "Texture.unload method wasn't called.");
 	}
 
 	void	load(string filePath, Variant[] options = null)

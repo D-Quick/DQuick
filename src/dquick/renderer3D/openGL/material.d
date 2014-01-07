@@ -8,6 +8,8 @@ import dquick.renderer3D.openGL.renderer;
 
 import dquick.maths.color;
 
+import dquick.utils.utils;
+
 import derelict.opengl3.gl;
 
 import std.stdio;
@@ -19,7 +21,7 @@ struct Material
 public:
 	~this()
 	{
-		assert(mTexture is null, "unload method wasn't called.");
+		destructorAssert(mTexture is null, "Material.unload method wasn't called.");
 	}
 
 	bool	setTexture(string filePath)

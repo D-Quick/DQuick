@@ -3,6 +3,8 @@ module dquick.system.sdl.guiApplicationSDL;
 import dquick.system.guiApplication;
 import dquick.system.sdl.openglContextSDL;
 
+import dquick.utils.utils;
+
 import derelict.sdl2.sdl;
 
 import std.string;
@@ -204,7 +206,7 @@ final class Window : WindowBase, IWindow
 {
 	~this()
 	{
-		assert(!wasCreated, "close method wasn't called.");
+		destructorAssert(!wasCreated, "Window.close method wasn't called.");
 	}
 
 	override

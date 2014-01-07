@@ -22,12 +22,14 @@ version (Windows)
 	import dquick.maths.matrix4x4;
 	import dquick.maths.vector2s32;
 
+	import dquick.utils.utils;
+
 	struct OpenGLContext
 	{
 	public:
 		~this()
 		{
-			release;
+			destructorAssert(mContext == null, "OpenGLContext.release method wasn't called.");
 		}
 
 		void	initialize(HWND Hwnd)

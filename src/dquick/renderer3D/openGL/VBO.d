@@ -3,6 +3,8 @@ module dquick.renderer3D.openGL.VBO;
 import dquick.renderer3D.openGL.util;
 import dquick.utils.resourceManager;
 
+import dquick.utils.utils;
+
 import derelict.opengl3.gl;
 
 import std.stdio;
@@ -14,7 +16,7 @@ final class VBO(T) : IResource
 public:
 	~this()
 	{
-		assert(mId == 0, "unload method wasn't called.");
+		destructorAssert(mId == 0, "VBO.unload method wasn't called.");
 	}
 
 	void	load(string filePath, Variant[] options)

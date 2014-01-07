@@ -15,6 +15,8 @@ public import dquick.maths.vector2s32;
 public import dquick.renderer3D.openGL.renderer;
 public import dquick.events.mouseEvent;
 
+import dquick.utils.utils;
+
 interface IWindow
 {
 public:
@@ -67,7 +69,7 @@ public:
 
 	~this()
 	{
-		assert(!wasCreated, "close method wasn't called.");
+		destructorAssert(!wasCreated, "WindowBase.close method wasn't called.");
 	}
 
 	void	setMainItem(GraphicItem item)
