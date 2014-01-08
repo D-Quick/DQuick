@@ -21,7 +21,7 @@ struct Material
 public:
 	~this()
 	{
-		destructorAssert(mTexture is null, "Material.unload method wasn't called.");
+		debug destructorAssert(mTexture is null, "Material.unload method wasn't called.");
 	}
 
 	bool	setTexture(string filePath)

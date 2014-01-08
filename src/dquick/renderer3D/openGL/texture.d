@@ -18,7 +18,7 @@ final class Texture : IResource
 public:
 	~this()
 	{
-		destructorAssert(mId == mBadId, "Texture.unload method wasn't called.");
+		debug destructorAssert(mId == mBadId, "Texture.unload method wasn't called.");
 	}
 
 	void	load(string filePath, Variant[] options = null)

@@ -38,7 +38,7 @@ public:
 
 	~this()
 	{
-		destructorAssert(vertices is null, "Mesh.clear method wasn't called.");
+		debug destructorAssert(vertices is null, "Mesh.clear method wasn't called.");
 	}
 
 	bool	setTexture(string filePath)
@@ -144,13 +144,13 @@ public:
 	{
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
-		destroy(indexes);
+		indexes.unload();
 		indexes = null;
-		destroy(vertices);
+		vertices.unload();
 		vertices = null;
-		destroy(colors);
+		colors.unload();
 		colors = null;
-		destroy(texCoords);
+		texCoords.unload();
 		texCoords = null;
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mShader);
 		mShader = null;

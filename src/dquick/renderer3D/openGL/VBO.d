@@ -16,12 +16,14 @@ final class VBO(T) : IResource
 public:
 	~this()
 	{
-		destructorAssert(mId == 0, "VBO.unload method wasn't called.");
+		debug destructorAssert(mId == 0, "VBO.unload method wasn't called. \n" ~ mTrace.toString());
 	}
 
 	void	load(string filePath, Variant[] options)
 	{
 		unload();
+
+		debug {mTrace = new Throwable("").info;}
 
 		assert(options && options.length == 2
 			&& options[0].type() == typeid(GLenum)
@@ -88,4 +90,9 @@ private:
 	T[]		mArray;
 	GLenum	mType;
 	GLenum	mMode;
+
+	debug
+	{
+		Throwable.TraceInfo	mTrace;
+	}
 }

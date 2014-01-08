@@ -2,9 +2,9 @@ module dquick.utils.utils;
 
 import std.stdio;
 
-void	destructorAssert(bool expression, string message)
+debug
 {
-	debug
+	void	destructorAssert(lazy bool expression, lazy string message)
 	{
 		if (!expression)
 		{

@@ -22,7 +22,7 @@ public:
 	
 	~this()
 	{
-		destructorAssert(mVertexShader == mBadId, "Shader.unload method wasn't called.");
+		debug destructorAssert(mVertexShader == mBadId, "Shader.unload method wasn't called.");
 	}
 	
 	/// Take a filePath of which correspond to the fragment and vertex shaders files without extention (extentions are "frag" and "vert")

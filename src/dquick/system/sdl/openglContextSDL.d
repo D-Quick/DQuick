@@ -26,7 +26,7 @@ struct OpenGLContextSDL
 public:
 	~this()
 	{
-		destructorAssert(mContext == null, "OpenGLContextSDL.release method wasn't called.");
+		debug destructorAssert(mContext == null, "OpenGLContextSDL.release method wasn't called.");
 	}
 
 	void	pushSettings()

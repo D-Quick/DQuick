@@ -41,7 +41,7 @@ public:
 
 	~this()
 	{
-		destructorAssert(mData.pixels == null, "Image.unload method wasn't called.");
+		debug destructorAssert(mData.pixels == null, "Image.unload method wasn't called.");
 	}
 
 	void	load(string filePath, Variant[] options = null)

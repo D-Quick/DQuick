@@ -21,7 +21,7 @@ struct DynamicLibrary
 public:
 	~this()
 	{
-		destructorAssert(mLibrary is null, "DynamicLibrary.unload method wasn't called.");
+		debug destructorAssert(mLibrary is null, "DynamicLibrary.unload method wasn't called.");
 	}
 
 	bool	load(string name)

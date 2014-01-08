@@ -69,7 +69,7 @@ public:
 
 	~this()
 	{
-		destructorAssert(!wasCreated, "WindowBase.close method wasn't called.");
+		debug destructorAssert(!wasCreated, "WindowBase.close method wasn't called.");
 	}
 
 	void	setMainItem(GraphicItem item)

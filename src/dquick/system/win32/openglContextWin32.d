@@ -29,7 +29,7 @@ version (Windows)
 	public:
 		~this()
 		{
-			destructorAssert(mContext == null, "OpenGLContext.release method wasn't called.");
+			debug destructorAssert(mContext == null, "OpenGLContext.release method wasn't called.");
 		}
 
 		void	initialize(HWND Hwnd)

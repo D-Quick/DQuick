@@ -84,7 +84,7 @@ version (Windows)
 	{
 		~this()
 		{
-			destructorAssert(!wasCreated, "Window.close method wasn't called.");
+			debug destructorAssert(!wasCreated, "Window.close method wasn't called.");
 		}
 
 		override

@@ -46,7 +46,7 @@ class FontManager
 public:
 	~this()
 	{
-		destructorAssert(mFonts.length == 0, "FontManager.clear method wasn't called.");
+		debug destructorAssert(mFonts.length == 0, "FontManager.clear method wasn't called.");
 	}
 
 	ref Font	getFont(in string family, in Font.Style style, in int size)
@@ -146,7 +146,7 @@ public:
 
 	~this()
 	{
-		destructorAssert(!mLoaded, "Font.release method wasn't called.");
+		debug destructorAssert(!mLoaded, "Font.release method wasn't called.");
 	}
 
 	Tuple!(Glyph, bool)	loadGlyph(uint charCode)
