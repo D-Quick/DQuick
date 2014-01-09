@@ -136,8 +136,7 @@ public:
 	{
 		debug mTrace = defaultTraceHandler(null);
 
-		if (vertices)
-			destruct();
+		destruct();
 		indexes = new VBO!GLuint();
 		vertices = new VBO!GLfloat();
 		colors = new VBO!GLfloat();
@@ -146,21 +145,27 @@ public:
 
 	void	destruct()
 	{
-		if (!vertices)
-			return;
-
-		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
-		mTexture = null;
-		indexes.unload();
-		indexes = null;
-		vertices.unload();
-		vertices = null;
-		colors.unload();
-		colors = null;
-		texCoords.unload();
-		texCoords = null;
-		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mShader);
-		mShader = null;
+		if (indexes)
+		{
+			indexes.unload();
+			indexes = null;
+			vertices.unload();
+			vertices = null;
+			colors.unload();
+			colors = null;
+			texCoords.unload();
+			texCoords = null;
+		}
+		if (mTexture)
+		{
+			dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
+			mTexture = null;
+		}
+		if (mShader)
+		{
+			dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mShader);
+			mShader = null;
+		}
 	}
 
 private:
