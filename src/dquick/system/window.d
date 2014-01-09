@@ -17,6 +17,8 @@ public import dquick.events.mouseEvent;
 
 import dquick.utils.utils;
 
+import core.runtime;
+
 interface IWindow
 {
 public:
@@ -69,7 +71,13 @@ public:
 
 	~this()
 	{
-		debug destructorAssert(!wasCreated, "WindowBase.close method wasn't called.");
+		debug destructorAssert(!wasCreated, "WindowBase.close method wasn't called.", mTrace);
+	}
+
+	bool	create()
+	{
+		debug mTrace = defaultTraceHandler(null);
+		return true;
 	}
 
 	void	setMainItem(GraphicItem item)
@@ -136,4 +144,6 @@ protected:
 private:
 	DMLEngine	mScriptContext;
 	GraphicItem	mRootItem;
+
+	debug Throwable.TraceInfo	mTrace;
 }

@@ -21,6 +21,8 @@ import std.math;
 import dquick.system.fontconfig.fontconfig;
 import std.conv;
 
+import core.runtime;
+
 /**
 * One Font per size and style
 * kerning requested at runtime
@@ -46,11 +48,13 @@ class FontManager
 public:
 	~this()
 	{
-		debug destructorAssert(mFonts.length == 0, "FontManager.clear method wasn't called.");
+		debug destructorAssert(mFonts.length == 0, "FontManager.clear method wasn't called.", mTrace);
 	}
 
 	ref Font	getFont(in string family, in Font.Style style, in int size)
 	{
+		debug mTrace = defaultTraceHandler(null);
+
 		string	fontKey;
 		Font*	font;
 
@@ -116,6 +120,8 @@ private:
 	Atlas[]			mAtlases;
 	Font[string]	mFonts;
 	Vector2s32		mAtlasSize = Vector2s32(512, 512);
+
+	debug Throwable.TraceInfo	mTrace;
 }
 
 FontManager	fontManager;
@@ -146,7 +152,7 @@ public:
 
 	~this()
 	{
-		debug destructorAssert(!mLoaded, "Font.release method wasn't called.");
+		debug destructorAssert(!mLoaded, "Font.release method wasn't called.", mTrace);
 	}
 
 	Tuple!(Glyph, bool)	loadGlyph(uint charCode)
@@ -322,7 +328,9 @@ public:
 private:
 	void	load(in string filePath, in Font.Style style, in int size)
 	{
+		debug mTrace = defaultTraceHandler(null);
 		debug mLoaded = true;
+	
 		mFilePath = filePath;
 		mSize = size;
 
@@ -400,7 +408,8 @@ private:
 			}
 	}
 
-	debug bool	mLoaded = false;
+	debug bool					mLoaded = false;
+	debug Throwable.TraceInfo	mTrace;
 
 	Glyph[uint]	mGlyphs;
 

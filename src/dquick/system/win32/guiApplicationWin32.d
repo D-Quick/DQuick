@@ -15,6 +15,9 @@ version (Windows)
 	import std.exception;
 
 	import std.c.windows.windows;
+
+	import core.runtime;
+
 	pragma(lib, "gdi32.lib");
 
 	final class GuiApplication : GuiApplicationBase, IGuiApplication
@@ -84,7 +87,7 @@ version (Windows)
 	{
 		~this()
 		{
-			debug destructorAssert(!wasCreated, "Window.close method wasn't called.");
+			debug destructorAssert(!wasCreated, "Window.close method wasn't called.", mTrace);
 		}
 
 		override
@@ -95,8 +98,12 @@ version (Windows)
 			DMLEngine	dmlEngine() {return super.dmlEngine();}
 		}
 
-		bool	create()
+		override bool	create()
 		{
+			debug mTrace = defaultTraceHandler(null);
+
+			WindowBase.create();
+
 			if (mhWnd)
 				throw new Exception("[Window] Must be destroy before, being able to create a new one.");
 
@@ -319,6 +326,8 @@ version (Windows)
 		bool		mFullScreen = false;
 
 		OpenGLContext	mContext;
+
+		debug Throwable.TraceInfo	mTrace;
 	}
 
 	//==========================================================================

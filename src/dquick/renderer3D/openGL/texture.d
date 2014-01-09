@@ -11,6 +11,8 @@ import derelict.opengl3.gl;
 
 import std.string;
 
+import core.runtime;
+
 final class Texture : IResource
 {
 	mixin ResourceBase;
@@ -18,11 +20,13 @@ final class Texture : IResource
 public:
 	~this()
 	{
-		debug destructorAssert(mId == mBadId, "Texture.unload method wasn't called.");
+		debug destructorAssert(mId == mBadId, "Texture.unload method wasn't called.", mTrace);
 	}
 
 	void	load(string filePath, Variant[] options = null)
 	{
+		debug mTrace = defaultTraceHandler(null);
+
 		unload();
 
 		if (options.length == 0)
@@ -128,4 +132,6 @@ private:
 	GLuint		mId = mBadId;
 	Vector2s32	mSize;
 	ubyte		mNbBytesPerPixels = 0;
+
+	debug Throwable.TraceInfo	mTrace;
 }

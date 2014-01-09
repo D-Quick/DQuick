@@ -9,6 +9,8 @@ import derelict.opengl3.gl;
 
 import std.stdio;
 
+import core.runtime;
+
 final class VBO(T) : IResource
 {
 	mixin ResourceBase;
@@ -16,14 +18,14 @@ final class VBO(T) : IResource
 public:
 	~this()
 	{
-		debug destructorAssert(mId == 0, "VBO.unload method wasn't called. \n" ~ mTrace.toString());
+		debug destructorAssert(mId == 0, "VBO.unload method wasn't called.", mTrace);
 	}
 
 	void	load(string filePath, Variant[] options)
 	{
 		unload();
 
-		debug {mTrace = new Throwable("").info;}
+		debug mTrace = defaultTraceHandler(null);
 
 		assert(options && options.length == 2
 			&& options[0].type() == typeid(GLenum)
@@ -91,8 +93,5 @@ private:
 	GLenum	mType;
 	GLenum	mMode;
 
-	debug
-	{
-		Throwable.TraceInfo	mTrace;
-	}
+	debug Throwable.TraceInfo	mTrace;
 }

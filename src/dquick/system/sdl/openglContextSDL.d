@@ -21,12 +21,14 @@ import dquick.utils.utils;
 
 import derelict.sdl2.sdl;
 
+import core.runtime;
+
 struct OpenGLContextSDL
 {
 public:
 	~this()
 	{
-		debug destructorAssert(mContext == null, "OpenGLContextSDL.release method wasn't called.");
+		debug destructorAssert(mContext == null, "OpenGLContextSDL.release method wasn't called.", mTrace);
 	}
 
 	void	pushSettings()
@@ -43,6 +45,8 @@ public:
 
 	void	initialize(SDL_Window* window)
 	{
+		debug mTrace = defaultTraceHandler(null);
+
 		mWindow = window;
 
 		mContext = SDL_GL_CreateContext(mWindow);
@@ -101,4 +105,6 @@ public:
 private:
 	SDL_Window*		mWindow;
 	SDL_GLContext	mContext;
+
+	debug Throwable.TraceInfo	mTrace;
 }

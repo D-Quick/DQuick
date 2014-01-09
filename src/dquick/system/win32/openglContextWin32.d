@@ -24,16 +24,20 @@ version (Windows)
 
 	import dquick.utils.utils;
 
+	import core.runtime;
+
 	struct OpenGLContext
 	{
 	public:
 		~this()
 		{
-			debug destructorAssert(mContext == null, "OpenGLContext.release method wasn't called.");
+			debug destructorAssert(mContext == null, "OpenGLContext.release method wasn't called.", mTrace);
 		}
 
 		void	initialize(HWND Hwnd)
 		{
+			debug mTrace = defaultTraceHandler(null);
+
 /*			c.gl.wgl.load();
 			c.gl.wglext.load();
 			c.gl.gl.load();
@@ -171,6 +175,8 @@ version (Windows)
 		HWND		mHwnd;
 		HDC			mHandle;
 		HGLRC		mContext;
+
+		debug Throwable.TraceInfo	mTrace;
 	}
 
 	// TODO add this extension to Derelict

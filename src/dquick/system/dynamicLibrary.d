@@ -21,11 +21,13 @@ struct DynamicLibrary
 public:
 	~this()
 	{
-		debug destructorAssert(mLibrary is null, "DynamicLibrary.unload method wasn't called.");
+		debug destructorAssert(mLibrary is null, "DynamicLibrary.unload method wasn't called.", mTrace);
 	}
 
 	bool	load(string name)
 	{
+		debug mTrace = defaultTraceHandler(null);
+
 		unload();
 		version(Windows)
 		{
@@ -71,4 +73,6 @@ public:
 
 private:
 	void*	mLibrary = null;
+
+	debug Throwable.TraceInfo	mTrace;
 }

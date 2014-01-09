@@ -11,6 +11,8 @@ import std.string;
 import std.stdio;
 import std.file;
 
+import core.runtime;
+
 final class Shader : IResource
 {
 	mixin ResourceBase;
@@ -22,13 +24,15 @@ public:
 	
 	~this()
 	{
-		debug destructorAssert(mVertexShader == mBadId, "Shader.unload method wasn't called.");
+		debug destructorAssert(mVertexShader == mBadId, "Shader.unload method wasn't called.", mTrace);
 	}
 	
 	/// Take a filePath of which correspond to the fragment and vertex shaders files without extention (extentions are "frag" and "vert")
 	/// Shader will be compiled and linked
 	void	load(string filePath, Variant[] options)
 	{
+		debug mTrace = defaultTraceHandler(null);
+
 		unload();
 
 		if (options == null)
@@ -174,4 +178,6 @@ private:
 	
 	string	mFragmentShaderSource;
 	string	mVertexShaderSource;
+
+	debug Throwable.TraceInfo	mTrace;
 };

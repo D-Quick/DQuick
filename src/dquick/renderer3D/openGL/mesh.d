@@ -19,6 +19,8 @@ import derelict.opengl3.gl;
 import std.stdio;
 import std.variant;
 
+import core.runtime;
+
 struct Mesh
 {
 public:
@@ -38,7 +40,7 @@ public:
 
 	~this()
 	{
-		debug destructorAssert(vertices is null, "Mesh.clear method wasn't called.");
+		debug destructorAssert(vertices is null, "Mesh.destruct method wasn't called.", mTrace);
 	}
 
 	bool	setTexture(string filePath)
@@ -132,15 +134,17 @@ public:
 
 	void	construct()
 	{
+		debug mTrace = defaultTraceHandler(null);
+
 		if (vertices)
-			clear();
+			destruct();
 		indexes = new VBO!GLuint();
 		vertices = new VBO!GLfloat();
 		colors = new VBO!GLfloat();
 		texCoords = new VBO!GLfloat();
 	}
 
-	void	clear()
+	void	destruct()
 	{
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
@@ -168,4 +172,6 @@ private:
 	Shader					mShader;
 	ShaderProgram			mShaderProgram;
 	Texture					mTexture;			// TODO move to Material
+
+	debug Throwable.TraceInfo	mTrace;
 }

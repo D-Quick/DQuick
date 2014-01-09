@@ -13,6 +13,8 @@ import dquick.utils.resourceManager;
 
 import dquick.utils.utils;
 
+import core.runtime;
+
 ResourceManager	resourceManager;
 
 // TODO check potential issue with unload and the resources management (it's certainly possible to get a corrupted image)
@@ -41,11 +43,13 @@ public:
 
 	~this()
 	{
-		debug destructorAssert(mData.pixels == null, "Image.unload method wasn't called.");
+		debug destructorAssert(mData.pixels == null, "Image.unload method wasn't called.", mTrace);
 	}
 
 	void	load(string filePath, Variant[] options = null)
 	{
+		debug mTrace = defaultTraceHandler(null);
+
 		assert(options == null);
 		unload();
 		mFilePath = filePath;
@@ -280,6 +284,9 @@ public:
 
 protected:
 	ImageData mData;
+
+private:
+	debug Throwable.TraceInfo	mTrace;
 }
 
 

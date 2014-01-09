@@ -4,11 +4,14 @@ import std.stdio;
 
 debug
 {
-	void	destructorAssert(lazy bool expression, lazy string message)
+	void	destructorAssert(bool expression, string message, Throwable.TraceInfo trace)
 	{
 		if (!expression)
 		{
 			writeln(message);
+			if (trace !is null)
+				foreach(t; trace)
+					writefln("%s", t);
 			readln();
 		}
 	}

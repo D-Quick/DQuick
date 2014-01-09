@@ -12,6 +12,8 @@ import std.exception;
 import std.stdio;
 import std.path;
 
+import core.runtime;
+
 shared static this()
 {
 	writeln("dquick.system.sdl.guiApplicationSDL : shared static this()");
@@ -206,7 +208,7 @@ final class Window : WindowBase, IWindow
 {
 	~this()
 	{
-		debug destructorAssert(!wasCreated, "Window.close method wasn't called.");
+		debug destructorAssert(!wasCreated, "Window.close method wasn't called.", mTrace);
 	}
 
 	override
@@ -217,8 +219,12 @@ final class Window : WindowBase, IWindow
 		DMLEngine	dmlEngine() {return super.dmlEngine();}
 	}
 
-	bool	create()
+	override bool	create()
 	{
+		debug mTrace = defaultTraceHandler(null);
+
+		WindowBase.create();
+
 		mContext.pushSettings();
 
 		mWindow = SDL_CreateWindow(GuiApplication.instance().applicationDisplayName.toStringz,
@@ -327,6 +333,8 @@ private:
 
 	SDL_Window*			mWindow = null;
 	OpenGLContextSDL	mContext;
+
+	debug Throwable.TraceInfo	mTrace;
 }
 
 private static void throwError()
