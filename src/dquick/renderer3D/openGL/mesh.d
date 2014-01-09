@@ -146,6 +146,9 @@ public:
 
 	void	destruct()
 	{
+		if (!vertices)
+			return;
+
 		dquick.renderer3D.openGL.renderer.resourceManager.releaseResource(mTexture);
 		mTexture = null;
 		indexes.unload();

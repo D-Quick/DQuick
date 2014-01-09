@@ -176,8 +176,8 @@ private:
 	void	rebuildMesh()
 	{
 		mNeedRebuild = false;
-		if (mMesh.vertices)
-			mMesh.clear();
+
+		mMesh.destruct();
 
 		if (!mText.length)
 		{
