@@ -316,6 +316,14 @@ version (Windows)
 		}
 
 	private:
+		void	closing()
+		{
+			mWindowsCounter--;
+			mContext.release();
+			mhWnd = null;
+			super.close();
+		}
+
 		static int	mWindowsCounter = 0;
 		int			mWindowId;
 
@@ -380,7 +388,10 @@ version (Windows)
 					break;
 				case WM_DESTROY:
 					if (hWnd in GuiApplication.instance().mWindows)
-						GuiApplication.instance().mWindows[hWnd].destroy();
+					{
+						GuiApplication.instance().mWindows[hWnd].closing();
+						GuiApplication.instance().mWindows.remove(hWnd);
+					}
 					PostQuitMessage(0);
 					break;
 

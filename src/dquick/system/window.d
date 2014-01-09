@@ -119,11 +119,8 @@ public:
 		mRootItem = null;
 		destroy(mScriptContext);
 		mScriptContext = null;
-		if (wasCreated())
-		{
-			if (isMainWindow())
-				GuiApplication.instance().quit();
-		}
+		if (isMainWindow())
+			GuiApplication.instance().quit();
 	}
 
 protected:

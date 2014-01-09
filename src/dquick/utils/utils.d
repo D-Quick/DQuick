@@ -12,7 +12,7 @@ debug
 			if (trace !is null)
 				foreach(t; trace)
 					writefln("%s", t);
-			readln();
+//			readln();
 		}
 	}
 }
