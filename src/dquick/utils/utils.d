@@ -9,6 +9,9 @@ debug
 		if (!expression)
 		{
 			writeln(message);
+			if (trace !is null)
+				foreach(t; trace)
+					writefln("%s", t);
 			readln();
 		}
 	}
