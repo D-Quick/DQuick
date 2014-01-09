@@ -434,7 +434,7 @@ version (Windows)
 		}
 		catch (Throwable e)
 		{
-			collectException(MessageBoxA(null, e.toString().toStringz, "Error", MB_OK | MB_ICONEXCLAMATION));	// PS: string.toString() method is not nothrow
+			collectException(writeln(e.toString()));	// PS: string.toString() method is not nothrow
 		}
 		return DefWindowProcA(hWnd, message, wParam, lParam);
 	}
