@@ -85,14 +85,11 @@ public:
 
 	void	draw()
 	{
-/*		checkgl!glUseProgram(mShader.getProgram);
-
-		glUniformMatrix4fv(mMDVInvertedMatrixUniform, 1, false, (Renderer.currentCamera().inverse() * Renderer.currentMDVMatrix).inverse().value_ptr);*/
-
 		if (mShader)
 		{
 			mShaderProgram.execute();
 
+			// TODO use parameter on mShaderProgram instead
 			glUniformMatrix4fv(mMDVMatrixUniform, 1, false, Renderer.currentMDVMatrix.value_ptr);
 		}
 
