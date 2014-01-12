@@ -89,7 +89,7 @@ public:
 
 		glUniformMatrix4fv(mMDVInvertedMatrixUniform, 1, false, (Renderer.currentCamera().inverse() * Renderer.currentMDVMatrix).inverse().value_ptr);*/
 
-		if (mShaderProgram.program != mShaderProgram.badId)
+		if (mShader)
 		{
 			mShaderProgram.execute();
 
