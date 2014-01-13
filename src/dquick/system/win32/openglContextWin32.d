@@ -148,11 +148,13 @@ version (Windows)
 
 		void	resize(int width, int height)
 		{
+			if (!mContext)
+				return;
+
 			if (height==0)										// Prevent A Divide By Zero By
 			{
 				height=1;										// Making Height Equal One
 			}
-
 
 			Renderer.setViewportSize(Vector2s32(width, height));						// Reset The Current Viewport
 
