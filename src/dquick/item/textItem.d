@@ -349,7 +349,7 @@ private:
 			mMesh.setShader(mShader);
 			mMesh.setShaderProgram(mShaderProgram);
 
-			GLuint[]	indexes;
+			GLuint[]	indexes;	// TODO preallocate arrays, I can compute the number of glyph to put in
 			GLfloat[]	vertices;
 			GLfloat[]	texCoords;
 			GLfloat[]	colors;
