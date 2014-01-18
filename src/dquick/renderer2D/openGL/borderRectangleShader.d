@@ -139,11 +139,10 @@ private:
 							   6,	7,	10,	7,	11,	10,
 							   8,	9,	12,	9,	13,	12,
 							   9,	10,	13,	10,	14,	13,
-							   10,	11,	14,	11,	15,	14],
-							   cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
+							   10,	11,	14,	11,	15,	14], cast(GLenum)GL_STATIC_DRAW);
 
-		mMesh.vertices.setArray(verticesArray(), cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
-		mMesh.texCoords.setArray(texCoordArray(), cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.vertices.setArray(verticesArray(), cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.texCoords.setArray(texCoordArray(), cast(GLenum)GL_DYNAMIC_DRAW);
 
 		mMesh.colors.setArray(cast(GLfloat[])[
 							  1.0f, 1.0f, 1.0f, 1.0f,
@@ -164,8 +163,7 @@ private:
 							  1.0f, 1.0f, 1.0f, 1.0f,
 							  1.0f, 1.0f, 1.0f, 1.0f,
 							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f],
-							  cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+							  1.0f, 1.0f, 1.0f, 1.0f], cast(GLenum)GL_DYNAMIC_DRAW);
 	}
 
 	void	updateMesh()

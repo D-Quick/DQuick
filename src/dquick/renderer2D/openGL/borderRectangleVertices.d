@@ -131,10 +131,10 @@ private:
 		mMesh.setShader(mShader);
 		mMesh.setShaderProgram(mShaderProgram);
 
-		mMesh.indexes.setArray(indexesArray(), cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
-		mMesh.vertices.setArray(verticesArray(), cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
-		mMesh.texCoords.setArray(texCoordArray(), cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
-		mMesh.colors.setArray(colorsArray(), cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.indexes.setArray(indexesArray(), cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.vertices.setArray(verticesArray(), cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.texCoords.setArray(texCoordArray(), cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.colors.setArray(colorsArray(), cast(GLenum)GL_DYNAMIC_DRAW);
 	}
 
 	void	updateMesh()

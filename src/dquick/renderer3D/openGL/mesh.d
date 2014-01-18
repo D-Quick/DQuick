@@ -134,10 +134,10 @@ public:
 		debug mTrace = defaultTraceHandler(null);
 
 		destruct();
-		indexes = new VBO!GLuint();
-		vertices = new VBO!GLfloat();
-		colors = new VBO!GLfloat();
-		texCoords = new VBO!GLfloat();
+		indexes = new VBO!GLuint(cast(GLenum)GL_ELEMENT_ARRAY_BUFFER);
+		vertices = new VBO!GLfloat(cast(GLenum)GL_ARRAY_BUFFER);
+		colors = new VBO!GLfloat(cast(GLenum)GL_ARRAY_BUFFER);
+		texCoords = new VBO!GLfloat(cast(GLenum)GL_ARRAY_BUFFER);
 	}
 
 	void	destruct()

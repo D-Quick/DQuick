@@ -272,22 +272,19 @@ protected:
 			mDebugMesh.setShaderProgram(mDebugShaderProgram);
 			mDebugMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
 
-			mDebugMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3],
-								   cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
+			mDebugMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3], cast(GLenum)GL_STATIC_DRAW);
 
 			mDebugMesh.vertices.setArray(cast(GLfloat[])[
 				0.0f,		0.0f,		0.0f,
 				mSize.x,	0.0f,		0.0f,
 				mSize.x,	mSize.y,	0.0f,
-				0.0f,		mSize.y,	0.0f],
-											cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+				0.0f,		mSize.y,	0.0f], cast(GLenum)GL_DYNAMIC_DRAW);
 
 			mDebugMesh.colors.setArray(cast(GLfloat[])[
 				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
 				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
 				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w],
-										  cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w], cast(GLenum)GL_DYNAMIC_DRAW);
 
 			// ImplicitSize
 			mDebugImplicitMesh.construct();
@@ -295,22 +292,19 @@ protected:
 			mDebugImplicitMesh.setShaderProgram(mDebugShaderProgram);
 			mDebugImplicitMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
 
-			mDebugImplicitMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3],
-										cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
+			mDebugImplicitMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3], cast(GLenum)GL_STATIC_DRAW);
 
 			mDebugImplicitMesh.vertices.setArray(cast(GLfloat[])[
 				0.0f,			0.0f,			0.0f,
 				implicitWidth,	0.0f,			0.0f,
 				implicitWidth,	implicitHeight,	0.0f,
-				0.0f,			implicitHeight,	0.0f],
-												 cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+				0.0f,			implicitHeight,	0.0f], cast(GLenum)GL_DYNAMIC_DRAW);
 
 			mDebugImplicitMesh.colors.setArray(cast(GLfloat[])[
 				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
 				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
 				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w],
-									   cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w], cast(GLenum)GL_DYNAMIC_DRAW);
 
 			mRebuildDebugMeshes = false;
 		}

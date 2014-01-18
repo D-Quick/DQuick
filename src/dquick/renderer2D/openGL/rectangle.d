@@ -80,29 +80,25 @@ private:
 		mMesh.setShader(mShader);
 		mMesh.setShaderProgram(mShaderProgram);
 
-		mMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 1, 3, 2],
-							   cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
+		mMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 1, 3, 2], cast(GLenum)GL_STATIC_DRAW);
 
 		mMesh.vertices.setArray(cast(GLfloat[])[
 								0.0f,		0.0f,		0.0f,
 								mSize.x,	0.0f,		0.0f,
 								0.0f,		mSize.y,	0.0f,
-								mSize.x,	mSize.y,	0.0f],
-								cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+								mSize.x,	mSize.y,	0.0f], cast(GLenum)GL_DYNAMIC_DRAW);
 
 		mMesh.texCoords.setArray(cast(GLfloat[])[
  								 0.0f, 0.0f,
  								 1.0f, 0.0f,
  								 0.0f, 1.0f,
- 								 1.0f, 1.0f],
- 								 cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+ 								 1.0f, 1.0f], cast(GLenum)GL_DYNAMIC_DRAW);
 
 		mMesh.colors.setArray(cast(GLfloat[])[
 						 	  1.0f, 1.0f, 1.0f, 1.0f,
 						 	  1.0f, 1.0f, 1.0f, 1.0f,
 						 	  1.0f, 1.0f, 1.0f, 1.0f,
-						 	  1.0f, 1.0f, 1.0f, 1.0f],
-							  cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_DYNAMIC_DRAW);
+						 	  1.0f, 1.0f, 1.0f, 1.0f], cast(GLenum)GL_DYNAMIC_DRAW);
 
 		mMeshIsDirty = false;
 	}

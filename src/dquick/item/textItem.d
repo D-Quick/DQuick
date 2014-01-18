@@ -367,10 +367,10 @@ private:
 				}
 			}
 
-			mMesh.indexes.setArray(indexes, cast(GLenum)GL_ELEMENT_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.vertices.setArray(vertices, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.texCoords.setArray(texCoords, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.colors.setArray(colors, cast(GLenum)GL_ARRAY_BUFFER, cast(GLenum)GL_STATIC_DRAW);
+			mMesh.indexes.setArray(indexes, cast(GLenum)GL_STATIC_DRAW);
+			mMesh.vertices.setArray(vertices, cast(GLenum)GL_STATIC_DRAW);
+			mMesh.texCoords.setArray(texCoords, cast(GLenum)GL_STATIC_DRAW);
+			mMesh.colors.setArray(colors, cast(GLenum)GL_STATIC_DRAW);
 
 			// Update texture at the last moment
 			if (mTextures.length < 0 + 1)	// Check if the textures array already contains the current atlas

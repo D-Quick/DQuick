@@ -16,6 +16,11 @@ final class VBO(T) : IResource
 	mixin ResourceBase;
 
 public:
+	this(GLenum type)
+	{
+		mType = type;
+	}
+
 	~this()
 	{
 		debug destructorAssert(mId == 0, "VBO.unload method wasn't called.", mTrace);
@@ -58,10 +63,9 @@ public:
 		checkgl!glBindBuffer(mType, 0);
 	}
 
-	void	setArray(T[] array, GLenum type, GLenum mode)
+	void	setArray(T[] array, GLenum mode)
 	{
 		mArray = array;
-		mType = type;
 		mMode = mode;
 		create();
 	}
