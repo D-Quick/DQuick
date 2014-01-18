@@ -187,6 +187,7 @@ private:
 
 		Vector2f32	implicitSize = Vector2f32(0.0f, 0.0f);
 		Line[]		lines;
+		size_t		nbGlyphesToRender = 0;
 
 		bool	updateTexture = false;	// True if a new glyph is loaded (this is a little optimization)
 
@@ -315,6 +316,7 @@ private:
 						// Update Line struct data
 						if (!isWhite(charCode))
 						{
+							nbGlyphesToRender++;
 							lines[$ - 1].glyphes ~= glyph;
 							lines[$ - 1].offsets ~= Vector2f32(cursor.x + pos.x, pos.y);
 							if (lines[$ - 1].verticalCursor < cursor.y)
@@ -349,10 +351,15 @@ private:
 			mMesh.setShader(mShader);
 			mMesh.setShaderProgram(mShaderProgram);
 
-			GLuint[]	indexes;	// TODO preallocate arrays, I can compute the number of glyph to put in
+			GLuint[]	indexes;
 			GLfloat[]	vertices;
 			GLfloat[]	texCoords;
 			GLfloat[]	colors;
+
+			indexes.length = 6 * nbGlyphesToRender;
+			vertices.length = 4 * 3 * nbGlyphesToRender;
+			texCoords.length = 4 * 2 * nbGlyphesToRender;
+			colors.length = 4 * 4 * nbGlyphesToRender;
 
 			size_t		glyphIndex = 0;
 
@@ -414,22 +421,28 @@ private:
 		tWidth = cast(float)width / cast(float)atlasSize.x;
 		tHeight = cast(float)height / cast(float)atlasSize.y;
 
-		indexes ~= cast(GLuint[])[glyphIndex * 4 + 0, glyphIndex * 4 + 1, glyphIndex * 4 + 2, glyphIndex * 4 + 1, glyphIndex * 4 + 3, glyphIndex * 4 + 2];
-		vertices ~= cast(GLfloat[])[
-			x,			y,			0.0f,
-			x + width,	y,			0.0f,
-			x,			y + height,	0.0f,
-			x + width,	y + height,	0.0f];
-		texCoords ~= cast(GLfloat[])[// Don't forget opengl is down to top oriented (left-top corner = 0,1 coords)
-			tX,				1.0f - tY,
-			tX + tWidth,	1.0f - tY,
-			tX,				1.0f - (tY + tHeight),
-			tX + tWidth,	1.0f - (tY + tHeight)];
-		colors~= cast(GLfloat[])[
-			1.0f, 1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 1.0f];
+		indexes[glyphIndex * 6 + 0] = glyphIndex * 4 + 0;
+		indexes[glyphIndex * 6 + 1] = glyphIndex * 4 + 1;
+		indexes[glyphIndex * 6 + 2] = glyphIndex * 4 + 2;
+		indexes[glyphIndex * 6 + 3] = glyphIndex * 4 + 1;
+		indexes[glyphIndex * 6 + 4] = glyphIndex * 4 + 3;
+		indexes[glyphIndex * 6 + 5] = glyphIndex * 4 + 2;
+
+		vertices[glyphIndex * 4 * 3 + 0] = x;			vertices[glyphIndex * 4 * 3 + 1] = y;			vertices[glyphIndex * 4 * 3 + 2] = 0.0f;
+		vertices[glyphIndex * 4 * 3 + 3] = x + width;	vertices[glyphIndex * 4 * 3 + 4] = y;			vertices[glyphIndex * 4 * 3 + 5] = 0.0f;
+		vertices[glyphIndex * 4 * 3 + 6] = x;			vertices[glyphIndex * 4 * 3 + 7] = y + height;	vertices[glyphIndex * 4 * 3 + 8] = 0.0f;
+		vertices[glyphIndex * 4 * 3 + 9] = x + width;	vertices[glyphIndex * 4 * 3 + 10] = y + height;	vertices[glyphIndex * 4 * 3 + 11] = 0.0f;
+
+		// Don't forget opengl is down to top oriented (left-top corner = 0,1 coords)
+		texCoords[glyphIndex * 4 * 2 + 0] = tX;				texCoords[glyphIndex * 4 * 2 + 1] = 1.0f - tY;
+		texCoords[glyphIndex * 4 * 2 + 2] = tX + tWidth;	texCoords[glyphIndex * 4 * 2 + 3] = 1.0f - tY;
+		texCoords[glyphIndex * 4 * 2 + 4] = tX;				texCoords[glyphIndex * 4 * 2 + 5] = 1.0f - (tY + tHeight);
+		texCoords[glyphIndex * 4 * 2 + 6] = tX + tWidth;	texCoords[glyphIndex * 4 * 2 + 7] = 1.0f - (tY + tHeight);
+
+		colors[glyphIndex * 4 * 4 + 0] = 1.0f;	colors[glyphIndex * 4 * 4 + 1] = 1.0f;	colors[glyphIndex * 4 * 4 + 2] = 1.0f;	colors[glyphIndex * 4 * 4 + 3] = 1.0f;
+		colors[glyphIndex * 4 * 4 + 4] = 1.0f;	colors[glyphIndex * 4 * 4 + 5] = 1.0f;	colors[glyphIndex * 4 * 4 + 6] = 1.0f;	colors[glyphIndex * 4 * 4 + 7] = 1.0f;
+		colors[glyphIndex * 4 * 4 + 8] = 1.0f;	colors[glyphIndex * 4 * 4 + 9] = 1.0f;	colors[glyphIndex * 4 * 4 + 10] = 1.0f;	colors[glyphIndex * 4 * 4 + 11] = 1.0f;
+		colors[glyphIndex * 4 * 4 + 12] = 1.0f;	colors[glyphIndex * 4 * 4 + 13] = 1.0f;	colors[glyphIndex * 4 * 4 + 14] = 1.0f;	colors[glyphIndex * 4 * 4 + 15] = 1.0f;
 	}
 
 	void	setImplicitSize(Vector2f32 implicitSize)
