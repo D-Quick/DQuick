@@ -121,11 +121,7 @@ public:
 		if (mNeedRebuild)
 			rebuildMesh();
 		if (mMesh.vertices)
-		{
-			if (mText == "")
-				int toto = 10;
 			mMesh.draw();
-		}
 		paintChildren();
 		endPaint();
 	}
