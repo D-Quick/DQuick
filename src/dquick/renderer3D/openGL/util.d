@@ -55,19 +55,35 @@ debug {
 }
 
 ReturnType!func checkgl(alias func, Args...)(Args args) {
-    debug scope(success) {
-        GLenum error_code = glGetError();
+	debug
+	{
+		if (func is null)
+		{
+			throw new Error("%s is null! OpenGL loaded? Required OpenGL version not supported?".format(func.stringof));
+		}
 
-        if(error_code != GL_NO_ERROR) {
-            _error_callback(error_code, func.stringof, format("%s".repeat(Args.length).join(", "), args));
-        }
-    }
+		static if (!is(ReturnType!func == void))
+		{
+			ReturnType!func	result;
 
-    debug if(func is null) {
-        throw new Error("%s is null! OpenGL loaded? Required OpenGL version not supported?".format(func.stringof));
-    }
+			result = func(args);
+		}
+		else
+			func(args);
 
-    return func(args);
+		scope(success) {
+			GLenum error_code = glGetError();
+
+			if(error_code != GL_NO_ERROR) {
+				_error_callback(error_code, func.stringof, format("%s".repeat(Args.length).join(", "), args));
+			}
+		}
+
+		static if (!is(ReturnType!func == void))
+			return result;
+	}
+	else
+		return func(args);
 }
 
 string gl_error_string(GLenum error) {
