@@ -87,10 +87,14 @@ private:
 		if (mId != 0)
 			unload();
 		checkgl!glGenBuffers(1, &mId);
+		if (mId == mBadId)
+			throw new Exception("[Texture] Unable to generate a vbo");
 		bind();
 		checkgl!glBufferData(mType, mArray.length * T.sizeof, mArray.ptr, mMode);
 		unbind();
 	}
+
+	static const GLuint	mBadId = 0;	// Useful if on some platforms 0 can be used for a VBO id
 
 	GLuint	mId;
 	T[]		mArray;
