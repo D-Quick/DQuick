@@ -21,6 +21,14 @@ import std.variant;
 
 import core.runtime;
 
+/*
+Mettre les VBO en interleaved et sur le mesh ajouter une propriété pour savoir s'ils sont dynamique ou pas.
+Les textes sont par exemple statique (car je les rebuild complètement si on modifie une propriété comme la taille) et peuvent du coup entre rendu en même temps s'ils ne se chevauchent pas ce qui est courant, surtout qu'ils partagent généralement la même texture grâce a l'atlas.
+*/
+
+
+// TODO check an attribut with id 0 is always send for the shader (else some drivers have issues)
+
 struct Mesh
 {
 public:
