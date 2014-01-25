@@ -1317,6 +1317,7 @@
     <File path="..\src\dquick\utils\resourceManager.d" />
     <File path="..\src\dquick\utils\utils.d" />
    </Folder>
+   <File path="..\src\dquick\buildSettings.d" />
    <File path="..\src\dquick\main.d" />
   </Folder>
  </Folder>
