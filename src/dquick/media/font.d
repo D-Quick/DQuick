@@ -136,19 +136,19 @@ public:
 		Italic = 0x02
 	}
 
-	static this()
+/*	static this()
 	{
 		FT_Error	error;
 
-		error = FT_Init_FreeType(&mLibrary);
+		error = FT_Init_FreeType(&freetypeLibrary);
 		if (error)
-			throw new Exception(format("Failed to initialize FreeType mLibrary. Error : %d", error));
+			throw new Exception(format("Failed to initialize FreeType freetypeLibrary. Error : %d", error));
 	}
 
 	static ~this()
 	{
-		FT_Done_FreeType(mLibrary);
-	}
+		FT_Done_FreeType(freetypeLibrary);
+	}*/
 
 	~this()
 	{
@@ -192,10 +192,10 @@ public:
 
 		if (depth == 3)
 		{
-			FT_Library_SetLcdFilter(mLibrary, FT_LcdFilter.FT_LCD_FILTER_LIGHT);
+			FT_Library_SetLcdFilter(freetypeLibrary, FT_LcdFilter.FT_LCD_FILTER_LIGHT);
 			flags |= FT_LOAD_TARGET_LCD;
 			if (mFiltering)
-				FT_Library_SetLcdFilterWeights(mLibrary, mLcdWeights.ptr);
+				FT_Library_SetLcdFilterWeights(freetypeLibrary, mLcdWeights.ptr);
 		}
 		error = FT_Load_Glyph(mFace, glyphIndex, flags);
 		if (error)
@@ -211,7 +211,7 @@ public:
 			FT_Stroker		stroker;
 			FT_BitmapGlyph	ftBitmapGlyph;
 
-			error = FT_Stroker_New(mLibrary, &stroker);
+			error = FT_Stroker_New(freetypeLibrary, &stroker);
 			if (error)
 				throw new Exception(format("Failed to create stroker. Error : %d", error));
 			scope(exit) FT_Stroker_Done(stroker);
@@ -341,7 +341,7 @@ private:
 		cast(int)((0.0) * 0x10000L),
 		cast(int)((1.0) * 0x10000L)};*/
 
-		error = FT_New_Face(mLibrary, filePath.toStringz(), 0, &mFace);
+		error = FT_New_Face(freetypeLibrary, filePath.toStringz(), 0, &mFace);
 		if (error)
 			throw new Exception(format("Failed to load face \"%s\". Error : %d", filePath, error));
 
@@ -413,7 +413,6 @@ private:
 
 	Glyph[uint]	mGlyphs;
 
-	static FT_Library	mLibrary;
 	FT_Face				mFace;
 
     string	mFilePath;
@@ -447,7 +446,8 @@ struct Glyph
 	Image		image;
 }
 
-private FcConfig*	config;
+private FcConfig*	fontconfigConfig;
+private FT_Library	freetypeLibrary;
 
 shared static this()
 {
@@ -465,14 +465,18 @@ shared static this()
 		throw new Exception("[FontManager] Unable to initialiaze fontconfig library.");
 	version (Windows)
 	{
-		//FcConfigParseAndLoad(config, "dquick/fontconfig/fonts.conf", FcTrue);	// TODO See why it doesn't work (an absolute path doesn't help)
+		//FcConfigParseAndLoad(fontconfigConfig, "dquick/fontconfig/fonts.conf", FcTrue);	// TODO See why it doesn't work (an absolute path doesn't help)
 		if (FcConfigAppFontAddDir(null, getFontFolder().toStringz()) == FcFalse)
 			throw new Exception("[FontManager] Fontconfig failed to scan fonts directory.");
 	}
 	else
-		config = FcInitLoadConfigAndFonts();
+		fontconfigConfig = FcInitLoadConfigAndFonts();
 
 	DerelictFT.load();
+	FT_Error	error;
+	error = FT_Init_FreeType(&freetypeLibrary);
+	if (error)
+		throw new Exception(format("Failed to initialize FreeType freetypeLibrary. Error : %d", error));
 
 	fontManager = new FontManager;
 }
@@ -480,6 +484,7 @@ shared static this()
 shared static ~this()
 {
 	writeln("dquick.media.font : shared static ~this()");
+	FT_Done_FreeType(freetypeLibrary);
 	DerelictFT.unload();
 	FcFini();
 	DerelictFontConfig.unload();
@@ -529,12 +534,12 @@ string	fontPathFromFamily(in string family, in Font.Style style = Font.Style.Reg
 
 	scope(exit) FcPatternDestroy(pat);
 
-	FcConfigSubstitute(config, pat, FcMatchKind.FcMatchPattern);
+	FcConfigSubstitute(fontconfigConfig, pat, FcMatchKind.FcMatchPattern);
 	FcDefaultSubstitute(pat);
 
 	// find the font
 	FcResult	result;
-	FcPattern*	font = FcFontMatch(config, pat, &result);
+	FcPattern*	font = FcFontMatch(fontconfigConfig, pat, &result);
 
 	scope(exit) FcPatternDestroy(font);
 	if (font)
@@ -556,7 +561,7 @@ string[]	getSystemFonts()
 
 	FcPattern*		pat = FcPatternCreate();
 	FcObjectSet*	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE, FC_LANG, FC_FILE, null);
-	FcFontSet*		fs = FcFontList(config, pat, os);
+	FcFontSet*		fs = FcFontList(fontconfigConfig, pat, os);
 
 //	writefln("Total matching fonts: %d\n", fs.nfont);
 	for (int i = 0; fs && i < fs.nfont; i++)
