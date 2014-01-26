@@ -417,12 +417,12 @@ private:
 		tWidth = cast(float)width / cast(float)atlasSize.x;
 		tHeight = cast(float)height / cast(float)atlasSize.y;
 
-		indexes[glyphIndex * 6 + 0] = glyphIndex * 4 + 0;
-		indexes[glyphIndex * 6 + 1] = glyphIndex * 4 + 1;
-		indexes[glyphIndex * 6 + 2] = glyphIndex * 4 + 2;
-		indexes[glyphIndex * 6 + 3] = glyphIndex * 4 + 1;
-		indexes[glyphIndex * 6 + 4] = glyphIndex * 4 + 3;
-		indexes[glyphIndex * 6 + 5] = glyphIndex * 4 + 2;
+		indexes[glyphIndex * 6 + 0] = cast(uint)(glyphIndex * 4 + 0);
+		indexes[glyphIndex * 6 + 1] = cast(uint)(glyphIndex * 4 + 1);
+		indexes[glyphIndex * 6 + 2] = cast(uint)(glyphIndex * 4 + 2);
+		indexes[glyphIndex * 6 + 3] = cast(uint)(glyphIndex * 4 + 1);
+		indexes[glyphIndex * 6 + 4] = cast(uint)(glyphIndex * 4 + 3);
+		indexes[glyphIndex * 6 + 5] = cast(uint)(glyphIndex * 4 + 2);
 
 		vertices[glyphIndex * 4 * 3 + 0] = x;			vertices[glyphIndex * 4 * 3 + 1] = y;			vertices[glyphIndex * 4 * 3 + 2] = 0.0f;
 		vertices[glyphIndex * 4 * 3 + 3] = x + width;	vertices[glyphIndex * 4 * 3 + 4] = y;			vertices[glyphIndex * 4 * 3 + 5] = 0.0f;

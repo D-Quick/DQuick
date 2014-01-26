@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "Images-MonoD", "projects\Images-MonoD.dproj", "{5E97499B-7F52-4782-A472-814AC4A1DBD5}"
 EndProject
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "Text-MonoD", "projects\Text-MonoD.dproj", "{5E97499B-7F52-4782-A472-914AC4A1DBD5}"
+EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "DQuick-MonoD", "projects\DQuick-MonoD.dproj", "{99F08BF3-3D40-437A-A878-F0330413FA87}"
 EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "Animation-MonoD", "projects\Animation-MonoD.dproj", "{9BFFD08A-62C0-4D8C-B38B-F7AAEFB79794}"
@@ -24,6 +26,12 @@ Global
 		{5E97499B-7F52-4782-A472-814AC4A1DBD5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5E97499B-7F52-4782-A472-814AC4A1DBD5}.Unittest|Any CPU.ActiveCfg = Unittest|Any CPU
 		{5E97499B-7F52-4782-A472-814AC4A1DBD5}.Unittest|Any CPU.Build.0 = Unittest|Any CPU
+		{5E97499B-7F52-4782-A472-914AC4A1DBD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E97499B-7F52-4782-A472-914AC4A1DBD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E97499B-7F52-4782-A472-914AC4A1DBD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E97499B-7F52-4782-A472-914AC4A1DBD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E97499B-7F52-4782-A472-914AC4A1DBD5}.Unittest|Any CPU.ActiveCfg = Unittest|Any CPU
+		{5E97499B-7F52-4782-A472-914AC4A1DBD5}.Unittest|Any CPU.Build.0 = Unittest|Any CPU
 		{99F08BF3-3D40-437A-A878-F0330413FA87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{99F08BF3-3D40-437A-A878-F0330413FA87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99F08BF3-3D40-437A-A878-F0330413FA87}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,7 +59,7 @@ Global
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		BaseDirectory = src
-		StartupItem = projects\Minesweeper-MonoD.dproj
+		StartupItem = projects\Text-MonoD.dproj
 		outputpath = build\bin
 	EndGlobalSection
 EndGlobal
