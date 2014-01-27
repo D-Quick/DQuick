@@ -40,6 +40,9 @@ protected:
 	void	terminateExecution()
 	{
 		Scheduler.terminateAll();
+		dquick.renderer3D.openGL.renderer.resourceManager.releaseAllResources();
+		dquick.media.image.resourceManager.releaseAllResources();
+		dquick.media.font.fontManager.clear();
 	}
 
 	bool	mQuit = false;

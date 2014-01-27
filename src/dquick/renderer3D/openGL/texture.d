@@ -20,14 +20,14 @@ final class Texture : IResource
 public:
 	~this()
 	{
-		debug destructorAssert(mId == mBadId, "Texture.unload method wasn't called.", mTrace);
+		debug destructorAssert(mId == mBadId, "Texture.release method wasn't called.", mTrace);
 	}
 
 	void	load(string filePath, Variant[] options = null)
 	{
 		debug mTrace = defaultTraceHandler(null);
 
-		unload();
+		release();
 
 		if (options.length == 0)
 		{
@@ -64,7 +64,7 @@ public:
 			throw new Exception("[Texture] Pixel format unsupported");
 	}
 
-	void	unload()
+	void	release()
 	{
 		if (mId != mBadId)
 			checkgl!glDeleteTextures(1, &mId);

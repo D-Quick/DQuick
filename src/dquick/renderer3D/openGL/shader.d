@@ -24,7 +24,7 @@ public:
 	
 	~this()
 	{
-		debug destructorAssert(mVertexShader == mBadId, "Shader.unload method wasn't called.", mTrace);
+		debug destructorAssert(mVertexShader == mBadId, "Shader.release method wasn't called.", mTrace);
 	}
 	
 	/// Take a filePath of which correspond to the fragment and vertex shaders files without extention (extentions are "frag" and "vert")
@@ -33,7 +33,7 @@ public:
 	{
 		debug mTrace = defaultTraceHandler(null);
 
-		unload();
+		release();
 
 		if (options == null)
 		{
@@ -64,8 +64,7 @@ public:
 		return mShaderProgram;
 	}
 
-private:
-	void	unload()
+	void	release()
 	{
 		if (mVertexShader != mBadId)
 		{
@@ -84,6 +83,7 @@ private:
 		}
 	}
 
+private:
 	uint	loadAndCompileShader(GLenum type, string source)
 	{
 		GLint	length;
@@ -122,7 +122,7 @@ private:
 	
 	void	compileAndLink()
 	{
-		scope(failure)unload();
+		scope(failure) release();
 
 		mShaderProgram = checkgl!glCreateProgram();
 

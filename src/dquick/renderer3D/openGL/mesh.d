@@ -161,7 +161,7 @@ public:
 	{
 		if (indexes)
 		{
-			indexes.unload();
+			indexes.release();
 			indexes = null;
 			geometry.unload();
 			geometry = null;

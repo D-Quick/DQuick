@@ -17,7 +17,7 @@ import core.runtime;
 
 ResourceManager	resourceManager;
 
-// TODO check potential issue with unload and the resources management (it's certainly possible to get a corrupted image)
+// TODO check potential issue with release and the resources management (it's certainly possible to get a corrupted image)
 
 static this()
 {
@@ -43,7 +43,7 @@ public:
 
 	~this()
 	{
-		debug destructorAssert(mData.pixels == null, "Image.unload method wasn't called.", mTrace);
+		debug destructorAssert(mData.pixels == null, "Image.release method wasn't called.", mTrace);
 	}
 
 	void	load(string filePath, Variant[] options = null)
@@ -51,7 +51,7 @@ public:
 		debug mTrace = defaultTraceHandler(null);
 
 		assert(options == null);
-		unload();
+		release();
 		mFilePath = filePath;
 
 		foreach (loader; ImageLoader)
@@ -80,7 +80,7 @@ public:
 
 	void	create(string filePath, uint width, uint height, ImageData.Format format)
 	{
-		unload();
+		release();
 		
 		mFilePath = filePath;
 		mData.format = format;
@@ -240,7 +240,7 @@ public:
 		}
 	}
 
-	void	unload()
+	void	release()
 	{
 		mData.format = ImageData.Format.Invalid;
 		mData.width = mData.height = 0;

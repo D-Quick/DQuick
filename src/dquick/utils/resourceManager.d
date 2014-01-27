@@ -14,6 +14,10 @@ public import std.variant;
 class ResourceManager
 {
 public:
+	~this()
+	{
+	}
+
 	@property void	maximumWeight(int weight)
 	{
 		mMaximumWeight = weight;
@@ -80,6 +84,16 @@ public:
 		}
 	}
 
+	void	releaseAllResources()
+	{
+		foreach (resource; mUsedResources)
+			resource.release();
+		mUsedResources = null;
+		foreach (resource; mCachedResources)
+			resource.release();
+		mCachedResources = null;
+	}
+
 	void	dump()
 	{
 		writeln("====================");
@@ -97,7 +111,6 @@ public:
 		{
 			writefln("Resource \"%s\" weight : %d", resource.filePath, resource.weight);
 		}
-
 	}
 
 protected:
@@ -121,6 +134,7 @@ protected:
 interface IResource
 {
 	void	load(string filePath, Variant[] options);	/// First parameter will always be a string containing the FilePath (added by the ResourceManager), because it have to be registered. You have to throw an Exception if load failed.
+	void	release();
 
 	@property string	filePath();
 	@property int		weight();
@@ -156,6 +170,10 @@ public:
 	{
 		assert(options == null);
 		mFilePath = filePath;
+	}
+
+	void	release()
+	{
 	}
 }
 

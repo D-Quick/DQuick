@@ -23,12 +23,12 @@ public:
 
 	~this()
 	{
-		debug destructorAssert(mId == 0, "VBO.unload method wasn't called.", mTrace);
+		debug destructorAssert(mId == 0, "VBO.release method wasn't called.", mTrace);
 	}
 
 	void	load(string filePath, Variant[] options)
 	{
-		unload();
+		release();
 
 		debug mTrace = defaultTraceHandler(null);
 
@@ -44,7 +44,7 @@ public:
 		mFilePath = filePath;
 	}
 
-	void	unload()
+	void	release()
 	{
 		checkgl!glDeleteBuffers(1, &mId);
 		mId = 0;
@@ -85,7 +85,7 @@ private:
 	void	create()
 	{
 		if (mId != 0)
-			unload();
+			release();
 		checkgl!glGenBuffers(1, &mId);
 		if (mId == mBadId)
 			throw new Exception("[Texture] Unable to generate a vbo");
