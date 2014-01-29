@@ -128,6 +128,10 @@ public:
 
 		// draw the VBOs
 		checkgl!glDrawElements(primitiveType, cast(GLsizei)indexes.length, GL_UNSIGNED_INT, null);
+		checkgl!glDisableVertexAttribArray(mPositionAttribute);
+		checkgl!glDisableVertexAttribArray(mColorAttribute);
+		if (mTexture)
+			checkgl!glDisableVertexAttribArray(mTexcoordAttribute);
 
 		// unbind VBOs, the program and the texture
 		indexes.unbind();	// One unbind per type
