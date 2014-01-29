@@ -113,21 +113,23 @@ public:
 			geometry.bind();
 			checkgl!glEnableVertexAttribArray(mPositionAttribute);
 			checkgl!glVertexAttribPointer(mPositionAttribute, 3, GL_FLOAT, GL_FALSE, cast(GLsizei)(3 * GLfloat.sizeof), null + cast(GLvoid*)(0 * GLfloat.sizeof));
-			glDisableVertexAttribArray(mPositionAttribute);
 			checkgl!glEnableVertexAttribArray(mColorAttribute);
 			checkgl!glVertexAttribPointer(mColorAttribute, 4, GL_FLOAT, GL_FALSE, cast(GLsizei)(4 * GLfloat.sizeof), null + cast(GLvoid*)(3 * GLfloat.sizeof));
-			glDisableVertexAttribArray(mColorAttribute);
 			if (mTexture)
 			{
 				checkgl!glEnableVertexAttribArray(mTexcoordAttribute);
 				checkgl!glVertexAttribPointer(mTexcoordAttribute, 2, GL_FLOAT, GL_FALSE, cast(GLsizei)(2 * GLfloat.sizeof), null + cast(GLvoid*)((3 + 4) * GLfloat.sizeof));
-				glDisableVertexAttribArray(mTexcoordAttribute);
 			}
 		}
 
 		// draw the VBOs
 		indexes.bind();
 		checkgl!glDrawElements(primitiveType, cast(GLsizei)indexes.length, GL_UNSIGNED_INT, null);
+		checkgl!glDisableVertexAttribArray(mPositionAttribute);
+		checkgl!glDisableVertexAttribArray(mColorAttribute);
+		if (mTexture)
+			checkgl!glDisableVertexAttribArray(mTexcoordAttribute);
+
 		checkgl!glDisableVertexAttribArray(mPositionAttribute);
 		checkgl!glDisableVertexAttribArray(mColorAttribute);
 		if (mTexture)
