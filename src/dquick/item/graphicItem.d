@@ -257,7 +257,7 @@ protected:
 	{
 		void	createDebugMeshes()	// Safe to call it if mesh is already created
 		{
-			if (mDebugMesh.vertices)
+			if (mDebugMesh.indexes)
 				return;
 
 			Variant[] options;
@@ -273,18 +273,7 @@ protected:
 			mDebugMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
 
 			mDebugMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3], cast(GLenum)GL_STATIC_DRAW);
-
-			mDebugMesh.vertices.setArray(cast(GLfloat[])[
-				0.0f,		0.0f,		0.0f,
-				mSize.x,	0.0f,		0.0f,
-				mSize.x,	mSize.y,	0.0f,
-				0.0f,		mSize.y,	0.0f], cast(GLenum)GL_DYNAMIC_DRAW);
-
-			mDebugMesh.colors.setArray(cast(GLfloat[])[
-				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w], cast(GLenum)GL_DYNAMIC_DRAW);
+			mDebugMesh.geometry.setArray(debugMeshGeometryArray(), cast(GLenum)GL_DYNAMIC_DRAW);
 
 			// ImplicitSize
 			mDebugImplicitMesh.construct();
@@ -293,18 +282,7 @@ protected:
 			mDebugImplicitMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
 
 			mDebugImplicitMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3], cast(GLenum)GL_STATIC_DRAW);
-
-			mDebugImplicitMesh.vertices.setArray(cast(GLfloat[])[
-				0.0f,			0.0f,			0.0f,
-				implicitWidth,	0.0f,			0.0f,
-				implicitWidth,	implicitHeight,	0.0f,
-				0.0f,			implicitHeight,	0.0f], cast(GLenum)GL_DYNAMIC_DRAW);
-
-			mDebugImplicitMesh.colors.setArray(cast(GLfloat[])[
-				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w], cast(GLenum)GL_DYNAMIC_DRAW);
+			mDebugImplicitMesh.geometry.setArray(debugImplicitMeshGeometryArray(), cast(GLenum)GL_DYNAMIC_DRAW);
 
 			mRebuildDebugMeshes = false;
 		}
@@ -313,34 +291,29 @@ protected:
 		{
 			createDebugMeshes();	// TODO find a way to avoid update just after creation
 
-			// Size
-			mDebugMesh.vertices.updateArray(cast(GLfloat[])[
-				0.0f,		0.0f,		0.0f,
-				mSize.x,	0.0f,		0.0f,
-				mSize.x,	mSize.y,	0.0f,
-				0.0f,		mSize.y,	0.0f]);
-
-			mDebugMesh.colors.updateArray(cast(GLfloat[])[
-				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-				mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w]);
-
-			// ImplicitSize
-			mDebugImplicitMesh.vertices.updateArray(cast(GLfloat[])[
-				0.0f,			0.0f,			0.0f,
-				implicitWidth,	0.0f,			0.0f,
-				implicitWidth,	implicitHeight,	0.0f,
-				0.0f,			implicitHeight,	0.0f]);
-
-			mDebugImplicitMesh.colors.updateArray(cast(GLfloat[])[
-				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-				mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w]);
+			mDebugMesh.geometry.updateArray(debugMeshGeometryArray());
+			mDebugImplicitMesh.geometry.updateArray(debugImplicitMeshGeometryArray());
 
 			mRebuildDebugMeshes = false;
 		}
+	}
+
+	GLfloat[]	debugMeshGeometryArray()
+	{
+		return cast(GLfloat[])[
+			0.0f,		0.0f,		0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+			mSize.x,	0.0f,		0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+			mSize.x,	mSize.y,	0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+			0.0f,		mSize.y,	0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w];
+	}
+
+	GLfloat[]	debugImplicitMeshGeometryArray()
+	{
+		return cast(GLfloat[])[
+			0.0f,			0.0f,			0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+			implicitWidth,	0.0f,			0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+			implicitWidth,	implicitHeight,	0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+			0.0f,			implicitHeight,	0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w];
 	}
 
 	bool			mVisible = true;

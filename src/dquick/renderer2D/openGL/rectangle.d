@@ -67,7 +67,7 @@ public:
 private:
 	void	create()	// Safe to call it if mesh is already created
 	{
-		if (mMesh.vertices)
+		if (mMesh.indexes)
 			return;
 
 		mMesh.construct();
@@ -82,23 +82,7 @@ private:
 
 		mMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 1, 3, 2], cast(GLenum)GL_STATIC_DRAW);
 
-		mMesh.vertices.setArray(cast(GLfloat[])[
-								0.0f,		0.0f,		0.0f,
-								mSize.x,	0.0f,		0.0f,
-								0.0f,		mSize.y,	0.0f,
-								mSize.x,	mSize.y,	0.0f], cast(GLenum)GL_DYNAMIC_DRAW);
-
-		mMesh.texCoords.setArray(cast(GLfloat[])[
- 								 0.0f, 0.0f,
- 								 1.0f, 0.0f,
- 								 0.0f, 1.0f,
- 								 1.0f, 1.0f], cast(GLenum)GL_DYNAMIC_DRAW);
-
-		mMesh.colors.setArray(cast(GLfloat[])[
-						 	  1.0f, 1.0f, 1.0f, 1.0f,
-						 	  1.0f, 1.0f, 1.0f, 1.0f,
-						 	  1.0f, 1.0f, 1.0f, 1.0f,
-						 	  1.0f, 1.0f, 1.0f, 1.0f], cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.geometry.setArray(geometryArray(), cast(GLenum)GL_DYNAMIC_DRAW);
 
 		mMeshIsDirty = false;
 	}
@@ -107,13 +91,18 @@ private:
 	{
 		create();	// TODO find a way to avoid update just after creation
 
-		mMesh.vertices.updateArray(cast(GLfloat[])[
-			0.0f,		0.0f,		0.0f,
-			mSize.x,	0.0f,		0.0f,
-			0.0f,		mSize.y,	0.0f,
-			mSize.x,	mSize.y,	0.0f]);
+		mMesh.geometry.updateArray(geometryArray());
 		
 		mMeshIsDirty = false;
+	}
+
+	GLfloat[]	geometryArray()
+	{
+		return cast(GLfloat[])[
+			0.0f,		0.0f,		0.0f,	1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 0.0f,		
+			mSize.x,	0.0f,		0.0f,	1.0f, 1.0f, 1.0f, 1.0f,		1.0f, 0.0f,		
+			0.0f,		mSize.y,	0.0f,	1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f,		
+			mSize.x,	mSize.y,	0.0f,	1.0f, 1.0f, 1.0f, 1.0f,		1.0f, 1.0f];
 	}
 
 	bool			mUserSize;

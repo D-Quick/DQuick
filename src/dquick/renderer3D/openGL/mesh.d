@@ -48,7 +48,7 @@ public:
 
 	~this()
 	{
-		debug destructorAssert(vertices is null, "Mesh.destruct method wasn't called.", mTrace);
+		debug destructorAssert(indexes is null, "Mesh.destruct method wasn't called.", mTrace);
 	}
 
 	bool	setTexture(string filePath)
@@ -86,9 +86,7 @@ public:
 	ShaderProgram	shaderProgram() {return mShaderProgram;}
 
 	VBO!GLuint		indexes = null;
-	VBO!GLfloat		vertices = null;
-	VBO!GLfloat		colors = null;
-	VBO!GLfloat		texCoords = null;
+	VBO!GLfloat		geometry = null;	/// Put geometry in interleaved mode, in this order : vertex, color, texture coordinates
 	PrimitiveType	primitiveType = PrimitiveType.Triangles;		/// Default type is Triangles
 
 	void	draw()
@@ -112,21 +110,23 @@ public:
 		// Can be in a VAO
 		{
 			indexes.bind();
-			vertices.bind();
+			geometry.bind();
 			checkgl!glEnableVertexAttribArray(mPositionAttribute);
 			checkgl!glVertexAttribPointer(mPositionAttribute, 3, GL_FLOAT, GL_FALSE, cast(GLsizei)(3 * GLfloat.sizeof), null + cast(GLvoid*)(0 * GLfloat.sizeof));
-			colors.bind();
+			glDisableVertexAttribArray(mPositionAttribute);
 			checkgl!glEnableVertexAttribArray(mColorAttribute);
-			checkgl!glVertexAttribPointer(mColorAttribute, 4, GL_FLOAT, GL_FALSE, cast(GLsizei)(4 * GLfloat.sizeof), null + cast(GLvoid*)(0 * GLfloat.sizeof));
+			checkgl!glVertexAttribPointer(mColorAttribute, 4, GL_FLOAT, GL_FALSE, cast(GLsizei)(4 * GLfloat.sizeof), null + cast(GLvoid*)(3 * GLfloat.sizeof));
+			glDisableVertexAttribArray(mColorAttribute);
 			if (mTexture)
 			{
-				texCoords.bind();
 				checkgl!glEnableVertexAttribArray(mTexcoordAttribute);
-				checkgl!glVertexAttribPointer(mTexcoordAttribute, 2, GL_FLOAT, GL_FALSE, cast(GLsizei)(2 * GLfloat.sizeof), null + cast(GLvoid*)(0 * GLfloat.sizeof));
+				checkgl!glVertexAttribPointer(mTexcoordAttribute, 2, GL_FLOAT, GL_FALSE, cast(GLsizei)(2 * GLfloat.sizeof), null + cast(GLvoid*)((3 + 4) * GLfloat.sizeof));
+				glDisableVertexAttribArray(mTexcoordAttribute);
 			}
 		}
 
 		// draw the VBOs
+		indexes.bind();
 		checkgl!glDrawElements(primitiveType, cast(GLsizei)indexes.length, GL_UNSIGNED_INT, null);
 		checkgl!glDisableVertexAttribArray(mPositionAttribute);
 		checkgl!glDisableVertexAttribArray(mColorAttribute);
@@ -135,7 +135,7 @@ public:
 
 		// unbind VBOs, the program and the texture
 		indexes.unbind();	// One unbind per type
-		vertices.unbind();	// One unbind per type
+		geometry.unbind();	// One unbind per type
 		checkgl!glBindTexture(GL_TEXTURE_2D, mBadId);
 		checkgl!glBindBuffer(GL_ARRAY_BUFFER, mBadId);
 		checkgl!glUseProgram(mBadId);
@@ -147,9 +147,7 @@ public:
 
 		destruct();
 		indexes = new VBO!GLuint(cast(GLenum)GL_ELEMENT_ARRAY_BUFFER);
-		vertices = new VBO!GLfloat(cast(GLenum)GL_ARRAY_BUFFER);
-		colors = new VBO!GLfloat(cast(GLenum)GL_ARRAY_BUFFER);
-		texCoords = new VBO!GLfloat(cast(GLenum)GL_ARRAY_BUFFER);
+		geometry = new VBO!GLfloat(cast(GLenum)GL_ARRAY_BUFFER);
 	}
 
 	void	destruct()
@@ -158,12 +156,8 @@ public:
 		{
 			indexes.unload();
 			indexes = null;
-			vertices.unload();
-			vertices = null;
-			colors.unload();
-			colors = null;
-			texCoords.unload();
-			texCoords = null;
+			geometry.unload();
+			geometry = null;
 		}
 		if (mTexture)
 		{

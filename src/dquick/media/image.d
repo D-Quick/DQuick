@@ -53,7 +53,7 @@ public:
 		assert(options == null);
 		unload();
 		mFilePath = filePath;
-		
+
 		foreach (loader; ImageLoader)
 		{
 			if (loader.load(filePath, mData))

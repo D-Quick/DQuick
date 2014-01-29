@@ -120,7 +120,7 @@ public:
 private:
 	void	create()	// Safe to call it if mesh is already created
 	{
-		if (mMesh.vertices)
+		if (mMesh.indexes)
 			return;
 
 		mMesh.construct();
@@ -141,41 +141,18 @@ private:
 							   9,	10,	13,	10,	14,	13,
 							   10,	11,	14,	11,	15,	14], cast(GLenum)GL_STATIC_DRAW);
 
-		mMesh.vertices.setArray(verticesArray(), cast(GLenum)GL_DYNAMIC_DRAW);
-		mMesh.texCoords.setArray(texCoordArray(), cast(GLenum)GL_DYNAMIC_DRAW);
-
-		mMesh.colors.setArray(cast(GLfloat[])[
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f,
-							  1.0f, 1.0f, 1.0f, 1.0f], cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.geometry.setArray(geometryArray(), cast(GLenum)GL_DYNAMIC_DRAW);
 	}
 
 	void	updateMesh()
 	{
 		create();
 
-		mMesh.vertices.updateArray(verticesArray());
-		mMesh.texCoords.updateArray(texCoordArray());
+		mMesh.geometry.updateArray(geometryArray());
 	}
 
 private:
-	GLfloat[]	verticesArray()
+	GLfloat[]	geometryArray()
 	{
 		GLfloat	rows[4];
 		GLfloat	columns[4];
@@ -190,32 +167,8 @@ private:
 		columns[3] = mSize.x;
 		columns[2] = columns[3] - mRightBorder;
 
-		return cast(GLfloat[])[
-			columns[0], rows[0], 0.0f,
-			columns[1], rows[0], 0.0f,
-			columns[2], rows[0], 0.0f,
-			columns[3], rows[0], 0.0f,
-
-			columns[0], rows[1], 0.0f,
-			columns[1], rows[1], 0.0f,
-			columns[2], rows[1], 0.0f,
-			columns[3], rows[1], 0.0f,
-
-			columns[0], rows[2], 0.0f,
-			columns[1], rows[2], 0.0f,
-			columns[2], rows[2], 0.0f,
-			columns[3], rows[2], 0.0f,
-
-			columns[0], rows[3], 0.0f,
-			columns[1], rows[3], 0.0f,
-			columns[2], rows[3], 0.0f,
-			columns[3], rows[3], 0.0f];
-	}
-
-	GLfloat[]	texCoordArray()
-	{
-		GLfloat	rows[4];
-		GLfloat	columns[4];
+		GLfloat	texRows[4];
+		GLfloat	texColumns[4];
 
 		GLfloat	texWidth = 0.0f;
 		GLfloat	texHeight = 0.0f;
@@ -226,36 +179,36 @@ private:
 			texHeight = mMesh.texture().size().y;
 		}
 
-		rows[0] = 0.0f;
-		rows[1] = rows[0] + mTopBorder / texHeight;
-		rows[3] = 1.0f;
-		rows[2] = rows[3] - mBottomBorder / texHeight;
+		texRows[0] = 0.0f;
+		texRows[1] = texRows[0] + mTopBorder / texHeight;
+		texRows[3] = 1.0f;
+		texRows[2] = texRows[3] - mBottomBorder / texHeight;
 
-		columns[0] = 0.0f;
-		columns[1] = columns[0] + mLeftBorder / texWidth;
-		columns[3] = 1.0f;
-		columns[2] = columns[3] - mRightBorder / texWidth;
+		texColumns[0] = 0.0f;
+		texColumns[1] = texColumns[0] + mLeftBorder / texWidth;
+		texColumns[3] = 1.0f;
+		texColumns[2] = texColumns[3] - mRightBorder / texWidth;
 
 		return cast(GLfloat[])[
-			columns[0], rows[0],
-			columns[1], rows[0],
-			columns[2], rows[0],
-			columns[3], rows[0],
+			columns[0], rows[0], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[0], texRows[0],
+			columns[1], rows[0], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[1], texRows[0],
+			columns[2], rows[0], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[2], texRows[0],
+			columns[3], rows[0], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[3], texRows[0],
 
-			columns[0], rows[1],
-			columns[1], rows[1],
-			columns[2], rows[1],
-			columns[3], rows[1],
+			columns[0], rows[1], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[0], texRows[1],
+			columns[1], rows[1], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[1], texRows[1],
+			columns[2], rows[1], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[2], texRows[1],
+			columns[3], rows[1], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[3], texRows[1],
 
-			columns[0], rows[2],
-			columns[1], rows[2],
-			columns[2], rows[2],
-			columns[3], rows[2],
+			columns[0], rows[2], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[0], texRows[2],
+			columns[1], rows[2], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[1], texRows[2],
+			columns[2], rows[2], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[2], texRows[2],
+			columns[3], rows[2], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[3], texRows[2],
 
-			columns[0], rows[3],
-			columns[1], rows[3],
-			columns[2], rows[3],
-			columns[3], rows[3]];
+			columns[0], rows[3], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[0], texRows[3],
+			columns[1], rows[3], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[1], texRows[3],
+			columns[2], rows[3], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[2], texRows[3],
+			columns[3], rows[3], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[3], texRows[3]];
 	}
 
 	bool			mUserSize;

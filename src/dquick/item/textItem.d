@@ -120,7 +120,7 @@ public:
 		startPaint(transformationUpdated);
 		if (mNeedRebuild)
 			rebuildMesh();
-		if (mMesh.vertices)
+		if (mMesh.indexes)
 			mMesh.draw();
 		paintChildren();
 		endPaint();
@@ -371,9 +371,7 @@ private:
 			}
 
 			mMesh.indexes.setArray(indexes, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.vertices.setArray(vertices, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.texCoords.setArray(texCoords, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.colors.setArray(colors, cast(GLenum)GL_STATIC_DRAW);
+			mMesh.geometry.setArray(vertices, cast(GLenum)GL_STATIC_DRAW);
 
 			// Update texture at the last moment
 			if (mTextures.length < 0 + 1)	// Check if the textures array already contains the current atlas
