@@ -348,14 +348,10 @@ private:
 			mMesh.setShaderProgram(mShaderProgram);
 
 			GLuint[]	indexes;
-			GLfloat[]	vertices;
-			GLfloat[]	texCoords;
-			GLfloat[]	colors;
+			GLfloat[]	geometry;
 
 			indexes.length = 6 * nbGlyphesToRender;
-			vertices.length = 4 * 3 * nbGlyphesToRender;
-			texCoords.length = 4 * 2 * nbGlyphesToRender;
-			colors.length = 4 * 4 * nbGlyphesToRender;
+			geometry.length = 4 * (3 + 4 + 2) * nbGlyphesToRender;
 
 			size_t		glyphIndex = 0;
 
@@ -363,7 +359,7 @@ private:
 			{
 				for (size_t i = 0; i < line.glyphes.length; i++)
 				{
-					addGlyphToMesh(indexes, vertices, texCoords, colors,
+					addGlyphToMesh(indexes, geometry,
 								   Vector2s32(cast(int)round(line.offsets[i].x), cast(int)round(line.verticalCursor + line.offsets[i].y)),
 								   line.glyphes[i], glyphIndex, mImages[line.glyphes[i].atlasIndex].size());
 					glyphIndex++;
@@ -371,7 +367,7 @@ private:
 			}
 
 			mMesh.indexes.setArray(indexes, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.geometry.setArray(vertices, cast(GLenum)GL_STATIC_DRAW);
+			mMesh.geometry.setArray(geometry, cast(GLenum)GL_STATIC_DRAW);
 
 			// Update texture at the last moment
 			if (mTextures.length < 0 + 1)	// Check if the textures array already contains the current atlas
@@ -399,7 +395,7 @@ private:
 		}
 	}
 
-	void	addGlyphToMesh(ref GLuint[] indexes, ref GLfloat[] vertices, ref GLfloat[] texCoords, ref GLfloat[] colors, Vector2s32 origin, Glyph glyph, size_t glyphIndex, Vector2s32 atlasSize)
+	void	addGlyphToMesh(ref GLuint[] indexes, ref GLfloat[] geometry, Vector2s32 origin, Glyph glyph, size_t glyphIndex, Vector2s32 atlasSize)
 	{
 		float	x, y, width, height;
 		float	tX, tY, tWidth, tHeight;
@@ -422,21 +418,25 @@ private:
 		indexes[glyphIndex * 6 + 4] = cast(uint)(glyphIndex * 4 + 3);
 		indexes[glyphIndex * 6 + 5] = cast(uint)(glyphIndex * 4 + 2);
 
-		vertices[glyphIndex * 4 * 3 + 0] = x;			vertices[glyphIndex * 4 * 3 + 1] = y;			vertices[glyphIndex * 4 * 3 + 2] = 0.0f;
-		vertices[glyphIndex * 4 * 3 + 3] = x + width;	vertices[glyphIndex * 4 * 3 + 4] = y;			vertices[glyphIndex * 4 * 3 + 5] = 0.0f;
-		vertices[glyphIndex * 4 * 3 + 6] = x;			vertices[glyphIndex * 4 * 3 + 7] = y + height;	vertices[glyphIndex * 4 * 3 + 8] = 0.0f;
-		vertices[glyphIndex * 4 * 3 + 9] = x + width;	vertices[glyphIndex * 4 * 3 + 10] = y + height;	vertices[glyphIndex * 4 * 3 + 11] = 0.0f;
+		size_t	index = glyphIndex * (4 * (3 + 4 + 2));
 
 		// Don't forget opengl is down to top oriented (left-top corner = 0,1 coords)
-		texCoords[glyphIndex * 4 * 2 + 0] = tX;				texCoords[glyphIndex * 4 * 2 + 1] = 1.0f - tY;
-		texCoords[glyphIndex * 4 * 2 + 2] = tX + tWidth;	texCoords[glyphIndex * 4 * 2 + 3] = 1.0f - tY;
-		texCoords[glyphIndex * 4 * 2 + 4] = tX;				texCoords[glyphIndex * 4 * 2 + 5] = 1.0f - (tY + tHeight);
-		texCoords[glyphIndex * 4 * 2 + 6] = tX + tWidth;	texCoords[glyphIndex * 4 * 2 + 7] = 1.0f - (tY + tHeight);
 
-		colors[glyphIndex * 4 * 4 + 0] = 1.0f;	colors[glyphIndex * 4 * 4 + 1] = 1.0f;	colors[glyphIndex * 4 * 4 + 2] = 1.0f;	colors[glyphIndex * 4 * 4 + 3] = 1.0f;
-		colors[glyphIndex * 4 * 4 + 4] = 1.0f;	colors[glyphIndex * 4 * 4 + 5] = 1.0f;	colors[glyphIndex * 4 * 4 + 6] = 1.0f;	colors[glyphIndex * 4 * 4 + 7] = 1.0f;
-		colors[glyphIndex * 4 * 4 + 8] = 1.0f;	colors[glyphIndex * 4 * 4 + 9] = 1.0f;	colors[glyphIndex * 4 * 4 + 10] = 1.0f;	colors[glyphIndex * 4 * 4 + 11] = 1.0f;
-		colors[glyphIndex * 4 * 4 + 12] = 1.0f;	colors[glyphIndex * 4 * 4 + 13] = 1.0f;	colors[glyphIndex * 4 * 4 + 14] = 1.0f;	colors[glyphIndex * 4 * 4 + 15] = 1.0f;
+		geometry[index++] = x;				geometry[index++] = y;						geometry[index++] = 0.0f;
+		geometry[index++] = 1.0f;			geometry[index++] = 1.0f;					geometry[index++] = 1.0f;	geometry[index++] = 1.0f;
+		geometry[index++] = tX;				geometry[index++] = 1.0f - tY;
+
+		geometry[index++] = x + width;		geometry[index++] = y;						geometry[index++] = 0.0f;
+		geometry[index++] = 1.0f;			geometry[index++] = 1.0f;					geometry[index++] = 1.0f;	geometry[index++] = 1.0f;
+		geometry[index++] = tX + tWidth;	geometry[index++] = 1.0f - tY;
+
+		geometry[index++] = x;				geometry[index++] = y + height;				geometry[index++] = 0.0f;
+		geometry[index++] = 1.0f;			geometry[index++] = 1.0f;					geometry[index++] = 1.0f;	geometry[index++] = 1.0f;
+		geometry[index++] = tX;				geometry[index++] = 1.0f - (tY + tHeight);
+
+		geometry[index++] = x + width;		geometry[index++] = y + height;				geometry[index++] = 0.0f;
+		geometry[index++] = 1.0f;			geometry[index++] = 1.0f;					geometry[index++] = 1.0f;	geometry[index++] = 1.0f;
+		geometry[index++] = tX + tWidth;	geometry[index++] = 1.0f - (tY + tHeight);
 	}
 
 	void	setImplicitSize(Vector2f32 implicitSize)
