@@ -54,6 +54,7 @@ public:
 	bool	setTexture(string filePath)
 	{
 		mTexture = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Texture(filePath);
+		updateGeometryParameters();
 		return true;
 	}
 	bool	setTexture(Image image)
@@ -61,11 +62,13 @@ public:
 		Variant[] options;
 		options ~= Variant(image);
 		mTexture = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Texture(image.filePath(), options);
+		updateGeometryParameters();
 		return true;
 	}
 	bool	setTexture(Texture texture)
 	{
 		mTexture = texture;
+		updateGeometryParameters();
 		return true;
 	}
 	Texture	texture() {return mTexture;}
@@ -79,6 +82,7 @@ public:
 		mTexcoordAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_texcoord"));
 		mTextureUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_texture"));
 		mMDVMatrixUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_modelViewProjectionMatrix"));
+		updateGeometryParameters();
 	}
 	Shader	shader() {return mShader;}
 
@@ -112,13 +116,13 @@ public:
 			indexes.bind();
 			geometry.bind();
 			checkgl!glEnableVertexAttribArray(mPositionAttribute);
-			checkgl!glVertexAttribPointer(mPositionAttribute, 3, GL_FLOAT, GL_FALSE, cast(GLsizei)(3 * GLfloat.sizeof), null + cast(GLvoid*)(0 * GLfloat.sizeof));
+			checkgl!glVertexAttribPointer(mPositionAttribute, 3, GL_FLOAT, GL_FALSE, mSliceSize, null + cast(GLvoid*)(0 * GLfloat.sizeof));
 			checkgl!glEnableVertexAttribArray(mColorAttribute);
-			checkgl!glVertexAttribPointer(mColorAttribute, 4, GL_FLOAT, GL_FALSE, cast(GLsizei)(4 * GLfloat.sizeof), null + cast(GLvoid*)(3 * GLfloat.sizeof));
+			checkgl!glVertexAttribPointer(mColorAttribute, 4, GL_FLOAT, GL_FALSE, mSliceSize, null + cast(GLvoid*)(3 * GLfloat.sizeof));
 			if (mTexture)
 			{
 				checkgl!glEnableVertexAttribArray(mTexcoordAttribute);
-				checkgl!glVertexAttribPointer(mTexcoordAttribute, 2, GL_FLOAT, GL_FALSE, cast(GLsizei)(2 * GLfloat.sizeof), null + cast(GLvoid*)((3 + 4) * GLfloat.sizeof));
+				checkgl!glVertexAttribPointer(mTexcoordAttribute, 2, GL_FLOAT, GL_FALSE, mSliceSize, null + cast(GLvoid*)((3 + 4) * GLfloat.sizeof));
 			}
 		}
 
@@ -150,6 +154,7 @@ public:
 		destruct();
 		indexes = new VBO!GLuint(cast(GLenum)GL_ELEMENT_ARRAY_BUFFER);
 		geometry = new VBO!GLfloat(cast(GLenum)GL_ARRAY_BUFFER);
+		updateGeometryParameters();
 	}
 
 	void	destruct()
@@ -174,6 +179,13 @@ public:
 	}
 
 private:
+	void	updateGeometryParameters()
+	{
+		mSliceSize = cast(GLsizei)((3 + 4) * GLfloat.sizeof);	// 3 for vertex, 4 for color
+		if (mTexture)
+			mSliceSize += cast(GLsizei)((2) * GLfloat.sizeof);	// 2 for texCoords
+	}
+
 	static const GLuint		mBadId = 0;
 
 	GLint					mPositionAttribute;
@@ -181,6 +193,8 @@ private:
 	GLint					mTexcoordAttribute;
 	GLint					mTextureUniform;
 	GLint					mMDVMatrixUniform;
+
+	GLsizei					mSliceSize;
 
 	Shader					mShader;
 	ShaderProgram			mShaderProgram;
