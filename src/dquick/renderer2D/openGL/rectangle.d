@@ -22,6 +22,12 @@ import std.variant;
 struct Rectangle
 {
 public:
+
+	~this()
+	{
+		mMesh.destruct();
+	}
+
 	bool	setTexture(string filePath)
 	{
 		create();

@@ -35,6 +35,11 @@ public:
 		Round,
 	}
 
+	~this()
+	{
+		mMesh.destruct();
+	}
+
 	bool	setTexture(string filePath)
 	{
 		create();
