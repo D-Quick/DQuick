@@ -70,6 +70,11 @@ public:
 		@property float	width() {return GraphicItem.width;}
 		@property void	height(float height) {mRectangle.height = height; GraphicItem.height = height;}
 		@property float	height() {return GraphicItem.height;}
+
+		void	release()
+		{
+			mRectangle.destruct();
+		}
 	}
 
 	@property void	borderLeft(int value) {mRectangle.borderLeft(value); onBorderLeftChanged.emit(value);}

@@ -116,6 +116,7 @@ public:
 
 	void	close()
 	{
+		mRootItem.release();
 		mRootItem = null;
 		destroy(mScriptContext);
 		mScriptContext = null;

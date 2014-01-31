@@ -95,6 +95,11 @@ public:
 		{
 			return mRectangle.textureSize.y;
 		}
+
+		void	release()
+		{
+			mRectangle.destruct();
+		}
 	}
 
 protected:

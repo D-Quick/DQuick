@@ -156,6 +156,11 @@ public:
 				rebuildMesh();
 			return mImplicitSize.y;
 		}
+
+		void	release()
+		{
+			mMesh.destruct();
+		}
 	}
 
 private:

@@ -71,20 +71,27 @@ public:
 		if (event.type == MouseEvent.Type.Move)
 			writeln(event.position);
 */
-		for (auto i = 0; i < mChildren.length; i++)
-			mChildren[i].mouseEvent(event);
+		foreach (child; mChildren)
+			child.mouseEvent(event);
 	}
 
 	Matrix4x4	matrix()
 	{
 		return mMatrix;
 	}
+
+	/// Call release on children, can be overloaded to release resources if needed
+	void	release()
+	{
+		foreach (child; mChildren)
+			child.release();
+	}
 	
 protected:
 	void	paintChildren()
 	{
-		for (auto i = 0; i < mChildren.length; i++)
-			mChildren[i].paint(mTransformationUpdated);
+		foreach (child; mChildren)
+			child.paint(mTransformationUpdated);
 	}
 
 	string				mId;

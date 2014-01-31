@@ -152,6 +152,14 @@ public:
 		endPaint();
 	}
 
+	override
+	void	release()
+	{
+		mDebugMesh.destruct();
+		mDebugImplicitMesh.destruct();
+		super.release();
+	}
+
 	/// Color will be used to draw the rectangle that represent the GraphicItem's size
 	@property void	debugMeshColor(Color color)
 	{

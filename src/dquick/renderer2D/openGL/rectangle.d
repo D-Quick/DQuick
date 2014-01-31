@@ -12,6 +12,8 @@ import dquick.maths.color;
 import dquick.maths.vector2f32;
 import dquick.maths.vector2s32;
 
+import dquick.utils.utils;
+
 import derelict.opengl3.gl;
 
 import std.stdio;
@@ -25,7 +27,7 @@ public:
 
 	~this()
 	{
-		mMesh.destruct();
+		debug destructorAssert(mMesh.indexes is null, "Rectangle.destruct method wasn't called.", mTrace);
 	}
 
 	bool	setTexture(string filePath)
@@ -70,11 +72,18 @@ public:
 		return mMesh.texture.size;
 	}
 
+	void	destruct()
+	{
+		mMesh.destruct();
+	}
+
 private:
 	void	create()	// Safe to call it if mesh is already created
 	{
 		if (mMesh.indexes)
 			return;
+
+		debug mTrace = defaultTraceHandler(null);
 
 		mMesh.construct();
 
@@ -117,4 +126,6 @@ private:
 	bool			mMeshIsDirty; // indicates that mesh has to be rebuilt in next draw() call.
 	Shader			mShader;
 	ShaderProgram	mShaderProgram;
+
+	debug Throwable.TraceInfo	mTrace;
 }
