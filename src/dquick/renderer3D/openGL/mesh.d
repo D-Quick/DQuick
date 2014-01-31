@@ -163,7 +163,7 @@ public:
 		{
 			indexes.release();
 			indexes = null;
-			geometry.unload();
+			geometry.release();
 			geometry = null;
 		}
 		if (mTexture)
