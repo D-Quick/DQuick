@@ -500,7 +500,7 @@ class ItemBinding(T) : ItemBindingBase!(T) // Proxy that auto bind T
 		{
 			static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding)) // Instantiate property binding
 			{
-				static immutable string propertyName = getPropertyNameFromPropertyDeclaration(member);
+				const string propertyName = getPropertyNameFromPropertyDeclaration(member);
 				static if (__traits(hasMember, this, "____"~propertyName~"ItemBinding")) // Instanciate subitem binding
 				{
 					__traits(getMember, this, member) = new typeof(__traits(getMember, this, member))(this, this);  // Instantiate property binding linked to __propertyName inside this
