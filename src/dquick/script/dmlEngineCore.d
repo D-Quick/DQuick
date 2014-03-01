@@ -2580,7 +2580,6 @@ extern(C)
 				if (key >= array.length)
 				{
 					throw new Exception(format("the key value %d is out of bound", key));
-					return 0;
 				}
 			}
 
