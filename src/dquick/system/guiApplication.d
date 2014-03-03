@@ -9,6 +9,8 @@ import derelict.lua.lua;
 
 import std.stdio;
 
+import dquick.buildSettings;
+
 interface IGuiApplication
 {
 	static IGuiApplication	instance();
@@ -52,14 +54,19 @@ private:
 	bool	mInitialized = false;
 }
 
-version (Windows)
+static if (windowSystem == WindowSystem.Native)
 {
-	public import dquick.system.win32.guiApplicationWin32;
+	version (Windows)
+	{
+		public import dquick.system.win32.guiApplicationWin32;
+	}
+	version (Posix)
+	{
+		public import dquick.system.sdl.guiApplicationSDL;
+	}
 }
-version (Posix)
-{
+else
 	public import dquick.system.sdl.guiApplicationSDL;
-}
 
 static this()
 {

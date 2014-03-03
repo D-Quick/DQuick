@@ -13,7 +13,7 @@ import derelict.opengl3.gl;
 import derelict.opengl3.glx;
 import derelict.util.exception;
 
-import dquick.renderer3D.openGL.renderer;
+import dquick.renderer3D.all;
 import dquick.maths.matrix4x4;
 import dquick.maths.vector2s32;
 

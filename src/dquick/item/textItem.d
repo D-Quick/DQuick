@@ -3,10 +3,7 @@ module dquick.item.textItem;
 import dquick.item.graphicItem;
 import dquick.media.font;
 import dquick.media.image;
-import dquick.renderer3D.openGL.mesh;
-import dquick.renderer3D.openGL.texture;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.shaderProgram;
+import dquick.renderer3D.all;
 import dquick.maths.vector2s32;
 import dquick.maths.color;
 

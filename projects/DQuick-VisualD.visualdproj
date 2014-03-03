@@ -1281,6 +1281,7 @@
      <File path="..\src\dquick\renderer3D\openGL\util.d" />
      <File path="..\src\dquick\renderer3D\openGL\VBO.d" />
     </Folder>
+    <File path="..\src\dquick\renderer3D\all.d" />
    </Folder>
    <Folder name="script">
     <File path="..\src\dquick\script\delegatePropertyBinding.d" />
@@ -1305,6 +1306,7 @@
      <File path="..\src\dquick\system\sdl\openglContextSDL.d" />
     </Folder>
     <Folder name="win32">
+     <File path="..\src\dquick\system\win32\d3d9ContextWin32.d" />
      <File path="..\src\dquick\system\win32\guiApplicationWin32.d" />
      <File path="..\src\dquick\system\win32\openglContextWin32.d" />
     </Folder>

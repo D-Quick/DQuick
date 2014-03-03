@@ -1,13 +1,6 @@
 module dquick.renderer2D.openGL.borderRectangleShader;
 
-import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.texture;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.shaderProgram;
-import dquick.renderer3D.openGL.VBO;
-import dquick.renderer3D.openGL.util;
-import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.mesh;
+import dquick.renderer3D.all;
 
 import dquick.maths.color;
 import dquick.maths.vector2f32;

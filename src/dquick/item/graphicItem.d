@@ -7,9 +7,7 @@ public import dquick.maths.transformation;
 public import dquick.maths.color;
 
 public import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.mesh;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.shaderProgram;
+import dquick.renderer3D.all;
 
 public import std.signals;
 import std.stdio;
