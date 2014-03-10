@@ -1,8 +1,6 @@
-module dquick.renderer3D.openGL.shaderProgram;
+module dquick.renderer3D.d3d9.shaderProgram;
 
-import dquick.renderer3D.openGL.util;
-
-import derelict.opengl3.gl;
+import dquick.renderer3D.d3d9.util;
 
 import std.variant;
 import std.string;
@@ -12,14 +10,14 @@ import std.string;
 /// This structure hold shader program parameters
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.OpenGL)
+static if (renderer == RendererMode.D3D9)
 struct ShaderProgram
 {
 public:
-	static const GLuint	badId = 0;
+//	static const GLuint	badId = 0;
 
-	void	program(GLuint id) {mProgram = id;}
-	GLuint	program() {return mProgram;}
+/*	void	program(GLuint id) {mProgram = id;}
+	GLuint	program() {return mProgram;}*/
 
 	void	setParameter(string name, ParameterType type, void* values)
 	{
@@ -67,7 +65,7 @@ public:
 	}
 
 private:
-	GLuint				mProgram = badId;
+//	GLuint				mProgram = badId;
 	Parameter[string]	mParameters;
 };
 
@@ -83,7 +81,7 @@ private
 struct Parameter
 {
 	string			name;	// For debuging
-	GLint			id;
+//	GLint			id;
 	ParameterType	type;
 	void*			values;
 }

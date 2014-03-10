@@ -1,16 +1,14 @@
-module dquick.renderer3D.openGL.material;
+module dquick.renderer3D.d3d9.material;
 
-import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.texture;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.util;
-import dquick.renderer3D.openGL.renderer;
+import dquick.renderer3D.d3d9.renderer;
+import dquick.renderer3D.d3d9.texture;
+import dquick.renderer3D.d3d9.shader;
+import dquick.renderer3D.d3d9.util;
+import dquick.renderer3D.d3d9.renderer;
 
 import dquick.maths.color;
 
 import dquick.utils.utils;
-
-import derelict.opengl3.gl;
 
 import std.stdio;
 
@@ -20,7 +18,7 @@ import core.runtime;
 /// Using a structure allow customization
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.OpenGL)
+static if (renderer == RendererMode.D3D9)
 struct Material
 {
 public:
@@ -46,12 +44,12 @@ public:
 	}
 
 private:
-	static const GLuint		mBadId = 0;
+//	static const GLuint		mBadId = 0;
 
 	Texture					mTexture;
 	Shader					mShader;
-	GLint					mColorAttribute;
-	GLint					mTexcoordAttribute;
+/*	GLint					mColorAttribute;
+	GLint					mTexcoordAttribute;*/
 
 	debug Throwable.TraceInfo	mTrace;
 }

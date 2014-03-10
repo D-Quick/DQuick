@@ -1,13 +1,11 @@
-module dquick.renderer3D.openGL.texture;
+module dquick.renderer3D.d3d9.texture;
 
-import dquick.renderer3D.openGL.util;
+import dquick.renderer3D.d3d9.util;
 import dquick.media.image;
 import dquick.maths.vector2s32;
 import dquick.utils.resourceManager;
 
 import dquick.utils.utils;
-
-import derelict.opengl3.gl;
 
 import std.string;
 
@@ -15,7 +13,7 @@ import core.runtime;
 
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.OpenGL)
+static if (renderer == RendererMode.D3D9)
 final class Texture : IResource
 {
 	mixin ResourceBase;
@@ -79,7 +77,7 @@ public:
 
 	Vector2s32	size() {return mSize;}
 
-	GLuint	id() {return mId;}
+//	GLuint	id() {return mId;}
 
 private:
 	void	load(Image image)
@@ -130,9 +128,6 @@ private:
 		mWeight = image.weight;
 	}
 
-	static const GLuint	mBadId = 0;	// Useful if on some platforms 0 can be used for a texture id
-
-	GLuint		mId = mBadId;
 	Vector2s32	mSize;
 	ubyte		mNbBytesPerPixels = 0;
 

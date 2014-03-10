@@ -42,7 +42,7 @@ protected:
 	void	terminateExecution()
 	{
 		Scheduler.terminateAll();
-		dquick.renderer3D.openGL.renderer.resourceManager.releaseAllResources();
+		Renderer.resourceManager.releaseAllResources();
 		dquick.media.image.resourceManager.releaseAllResources();
 		dquick.media.font.fontManager.clear();
 	}

@@ -2,6 +2,8 @@ module dquick.system.win32.d3d9ContextWin32;
 
 import dquick.buildSettings;
 
+// TODO voir C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Samples\C++
+
 static if (renderer == RendererMode.D3D9)
 {
 	import std.c.windows.windows;

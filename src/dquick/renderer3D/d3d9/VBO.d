@@ -1,18 +1,17 @@
-module dquick.renderer3D.openGL.VBO;
+module dquick.renderer3D.d3d9.VBO;
 
-import dquick.renderer3D.openGL.util;
+import dquick.renderer3D.d3d9.util;
 import dquick.utils.resourceManager;
-import dquick.utils.utils;
-import dquick.renderer3D.generic;
-import dquick.buildSettings;
 
-import derelict.opengl3.gl;
+import dquick.utils.utils;
 
 import std.stdio;
 
 import core.runtime;
 
-static if (renderer == RendererMode.OpenGL)
+import dquick.buildSettings;
+
+static if (renderer == RendererMode.D3D9)
 final class VBO(T) : IResource
 {
 	mixin ResourceBase;
@@ -20,7 +19,7 @@ final class VBO(T) : IResource
 public:
 	this(VBOType type)
 	{
-		mType = typeToGLenum(type);
+		mType = type;
 	}
 
 	~this()
@@ -52,6 +51,8 @@ public:
 		mId = 0;
 	}
 
+	@property GLuint	id() {return mId;}
+
 	void	bind()
 	{
 		assert(mId != 0);
@@ -63,10 +64,10 @@ public:
 		checkgl!glBindBuffer(mType, 0);
 	}
 
-	void	setArray(T[] array, VBOMode mode)
+	void	setArray(T[] array, GLenum mode)
 	{
 		mArray = array;
-		mMode = modeToGLenum(mode);
+		mMode = mode;
 		create();
 	}
 
@@ -82,30 +83,6 @@ public:
 	size_t	length() {return mArray.length;}
 
 private:
-	static const GLenum typeToGLenum(VBOType type)
-	{
-		final switch(type)
-		{
-			case VBOType.Indexes:
-				return GL_ELEMENT_ARRAY_BUFFER;
-			case VBOType.Geometry:
-				return GL_ARRAY_BUFFER;
-		}
-	}
-
-	static const GLenum modeToGLenum(VBOMode type)
-	{
-		final switch(type)
-		{
-			case VBOMode.Static:
-				return GL_STATIC_DRAW;
-			case VBOMode.Dynamic:
-				return GL_DYNAMIC_DRAW;
-		}
-	}
-
-	@property GLuint	id() {return mId;}
-
 	void	create()
 	{
 		if (mId != 0)

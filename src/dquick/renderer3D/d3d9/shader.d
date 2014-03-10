@@ -1,11 +1,9 @@
-module dquick.renderer3D.openGL.shader;
+module dquick.renderer3D.d3d9.shader;
 
-import dquick.renderer3D.openGL.util;
+import dquick.renderer3D.d3d9.util;
 import dquick.utils.resourceManager;
 
 import dquick.utils.utils;
-
-import derelict.opengl3.gl;
 
 import std.string;
 import std.stdio;
@@ -15,7 +13,7 @@ import core.runtime;
 
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.OpenGL)
+static if (renderer == RendererMode.D3D9)
 final class Shader : IResource
 {
 	mixin ResourceBase;
@@ -62,10 +60,10 @@ public:
 		mFilePath = filePath;
 	}
 
-	GLuint	getProgram()
+/*	GLuint	getProgram()
 	{
 		return mShaderProgram;
-	}
+	}*/
 
 	void	release()
 	{
@@ -87,7 +85,7 @@ public:
 	}
 
 private:
-	uint	loadAndCompileShader(GLenum type, string source)
+/*	uint	loadAndCompileShader(GLenum type, string source)
 	{
 		GLint	length;
 
@@ -171,13 +169,13 @@ private:
 			}
 			throw new Exception("Failed to link program");
 		}
-	}
+	}*/
 	
-	static const GLuint	mBadId = 0;
+/*	static const GLuint	mBadId = 0;
 
 	GLuint	mFragmentShader = mBadId;
 	GLuint	mVertexShader = mBadId;
-	GLuint	mShaderProgram = mBadId;
+	GLuint	mShaderProgram = mBadId;*/
 	
 	string	mFragmentShaderSource;
 	string	mVertexShaderSource;

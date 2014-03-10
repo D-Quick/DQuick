@@ -1,21 +1,18 @@
-module dquick.renderer3D.openGL.mesh;
+module dquick.renderer3D.d3d9.mesh;
 
-import dquick.renderer3D.generic;
-import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.texture;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.shaderProgram;
-import dquick.renderer3D.openGL.VBO;
-import dquick.renderer3D.openGL.util;
-import dquick.renderer3D.openGL.renderer;
+import dquick.renderer3D.d3d9.renderer;
+import dquick.renderer3D.d3d9.texture;
+import dquick.renderer3D.d3d9.shader;
+import dquick.renderer3D.d3d9.shaderProgram;
+import dquick.renderer3D.d3d9.VBO;
+import dquick.renderer3D.d3d9.util;
+import dquick.renderer3D.d3d9.renderer;
 
 import dquick.maths.color;
 
 import dquick.media.image;
 
 import dquick.utils.utils;
-
-import derelict.opengl3.gl;
 
 import std.stdio;
 import std.variant;
@@ -26,22 +23,22 @@ import core.runtime;
 
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.OpenGL)
+static if (renderer == RendererMode.D3D9)
 struct Mesh
 {
 public:
 	enum PrimitiveType
 	{
-		Points = GL_POINTS,
-		LineStrip = GL_LINE_STRIP,
-		LineLoop = GL_LINE_LOOP,
-		Lines = GL_LINES,
-		TriangleStrip = GL_TRIANGLE_STRIP,
-		TriangleFan = GL_TRIANGLE_FAN,
-		Triangles = GL_TRIANGLES,
-		QuadStrip = GL_QUAD_STRIP,
-		Quads = GL_QUADS,
-		Polygon = GL_POLYGON
+		Points,
+		LineStrip,
+		LineLoop,
+		Lines,
+		TriangleStrip,
+		TriangleFan,
+		Triangles,
+		QuadStrip,
+		Quads,
+		Polygon
 	}
 
 	~this()
@@ -51,7 +48,7 @@ public:
 
 	bool	setTexture(string filePath)
 	{
-		mTexture = Renderer.resourceManager.getResource!Texture(filePath);
+		mTexture = renderer.resourceManager.getResource!Texture(filePath);
 		updateGeometryParameters();
 		return true;
 	}
@@ -59,7 +56,7 @@ public:
 	{
 		Variant[] options;
 		options ~= Variant(image);
-		mTexture = Renderer.resourceManager.getResource!Texture(image.filePath(), options);
+		mTexture = renderer.resourceManager.getResource!Texture(image.filePath(), options);
 		updateGeometryParameters();
 		return true;
 	}
@@ -87,13 +84,13 @@ public:
 	void			setShaderProgram(ShaderProgram program) {mShaderProgram = program;}
 	ShaderProgram	shaderProgram() {return mShaderProgram;}
 
-	VBO!GLuint		indexes = null;
-	VBO!GLfloat		geometry = null;	/// Put geometry in interleaved mode, in this order : vertex, color, texture coordinates
+	VBO!uint		indexes = null;
+	VBO!float		geometry = null;	/// Put geometry in interleaved mode, in this order : vertex, color, texture coordinates
 	PrimitiveType	primitiveType = PrimitiveType.Triangles;		/// Default type is Triangles
 
 	void	draw()
 	{
-		if (mShader)
+/*		if (mShader)
 		{
 			mShaderProgram.execute();
 
@@ -142,7 +139,7 @@ public:
 		geometry.unbind();	// One unbind per type
 		checkgl!glBindTexture(GL_TEXTURE_2D, mBadId);
 		checkgl!glBindBuffer(GL_ARRAY_BUFFER, mBadId);
-		checkgl!glUseProgram(mBadId);
+		checkgl!glUseProgram(mBadId);*/
 	}
 
 	void	construct()
@@ -150,8 +147,8 @@ public:
 		debug mTrace = defaultTraceHandler(null);
 
 		destruct();
-		indexes = new VBO!uint(VBOType.Indexes);
-		geometry = new VBO!float(VBOType.Geometry);
+		indexes = new VBO!GLuint(VBOType.Indexes);
+		geometry = new VBO!GLfloat(VBOType.Geometry);
 		updateGeometryParameters();
 	}
 
@@ -166,12 +163,12 @@ public:
 		}
 		if (mTexture)
 		{
-			Renderer.resourceManager.releaseResource(mTexture);
+			renderer.resourceManager.releaseResource(mTexture);
 			mTexture = null;
 		}
 		if (mShader)
 		{
-			Renderer.resourceManager.releaseResource(mShader);
+			renderer.resourceManager.releaseResource(mShader);
 			mShader = null;
 		}
 	}
@@ -184,7 +181,7 @@ private:
 			mSliceSize += cast(GLsizei)((2) * GLfloat.sizeof);	// 2 for texCoords
 	}
 
-	static const GLuint		mBadId = 0;
+/*	static const GLuint		mBadId = 0;
 
 	GLint					mPositionAttribute;
 	GLint					mColorAttribute;
@@ -192,7 +189,7 @@ private:
 	GLint					mTextureUniform;
 	GLint					mMDVMatrixUniform;
 
-	GLsizei					mSliceSize;
+	GLsizei					mSliceSize;*/
 
 	Shader					mShader;
 	ShaderProgram			mShaderProgram;
