@@ -1,6 +1,7 @@
 module dquick.renderer3D.d3d10.VBO;
 
 import dquick.renderer3D.d3d10.util;
+import dquick.renderer3D.generic;
 import dquick.utils.resourceManager;
 
 import dquick.utils.utils;
@@ -19,7 +20,7 @@ final class VBO(T) : IResource
 public:
 	this(VBOType type)
 	{
-		mType = type;
+		mType = typeToGLenum(type);
 	}
 
 	~this()
@@ -51,8 +52,6 @@ public:
 		mId = 0;
 	}
 
-	@property GLuint	id() {return mId;}
-
 	void	bind()
 	{
 		assert(mId != 0);
@@ -64,10 +63,10 @@ public:
 		checkgl!glBindBuffer(mType, 0);
 	}
 
-	void	setArray(T[] array, GLenum mode)
+	void	setArray(T[] array, VBOMode mode)
 	{
 		mArray = array;
-		mMode = mode;
+		mMode = modeToGLenum(mode);
 		create();
 	}
 
@@ -95,12 +94,9 @@ private:
 		unbind();
 	}
 
-	static const GLuint	mBadId = 0;	// Useful if on some platforms 0 can be used for a VBO id
+//	IDirect3DVertexBuffer9*	buffer;
 
-	GLuint	mId;
 	T[]		mArray;
-	GLenum	mType;
-	GLenum	mMode;
 
 	debug Throwable.TraceInfo	mTrace;
 }

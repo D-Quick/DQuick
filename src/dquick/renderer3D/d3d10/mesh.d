@@ -48,7 +48,7 @@ public:
 
 	bool	setTexture(string filePath)
 	{
-		mTexture = renderer.resourceManager.getResource!Texture(filePath);
+		mTexture = Renderer.resourceManager.getResource!Texture(filePath);
 		updateGeometryParameters();
 		return true;
 	}
@@ -56,7 +56,7 @@ public:
 	{
 		Variant[] options;
 		options ~= Variant(image);
-		mTexture = renderer.resourceManager.getResource!Texture(image.filePath(), options);
+		mTexture = Renderer.resourceManager.getResource!Texture(image.filePath(), options);
 		updateGeometryParameters();
 		return true;
 	}
@@ -147,8 +147,8 @@ public:
 		debug mTrace = defaultTraceHandler(null);
 
 		destruct();
-		indexes = new VBO!GLuint(VBOType.Indexes);
-		geometry = new VBO!GLfloat(VBOType.Geometry);
+		indexes = new VBO!uint(VBOType.Indexes);
+		geometry = new VBO!float(VBOType.Geometry);
 		updateGeometryParameters();
 	}
 
@@ -163,12 +163,12 @@ public:
 		}
 		if (mTexture)
 		{
-			renderer.resourceManager.releaseResource(mTexture);
+			Renderer.resourceManager.releaseResource(mTexture);
 			mTexture = null;
 		}
 		if (mShader)
 		{
-			renderer.resourceManager.releaseResource(mShader);
+			Renderer.resourceManager.releaseResource(mShader);
 			mShader = null;
 		}
 	}

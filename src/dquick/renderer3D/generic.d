@@ -11,3 +11,17 @@ enum VBOMode
 	Static,
 	Dynamic
 }
+
+enum PrimitiveType
+{
+	Points,
+	LineStrip,
+	LineLoop,
+	Lines,
+	TriangleStrip,
+	TriangleFan,
+	Triangles,
+	QuadStrip,
+	Quads,
+	Polygon
+}

@@ -23,6 +23,7 @@ import std.variant;
 import core.runtime;
 
 // TODO check an attribut with id 0 is always send for the shader (else some drivers have issues)
+// TODO see if mesh can't be generic (normally it can have no opengl or directX calls here), specific code must be on smaller graphics primitive 
 
 import dquick.buildSettings;
 
@@ -30,20 +31,6 @@ static if (renderer == RendererMode.OpenGL)
 struct Mesh
 {
 public:
-	enum PrimitiveType
-	{
-		Points = GL_POINTS,
-		LineStrip = GL_LINE_STRIP,
-		LineLoop = GL_LINE_LOOP,
-		Lines = GL_LINES,
-		TriangleStrip = GL_TRIANGLE_STRIP,
-		TriangleFan = GL_TRIANGLE_FAN,
-		Triangles = GL_TRIANGLES,
-		QuadStrip = GL_QUAD_STRIP,
-		Quads = GL_QUADS,
-		Polygon = GL_POLYGON
-	}
-
 	~this()
 	{
 		debug destructorAssert(indexes is null, "Mesh.destruct method wasn't called.", mTrace);
@@ -87,9 +74,10 @@ public:
 	void			setShaderProgram(ShaderProgram program) {mShaderProgram = program;}
 	ShaderProgram	shaderProgram() {return mShaderProgram;}
 
+	void			setPrimitiveType(PrimitiveType type) {primitiveType = primitiveTypeToGLenum(type);}
+
 	VBO!GLuint		indexes = null;
 	VBO!GLfloat		geometry = null;	/// Put geometry in interleaved mode, in this order : vertex, color, texture coordinates
-	PrimitiveType	primitiveType = PrimitiveType.Triangles;		/// Default type is Triangles
 
 	void	draw()
 	{
@@ -177,6 +165,33 @@ public:
 	}
 
 private:
+	static const GLenum primitiveTypeToGLenum(PrimitiveType type)
+	{
+		final switch(type)
+		{
+			case PrimitiveType.Points:
+					return GL_POINTS;
+			case PrimitiveType.LineStrip:
+				return GL_LINE_STRIP;
+			case PrimitiveType.LineLoop:
+				return GL_LINE_LOOP;
+			case PrimitiveType.Lines:
+				return GL_LINES;
+			case PrimitiveType.TriangleStrip:
+				return GL_TRIANGLE_STRIP;
+			case PrimitiveType.TriangleFan:
+				return GL_TRIANGLE_FAN;
+			case PrimitiveType.Triangles:
+				return GL_TRIANGLES;
+			case PrimitiveType.QuadStrip:
+				return GL_QUAD_STRIP;
+			case PrimitiveType.Quads:
+				return GL_QUADS;
+			case PrimitiveType.Polygon:
+				return GL_POLYGON;
+		}
+	}
+
 	void	updateGeometryParameters()
 	{
 		mSliceSize = cast(GLsizei)((3 + 4) * GLfloat.sizeof);	// 3 for vertex, 4 for color
@@ -186,6 +201,7 @@ private:
 
 	static const GLuint		mBadId = 0;
 
+	GLenum					primitiveType = primitiveTypeToGLenum(PrimitiveType.Triangles);		/// Default type is Triangles
 	GLint					mPositionAttribute;
 	GLint					mColorAttribute;
 	GLint					mTexcoordAttribute;

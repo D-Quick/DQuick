@@ -92,35 +92,35 @@ private:
 		length = cast(GLint)source.length;
 
 		GLuint shader = checkgl!glCreateShader(type);
-		
+
 		auto	ssp = source.ptr;
 		checkgl!glShaderSource(shader, 1, &ssp, &length);
-		
+
 		checkgl!glCompileShader(shader);
-		
+
 		GLint status;
 		checkgl!glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-		
+
 		if (status == GL_FALSE)
 		{
 			GLint logLength;
 			checkgl!glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
-			
+
 			if (logLength > 0)
 			{
 				ubyte[]	log;
 
 				log.length = logLength;
 				checkgl!glGetShaderInfoLog(shader, logLength, &logLength, cast(GLchar*)log.ptr);
-				
+
 				writefln("\n%s", cast(string)log);
 			}
 			throw new Exception(format("Failed to compile shader: %s", filePath));
 		}
-		
+
 		return shader;
 	}
-	
+
 	void	compileAndLink()
 	{
 		scope(failure) release();
@@ -148,7 +148,7 @@ private:
 	void	linkProgram()
 	{
 		checkgl!glLinkProgram(mShaderProgram);
-		
+
 		GLint status;
 		checkgl!glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &status);
 		if (status == GL_FALSE)
@@ -170,13 +170,13 @@ private:
 			throw new Exception("Failed to link program");
 		}
 	}*/
-	
+
 /*	static const GLuint	mBadId = 0;
 
 	GLuint	mFragmentShader = mBadId;
 	GLuint	mVertexShader = mBadId;
 	GLuint	mShaderProgram = mBadId;*/
-	
+
 	string	mFragmentShaderSource;
 	string	mVertexShaderSource;
 

@@ -8,20 +8,20 @@ import dquick.utils.resourceManager;
 import std.math;
 import std.stdio;
 
-ResourceManager	resourceManager;	// TODO check the release of resource when it's destroy (need to be destroy before the context) also check it for images
-
+static if (renderer == RendererMode.D3D10)
 shared static this()
 {
 	writeln("dquick.renderer3D.d3d10.renderer : shared static this()");
-	resourceManager = new ResourceManager();
-	resourceManager.maximumWeight(128 * 1000 * 1024);
+	Renderer.resourceManager = new ResourceManager();
+	Renderer.resourceManager.maximumWeight(128 * 1000 * 1024);
 }
 
+static if (renderer == RendererMode.D3D10)
 shared static ~this()
 {
 	writeln("dquick.renderer3D.d3d10.renderer : shared static ~this()");
-	destroy(resourceManager);
-	resourceManager = null;
+	destroy(Renderer.resourceManager);
+	Renderer.resourceManager = null;
 }
 
 import dquick.buildSettings;
@@ -29,7 +29,9 @@ import dquick.buildSettings;
 static if (renderer == RendererMode.D3D10)
 struct Renderer
 {
-	static void	initialize()										// All Setup For.d3d10 Goes Here
+	static ResourceManager	resourceManager;	// TODO check the release of resource when it's destroy (need to be destroy before the context) also check it for images
+
+	static void	initialize()										// All Setup For D3D10 Goes Here
 	{
 		if (mInitialized)
 			return;
@@ -94,6 +96,17 @@ struct Renderer
 	static Matrix4x4	currentCamera()
 	{
 		return mCurrentCamera;
+	}
+
+	static void	startScissor(int x, int y, int width, int height)
+	{
+//		glEnable(GL_SCISSOR_TEST);
+//		glScissor(x, y, width, height);
+	}
+
+	static void	endScissor()
+	{
+//		glDisable(GL_SCISSOR_TEST);
 	}
 
 private:

@@ -14,4 +14,4 @@ enum WindowSystem
 }
 
 const WindowSystem	windowSystem = WindowSystem.Native;
-const RendererMode	renderer = RendererMode.D3D10;
+const RendererMode	renderer = RendererMode.OpenGL;

@@ -273,7 +273,7 @@ protected:
 			mDebugMesh.construct();
 			mDebugMesh.setShader(mDebugShader);
 			mDebugMesh.setShaderProgram(mDebugShaderProgram);
-			mDebugMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
+			mDebugMesh.setPrimitiveType(PrimitiveType.LineLoop);
 
 			mDebugMesh.indexes.setArray(cast(uint[])[0, 1, 2, 3], VBOMode.Static);
 			mDebugMesh.geometry.setArray(debugMeshGeometryArray(), VBOMode.Dynamic);
@@ -282,7 +282,7 @@ protected:
 			mDebugImplicitMesh.construct();
 			mDebugImplicitMesh.setShader(mDebugShader);
 			mDebugImplicitMesh.setShaderProgram(mDebugShaderProgram);
-			mDebugImplicitMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
+			mDebugImplicitMesh.setPrimitiveType(PrimitiveType.LineLoop);
 
 			mDebugImplicitMesh.indexes.setArray(cast(uint[])[0, 1, 2, 3], VBOMode.Static);
 			mDebugImplicitMesh.geometry.setArray(debugImplicitMeshGeometryArray(), VBOMode.Dynamic);

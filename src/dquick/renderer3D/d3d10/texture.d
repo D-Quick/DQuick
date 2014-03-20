@@ -90,24 +90,24 @@ private:
 		checkgl!glGenTextures(1, &mId);
 		if (mId == mBadId)
 			throw new Exception("[Texture] Unable to generate a texture");
-			
+
 		uint internalFormat;
 		switch(image.nbBytesPerPixel)
 		{
-		case 1:
-			internalFormat = GL_LUMINANCE;
-			break;
-		case 2:
-			internalFormat = GL_LUMINANCE_ALPHA;
-			break;
-		case 3:
-			internalFormat = GL_RGB;
-			break;
-		case 4:
-			internalFormat = GL_RGBA;
-			break;
-		default:
-			throw new Exception("[Texture] Pixel format unsupported");
+			case 1:
+				internalFormat = GL_LUMINANCE;
+				break;
+			case 2:
+				internalFormat = GL_LUMINANCE_ALPHA;
+				break;
+			case 3:
+				internalFormat = GL_RGB;
+				break;
+			case 4:
+				internalFormat = GL_RGBA;
+				break;
+			default:
+				throw new Exception("[Texture] Pixel format unsupported");
 		}
 
 		checkgl!glBindTexture(GL_TEXTURE_2D, mId);
@@ -115,12 +115,12 @@ private:
 
 		checkgl!glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		checkgl!glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-/*		checkgl!glTexParameteri( GL_TEXTURE_2D, 
-						GL_TEXTURE_WRAP_S, 
-						GL_CLAMP ); 
+		/*		checkgl!glTexParameteri( GL_TEXTURE_2D, 
+		GL_TEXTURE_WRAP_S, 
+		GL_CLAMP ); 
 		checkgl!glTexParameteri( GL_TEXTURE_2D, 
-						GL_TEXTURE_WRAP_T, 
-						GL_REPEAT );*/
+		GL_TEXTURE_WRAP_T, 
+		GL_REPEAT );*/
 
 		//		checkgl!glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		//		checkgl!glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
