@@ -1,6 +1,6 @@
-module dquick.renderer3D.d3d9.texture;
+module dquick.renderer3D.d3d10.texture;
 
-import dquick.renderer3D.d3d9.util;
+import dquick.renderer3D.d3d10.util;
 import dquick.media.image;
 import dquick.maths.vector2s32;
 import dquick.utils.resourceManager;
@@ -13,7 +13,7 @@ import core.runtime;
 
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.D3D9)
+static if (renderer == RendererMode.D3D10)
 final class Texture : IResource
 {
 	mixin ResourceBase;

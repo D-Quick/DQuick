@@ -4,7 +4,7 @@ version (Windows)
 {
 	import dquick.system.guiApplication;
 	import dquick.system.win32.openglContextWin32;
-	import dquick.system.win32.d3d9ContextWin32;
+	import dquick.system.win32.d3d10ContextWin32;
 
 	import dquick.utils.utils;
 

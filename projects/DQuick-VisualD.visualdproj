@@ -1271,15 +1271,16 @@
     </Folder>
    </Folder>
    <Folder name="renderer3D">
-    <Folder name="d3d9">
-     <File path="..\src\dquick\renderer3D\d3d9\material.d" />
-     <File path="..\src\dquick\renderer3D\d3d9\mesh.d" />
-     <File path="..\src\dquick\renderer3D\d3d9\renderer.d" />
-     <File path="..\src\dquick\renderer3D\d3d9\shader.d" />
-     <File path="..\src\dquick\renderer3D\d3d9\shaderProgram.d" />
-     <File path="..\src\dquick\renderer3D\d3d9\texture.d" />
-     <File path="..\src\dquick\renderer3D\d3d9\util.d" />
-     <File path="..\src\dquick\renderer3D\d3d9\VBO.d" />
+    <Folder name="d3d10">
+     <File path="..\src\dquick\renderer3D\d3d10\d3d10.d" />
+     <File path="..\src\dquick\renderer3D\d3d10\material.d" />
+     <File path="..\src\dquick\renderer3D\d3d10\mesh.d" />
+     <File path="..\src\dquick\renderer3D\d3d10\renderer.d" />
+     <File path="..\src\dquick\renderer3D\d3d10\shader.d" />
+     <File path="..\src\dquick\renderer3D\d3d10\shaderProgram.d" />
+     <File path="..\src\dquick\renderer3D\d3d10\texture.d" />
+     <File path="..\src\dquick\renderer3D\d3d10\util.d" />
+     <File path="..\src\dquick\renderer3D\d3d10\VBO.d" />
     </Folder>
     <Folder name="openGL">
      <File path="..\src\dquick\renderer3D\openGL\material.d" />
@@ -1317,7 +1318,7 @@
      <File path="..\src\dquick\system\sdl\openglContextSDL.d" />
     </Folder>
     <Folder name="win32">
-     <File path="..\src\dquick\system\win32\d3d9ContextWin32.d" />
+     <File path="..\src\dquick\system\win32\d3d10ContextWin32.d" />
      <File path="..\src\dquick\system\win32\guiApplicationWin32.d" />
      <File path="..\src\dquick\system\win32\openglContextWin32.d" />
     </Folder>

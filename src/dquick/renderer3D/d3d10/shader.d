@@ -1,6 +1,6 @@
-module dquick.renderer3D.d3d9.shader;
+module dquick.renderer3D.d3d10.shader;
 
-import dquick.renderer3D.d3d9.util;
+import dquick.renderer3D.d3d10.util;
 import dquick.utils.resourceManager;
 
 import dquick.utils.utils;
@@ -13,7 +13,7 @@ import core.runtime;
 
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.D3D9)
+static if (renderer == RendererMode.D3D10)
 final class Shader : IResource
 {
 	mixin ResourceBase;

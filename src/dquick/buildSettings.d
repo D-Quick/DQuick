@@ -4,7 +4,7 @@ module dquick.buildSettings;
 enum RendererMode
 {
 	OpenGL,
-	D3D9
+	D3D10
 }
 
 enum WindowSystem
@@ -14,4 +14,4 @@ enum WindowSystem
 }
 
 const WindowSystem	windowSystem = WindowSystem.Native;
-const RendererMode	renderer = RendererMode.OpenGL;
+const RendererMode	renderer = RendererMode.D3D10;

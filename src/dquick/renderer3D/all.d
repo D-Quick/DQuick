@@ -15,16 +15,16 @@ static if (renderer == RendererMode.OpenGL)
 	public import dquick.renderer3D.openGL.util;
 	public import dquick.renderer3D.openGL.VBO;
 }
-else static if (renderer == RendererMode.D3D9)
+else static if (renderer == RendererMode.D3D10)
 {
-	public import dquick.renderer3D.d3d9.material;
-	public import dquick.renderer3D.d3d9.mesh;
-	public import dquick.renderer3D.d3d9.renderer;
-	public import dquick.renderer3D.d3d9.shader;
-	public import dquick.renderer3D.d3d9.shaderProgram;
-	public import dquick.renderer3D.d3d9.texture;
-	public import dquick.renderer3D.d3d9.util;
-	public import dquick.renderer3D.d3d9.VBO;
+	public import dquick.renderer3D.d3d10.material;
+	public import dquick.renderer3D.d3d10.mesh;
+	public import dquick.renderer3D.d3d10.renderer;
+	public import dquick.renderer3D.d3d10.shader;
+	public import dquick.renderer3D.d3d10.shaderProgram;
+	public import dquick.renderer3D.d3d10.texture;
+	public import dquick.renderer3D.d3d10.util;
+	public import dquick.renderer3D.d3d10.VBO;
 }
 else
 {

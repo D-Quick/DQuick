@@ -1,6 +1,6 @@
-module dquick.renderer3D.d3d9.renderer;
+module dquick.renderer3D.d3d10.renderer;
 
-import dquick.renderer3D.d3d9.util;
+import dquick.renderer3D.d3d10.util;
 import dquick.maths.matrix4x4;
 import dquick.maths.vector2s32;
 import dquick.utils.resourceManager;
@@ -12,24 +12,24 @@ ResourceManager	resourceManager;	// TODO check the release of resource when it's
 
 shared static this()
 {
-	writeln("dquick.renderer3D.d3d9.renderer : shared static this()");
+	writeln("dquick.renderer3D.d3d10.renderer : shared static this()");
 	resourceManager = new ResourceManager();
 	resourceManager.maximumWeight(128 * 1000 * 1024);
 }
 
 shared static ~this()
 {
-	writeln("dquick.renderer3D.d3d9.renderer : shared static ~this()");
+	writeln("dquick.renderer3D.d3d10.renderer : shared static ~this()");
 	destroy(resourceManager);
 	resourceManager = null;
 }
 
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.D3D9)
+static if (renderer == RendererMode.D3D10)
 struct Renderer
 {
-	static void	initialize()										// All Setup For.d3d9 Goes Here
+	static void	initialize()										// All Setup For.d3d10 Goes Here
 	{
 		if (mInitialized)
 			return;

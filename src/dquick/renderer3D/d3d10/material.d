@@ -1,10 +1,10 @@
-module dquick.renderer3D.d3d9.material;
+module dquick.renderer3D.d3d10.material;
 
-import dquick.renderer3D.d3d9.renderer;
-import dquick.renderer3D.d3d9.texture;
-import dquick.renderer3D.d3d9.shader;
-import dquick.renderer3D.d3d9.util;
-import dquick.renderer3D.d3d9.renderer;
+import dquick.renderer3D.d3d10.renderer;
+import dquick.renderer3D.d3d10.texture;
+import dquick.renderer3D.d3d10.shader;
+import dquick.renderer3D.d3d10.util;
+import dquick.renderer3D.d3d10.renderer;
 
 import dquick.maths.color;
 
@@ -18,7 +18,7 @@ import core.runtime;
 /// Using a structure allow customization
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.D3D9)
+static if (renderer == RendererMode.D3D10)
 struct Material
 {
 public:

@@ -1,6 +1,6 @@
-module dquick.renderer3D.d3d9.shaderProgram;
+module dquick.renderer3D.d3d10.shaderProgram;
 
-import dquick.renderer3D.d3d9.util;
+import dquick.renderer3D.d3d10.util;
 
 import std.variant;
 import std.string;
@@ -10,7 +10,7 @@ import std.string;
 /// This structure hold shader program parameters
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.D3D9)
+static if (renderer == RendererMode.D3D10)
 struct ShaderProgram
 {
 public:
