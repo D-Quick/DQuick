@@ -12,7 +12,29 @@ import core.runtime;
 
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.D3D10)
+/*
+1	#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX2)
+2	 
+3	IDirect3DVertexBuffer9* g_pVB = NULL;
+4	if( FAILED( g_pd3dDevice->CreateVertexBuffer( vertexCount * sizeof(CUSTOMVERTEX), D3DUSAGE_WRITEONLY, D3DFVF_CUSTOMVERTEX, D3DPOOL_MANAGED, &g_pVB, NULL ) ) )
+5	    return E_FAIL;
+6	 
+7	VOID* pVertices;
+8	if( FAILED( g_pVB->Lock( 0, sizeof(CUSTOMVERTEX) * vertexCount, (void**)&pVertices, 0 ) ) )
+9	    return E_FAIL;
+10	  
+11	memcpy( pVertices, vertices, sizeof(S3DVertex) * vertexCount );
+12	  
+13	g_pVB->Unlock();
+14	 
+15	 
+16	// Render
+17	g_pd3dDevice->SetStreamSource( 0, g_pVB, 0, sizeof(CUSTOMVERTEX) );
+18	g_pd3dDevice->SetFVF( D3DFVF_CUSTOMVERTEX );
+19	g_pd3dDevice->DrawPrimitive( D3DPT_TRIANGLELIST, 0, vertexCount / 3 );
+*/
+
+static if (renderer == RendererMode.D3D10)	// TODO remove it, it will be better if both version can be built, this will enforce the API chechs during compilation (all renderers will be compiled)
 final class VBO(T) : IResource
 {
 	mixin ResourceBase;
