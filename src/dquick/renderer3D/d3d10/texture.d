@@ -21,12 +21,12 @@ final class Texture : IResource
 public:
 	~this()
 	{
-		debug destructorAssert(mId == mBadId, "Texture.release method wasn't called.", mTrace);
+//		debug destructorAssert(mId == mBadId, "Texture.release method wasn't called.", mTrace);
 	}
 
 	void	load(string filePath, Variant[] options = null)
 	{
-		debug mTrace = defaultTraceHandler(null);
+/*		debug mTrace = defaultTraceHandler(null);
 
 		release();
 
@@ -45,13 +45,13 @@ public:
 		else
 			assert(false);
 
-		mFilePath = filePath;
+		mFilePath = filePath;*/
 	}
 
 	/// Replace the texture's image by the new one, format need to be the same (size, bytes per pixels, color encoding)
 	void	update(Image image)
 	{
-		assert(image.size() == mSize);
+/*		assert(image.size() == mSize);
 		assert(image.nbBytesPerPixel() == mNbBytesPerPixels);
 		// TODO check format (nbBytePerPixels) and color encoding
 
@@ -62,18 +62,18 @@ public:
 		else if (image.nbBytesPerPixel() == 4)
 			checkgl!glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mSize.x, mSize.y, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels());
 		else
-			throw new Exception("[Texture] Pixel format unsupported");
+			throw new Exception("[Texture] Pixel format unsupported");*/
 	}
 
 	void	release()
 	{
-		if (mId != mBadId)
+/*		if (mId != mBadId)
 			checkgl!glDeleteTextures(1, &mId);
 		mId = mBadId;
-		mSize = Vector2s32(0, 0);
+		mSize = Vector2s32(0, 0);*/
 	}
 
-	bool	isLoaded() {return mId != mBadId;}
+	bool	isLoaded() {return false;/*mId != mBadId;*/}
 
 	Vector2s32	size() {return mSize;}
 
@@ -82,7 +82,7 @@ public:
 private:
 	void	load(Image image)
 	{
-		mSize.x = image.width;
+/*		mSize.x = image.width;
 		mSize.y = image.height;
 		mNbBytesPerPixels = image.nbBytesPerPixel;
 
@@ -115,17 +115,11 @@ private:
 
 		checkgl!glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		checkgl!glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		/*		checkgl!glTexParameteri( GL_TEXTURE_2D, 
-		GL_TEXTURE_WRAP_S, 
-		GL_CLAMP ); 
-		checkgl!glTexParameteri( GL_TEXTURE_2D, 
-		GL_TEXTURE_WRAP_T, 
-		GL_REPEAT );*/
 
 		//		checkgl!glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		//		checkgl!glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		mWeight = image.weight;
+		mWeight = image.weight;*/
 	}
 
 	Vector2s32	mSize;

@@ -21,7 +21,7 @@ public:
 
 	void	setParameter(string name, ParameterType type, void* values)
 	{
-		Parameter*	parameter;
+/*		Parameter*	parameter;
 
 		parameter = (name in mParameters);
 		if (parameter is null)
@@ -34,12 +34,12 @@ public:
 			parameter.name = name;
 		}
 		parameter.type = type;
-		parameter.values = values;
+		parameter.values = values;*/
 	}
 
 	void	execute()
 	{
-		assert(mProgram != 0);
+/*		assert(mProgram != 0);
 
 		checkgl!glUseProgram(mProgram);
 
@@ -61,7 +61,7 @@ public:
 					glUniformMatrix4fv(parameter.id, 1, false, cast(float*)parameter.values);
 					break;
 			}
-		}
+		}*/
 	}
 
 private:

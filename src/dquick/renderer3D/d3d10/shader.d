@@ -25,7 +25,7 @@ public:
 	
 	~this()
 	{
-		debug destructorAssert(mVertexShader == mBadId, "Shader.release method wasn't called.", mTrace);
+//		debug destructorAssert(mVertexShader == mBadId, "Shader.release method wasn't called.", mTrace);
 	}
 	
 	/// Take a filePath of which correspond to the fragment and vertex shaders files without extention (extentions are "frag" and "vert")
@@ -67,7 +67,7 @@ public:
 
 	void	release()
 	{
-		if (mVertexShader != mBadId)
+/*		if (mVertexShader != mBadId)
 		{
 			checkgl!glDeleteShader(mVertexShader);
 			mVertexShader = mBadId;
@@ -81,7 +81,7 @@ public:
 		{
 			checkgl!glDeleteProgram(mShaderProgram);
 			mShaderProgram = mBadId;
-		}
+		}*/
 	}
 
 private:
@@ -120,10 +120,10 @@ private:
 
 		return shader;
 	}
-
+*/
 	void	compileAndLink()
 	{
-		scope(failure) release();
+/*		scope(failure) release();
 
 		mShaderProgram = checkgl!glCreateProgram();
 
@@ -142,12 +142,12 @@ private:
 		checkgl!glAttachShader(mShaderProgram, mVertexShader);
 		checkgl!glAttachShader(mShaderProgram, mFragmentShader);
 
-		linkProgram();
+		linkProgram();*/
 	}
 
 	void	linkProgram()
 	{
-		checkgl!glLinkProgram(mShaderProgram);
+/*		checkgl!glLinkProgram(mShaderProgram);
 
 		GLint status;
 		checkgl!glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &status);
@@ -168,8 +168,8 @@ private:
 				}
 			}
 			throw new Exception("Failed to link program");
-		}
-	}*/
+		}*/
+	}
 
 /*	static const GLuint	mBadId = 0;
 

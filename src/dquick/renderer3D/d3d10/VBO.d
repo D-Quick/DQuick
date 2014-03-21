@@ -42,12 +42,12 @@ final class VBO(T) : IResource
 public:
 	this(VBOType type)
 	{
-		mType = typeToGLenum(type);
+//		mType = typeToGLenum(type);
 	}
 
 	~this()
 	{
-		debug destructorAssert(mId == 0, "VBO.release method wasn't called.", mTrace);
+//		debug destructorAssert(mId == 0, "VBO.release method wasn't called.", mTrace);
 	}
 
 	void	load(string filePath, Variant[] options)
@@ -57,48 +57,35 @@ public:
 		debug mTrace = defaultTraceHandler(null);
 
 		assert(options && options.length == 2
-			&& options[0].type() == typeid(GLenum)
-			&& options[1].type() == typeid(GLenum)
-			&& options[2].type() == typeid(T[]));
-		mType = options[0].get!GLenum();
-		mMode = options[1].get!GLenum();
+			   && options[0].type() == typeid(VBOType)
+			   && options[1].type() == typeid(VBOMode)
+			   && options[2].type() == typeid(T[]));
+/*		mType = typeToGLenum(options[0].get!VBOType());
+		mMode = modeToGLenum(options[1].get!VBOMode());
 		mArray = options[2].get!(T[])();
 
 		mWeight = mArray.sizeof;
-		mFilePath = filePath;
+		mFilePath = filePath;*/
 	}
 
 	void	release()
 	{
-		checkgl!glDeleteBuffers(1, &mId);
-		mId = 0;
 	}
 
 	void	bind()
 	{
-		assert(mId != 0);
-		checkgl!glBindBuffer(mType, mId);
 	}
 
 	void	unbind()
 	{
-		checkgl!glBindBuffer(mType, 0);
 	}
 
 	void	setArray(T[] array, VBOMode mode)
 	{
-		mArray = array;
-		mMode = modeToGLenum(mode);
-		create();
 	}
 
 	void	updateArray(T[] array)
 	{
-		assert(mId != 0);
-		mArray = array;
-		bind();
-		checkgl!glBufferData(mType, mArray.length * T.sizeof, mArray.ptr, mMode);
-		unbind();
 	}
 
 	size_t	length() {return mArray.length;}
@@ -106,14 +93,6 @@ public:
 private:
 	void	create()
 	{
-		if (mId != 0)
-			release();
-		checkgl!glGenBuffers(1, &mId);
-		if (mId == mBadId)
-			throw new Exception("[Texture] Unable to generate a vbo");
-		bind();
-		checkgl!glBufferData(mType, mArray.length * T.sizeof, mArray.ptr, mMode);
-		unbind();
 	}
 
 //	IDirect3DVertexBuffer9*	buffer;

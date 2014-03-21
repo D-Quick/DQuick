@@ -35,11 +35,11 @@ public:
 		debug mTrace = defaultTraceHandler(null);
 
 		assert(options && options.length == 2
-			&& options[0].type() == typeid(GLenum)
-			&& options[1].type() == typeid(GLenum)
+			&& options[0].type() == typeid(VBOType)
+			&& options[1].type() == typeid(VBOMode)
 			&& options[2].type() == typeid(T[]));
-		mType = options[0].get!GLenum();
-		mMode = options[1].get!GLenum();
+		mType = typeToGLenum(options[0].get!VBOType());
+		mMode = modeToGLenum(options[1].get!VBOMode());
 		mArray = options[2].get!(T[])();
 
 		mWeight = mArray.sizeof;

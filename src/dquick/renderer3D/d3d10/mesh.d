@@ -72,11 +72,11 @@ public:
 	{
 		mShader = shader;
 
-		mPositionAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_position"));
+/*		mPositionAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_position"));
 		mColorAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_color"));
 		mTexcoordAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_texcoord"));
 		mTextureUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_texture"));
-		mMDVMatrixUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_modelViewProjectionMatrix"));
+		mMDVMatrixUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_modelViewProjectionMatrix"));*/
 		updateGeometryParameters();
 	}
 	Shader	shader() {return mShader;}
@@ -176,9 +176,9 @@ public:
 private:
 	void	updateGeometryParameters()
 	{
-		mSliceSize = cast(GLsizei)((3 + 4) * GLfloat.sizeof);	// 3 for vertex, 4 for color
+/*		mSliceSize = cast(GLsizei)((3 + 4) * GLfloat.sizeof);	// 3 for vertex, 4 for color
 		if (mTexture)
-			mSliceSize += cast(GLsizei)((2) * GLfloat.sizeof);	// 2 for texCoords
+			mSliceSize += cast(GLsizei)((2) * GLfloat.sizeof);	// 2 for texCoords*/
 	}
 
 /*	static const GLuint		mBadId = 0;
