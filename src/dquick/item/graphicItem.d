@@ -267,7 +267,7 @@ protected:
 			options ~= Variant(import("color.vert"));
 			options ~= Variant(import("color.frag"));
 			mDebugShader = Renderer.resourceManager.getResource!Shader("color", options);
-			mDebugShaderProgram.program = mDebugShader.getProgram();
+			mDebugShaderProgram = cast(ShaderProgram)mDebugShader.getProgram();
 
 			// Size
 			mDebugMesh.construct();

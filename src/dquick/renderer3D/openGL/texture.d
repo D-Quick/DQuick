@@ -1,5 +1,6 @@
 module dquick.renderer3D.openGL.texture;
 
+import dquick.renderer3D.iTexture;
 import dquick.renderer3D.openGL.util;
 import dquick.media.image;
 import dquick.maths.vector2s32;
@@ -16,7 +17,7 @@ import core.runtime;
 import dquick.buildSettings;
 
 static if (renderer == RendererMode.OpenGL)
-final class Texture : IResource
+final class Texture : ITexture, IResource
 {
 	mixin ResourceBase;
 

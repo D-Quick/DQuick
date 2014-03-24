@@ -1,5 +1,6 @@
 module dquick.renderer3D.openGL.shader;
 
+import dquick.renderer3D.iShader;
 import dquick.renderer3D.openGL.util;
 import dquick.utils.resourceManager;
 
@@ -16,7 +17,7 @@ import core.runtime;
 import dquick.buildSettings;
 
 static if (renderer == RendererMode.OpenGL)
-final class Shader : IResource
+final class Shader : IShader, IResource
 {
 	mixin ResourceBase;
 
@@ -62,9 +63,9 @@ public:
 		mFilePath = filePath;
 	}
 
-	GLuint	getProgram()
+	IShaderProgram	getProgram()
 	{
-		return mShaderProgram;
+		return new ShaderProgram(mShaderProgram);
 	}
 
 	void	release()
@@ -186,13 +187,15 @@ private:
 }
 
 static if (renderer == RendererMode.OpenGL)
-struct ShaderProgram
+final class ShaderProgram : IShaderProgram
 {
 public:
 	static const GLuint	badId = 0;
 
-	void	program(GLuint id) {mProgram = id;}
-	GLuint	program() {return mProgram;}
+	this(GLuint programId)
+	{
+		mProgram = id;
+	}
 
 	void	setParameter(string name, ParameterType type, void* values)
 	{

@@ -1,6 +1,9 @@
 module dquick.renderer3D.openGL.mesh;
 
 import dquick.renderer3D.generic;
+import dquick.renderer3D.iMesh;
+import dquick.renderer3D.iTexture;
+import dquick.renderer3D.iShader;
 import dquick.renderer3D.openGL.renderer;
 import dquick.renderer3D.openGL.texture;
 import dquick.renderer3D.openGL.shader;
@@ -27,7 +30,7 @@ import core.runtime;
 import dquick.buildSettings;
 
 static if (renderer == RendererMode.OpenGL)
-struct Mesh
+final class Mesh : IMesh
 {
 public:
 	~this()
@@ -49,17 +52,17 @@ public:
 		updateGeometryParameters();
 		return true;
 	}
-	bool	setTexture(Texture texture)
+	bool	setTexture(ITexture texture)
 	{
-		mTexture = texture;
+		mTexture = cast(Texture)texture;
 		updateGeometryParameters();
 		return true;
 	}
-	Texture	texture() {return mTexture;}
+	ITexture	texture() {return mTexture;}
 
-	void	setShader(Shader shader)
+	void	setShader(IShader shader)
 	{
-		mShader = shader;
+		mShader = cast(Shader)shader;
 
 		mPositionAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_position"));
 		mColorAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_color"));
@@ -68,10 +71,10 @@ public:
 		mMDVMatrixUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_modelViewProjectionMatrix"));
 		updateGeometryParameters();
 	}
-	Shader	shader() {return mShader;}
+	IShader	shader() {return mShader;}
 
-	void			setShaderProgram(ShaderProgram program) {mShaderProgram = program;}
-	ShaderProgram	shaderProgram() {return mShaderProgram;}
+	void			setShaderProgram(IShaderProgram program) {mShaderProgram = cast(ShaderProgram)program;}
+	IShaderProgram	shaderProgram() {return mShaderProgram;}
 
 	void			setPrimitiveType(PrimitiveType type) {primitiveType = primitiveTypeToGLenum(type);}
 

@@ -83,7 +83,7 @@ private:
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
 		mShader = Renderer.resourceManager.getResource!Shader("rectangle", options);
-		mShaderProgram.program = mShader.getProgram();
+		mShaderProgram = cast(ShaderProgram)mShader.getProgram();
 		mMesh.setShader(mShader);
 		mMesh.setShaderProgram(mShaderProgram);
 
