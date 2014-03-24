@@ -1273,27 +1273,28 @@
    <Folder name="renderer3D">
     <Folder name="d3d10">
      <File path="..\src\dquick\renderer3D\d3d10\d3d10.d" />
-     <File path="..\src\dquick\renderer3D\d3d10\material.d" />
      <File path="..\src\dquick\renderer3D\d3d10\mesh.d" />
      <File path="..\src\dquick\renderer3D\d3d10\renderer.d" />
      <File path="..\src\dquick\renderer3D\d3d10\shader.d" />
-     <File path="..\src\dquick\renderer3D\d3d10\shaderProgram.d" />
      <File path="..\src\dquick\renderer3D\d3d10\texture.d" />
      <File path="..\src\dquick\renderer3D\d3d10\util.d" />
      <File path="..\src\dquick\renderer3D\d3d10\VBO.d" />
     </Folder>
     <Folder name="openGL">
-     <File path="..\src\dquick\renderer3D\openGL\material.d" />
      <File path="..\src\dquick\renderer3D\openGL\mesh.d" />
      <File path="..\src\dquick\renderer3D\openGL\renderer.d" />
      <File path="..\src\dquick\renderer3D\openGL\shader.d" />
-     <File path="..\src\dquick\renderer3D\openGL\shaderProgram.d" />
      <File path="..\src\dquick\renderer3D\openGL\texture.d" />
      <File path="..\src\dquick\renderer3D\openGL\util.d" />
      <File path="..\src\dquick\renderer3D\openGL\VBO.d" />
     </Folder>
     <File path="..\src\dquick\renderer3D\all.d" />
     <File path="..\src\dquick\renderer3D\generic.d" />
+    <File path="..\src\dquick\renderer3D\iMesh.d" />
+    <File path="..\src\dquick\renderer3D\iRenderer.d" />
+    <File path="..\src\dquick\renderer3D\iShader.d" />
+    <File path="..\src\dquick\renderer3D\iTexture.d" />
+    <File path="..\src\dquick\renderer3D\iVBO.d" />
    </Folder>
    <Folder name="script">
     <File path="..\src\dquick\script\delegatePropertyBinding.d" />

@@ -3,7 +3,6 @@ module dquick.renderer3D.d3d10.mesh;
 import dquick.renderer3D.d3d10.renderer;
 import dquick.renderer3D.d3d10.texture;
 import dquick.renderer3D.d3d10.shader;
-import dquick.renderer3D.d3d10.shaderProgram;
 import dquick.renderer3D.d3d10.VBO;
 import dquick.renderer3D.d3d10.util;
 import dquick.renderer3D.d3d10.renderer;

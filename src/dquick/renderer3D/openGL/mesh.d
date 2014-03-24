@@ -4,7 +4,6 @@ import dquick.renderer3D.generic;
 import dquick.renderer3D.openGL.renderer;
 import dquick.renderer3D.openGL.texture;
 import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.shaderProgram;
 import dquick.renderer3D.openGL.VBO;
 import dquick.renderer3D.openGL.util;
 import dquick.renderer3D.openGL.renderer;

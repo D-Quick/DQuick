@@ -1,5 +1,6 @@
 module dquick.renderer3D.openGL.renderer;
 
+import dquick.renderer3D.iRenderer;
 import dquick.renderer3D.openGL.util;
 import dquick.maths.matrix4x4;
 import dquick.maths.vector2s32;
@@ -27,7 +28,8 @@ shared static ~this()
 import dquick.buildSettings;
 
 static if (renderer == RendererMode.OpenGL)
-struct Renderer
+//struct Renderer
+final class Renderer : IRenderer
 {
 	static ResourceManager	resourceManager;	// TODO check the release of resource when it's destroy (need to be destroy before the context) also check it for images
 
