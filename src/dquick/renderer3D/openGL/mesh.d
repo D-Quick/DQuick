@@ -64,11 +64,11 @@ public:
 	{
 		mShader = cast(Shader)shader;
 
-		mPositionAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_position"));
-		mColorAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_color"));
-		mTexcoordAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_texcoord"));
-		mTextureUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_texture"));
-		mMDVMatrixUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_modelViewProjectionMatrix"));
+		mPositionAttribute = checkgl!glGetAttribLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("a_position"));
+		mColorAttribute = checkgl!glGetAttribLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("a_color"));
+		mTexcoordAttribute = checkgl!glGetAttribLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("a_texcoord"));
+		mTextureUniform = checkgl!glGetUniformLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("u_texture"));
+		mMDVMatrixUniform = checkgl!glGetUniformLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("u_modelViewProjectionMatrix"));
 		updateGeometryParameters();
 	}
 	IShader	shader() {return mShader;}

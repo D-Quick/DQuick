@@ -194,7 +194,7 @@ public:
 
 	this(GLuint programId)
 	{
-		mProgram = id;
+		mProgram = programId;
 	}
 
 	void	setParameter(string name, ParameterType type, void* values)
@@ -242,8 +242,9 @@ public:
 		}
 	}
 
+	GLuint	mProgram = badId;
+
 private:
-	GLuint				mProgram = badId;
 	Parameter[string]	mParameters;
 };
 
