@@ -190,8 +190,6 @@ static if (renderer == RendererMode.OpenGL)
 final class ShaderProgram : IShaderProgram
 {
 public:
-	static const GLuint	badId = 0;
-
 	this(GLuint programId)
 	{
 		mProgram = programId;
@@ -245,6 +243,8 @@ public:
 	GLuint	mProgram = badId;
 
 private:
+	static const GLuint	badId = 0;
+
 	Parameter[string]	mParameters;
 };
 

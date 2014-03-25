@@ -82,7 +82,7 @@ public:
 
 	GLuint	id() {return mId;}
 
-private:
+protected:
 	void	load(Image image)
 	{
 		mSize.x = image.width;
@@ -131,6 +131,7 @@ private:
 		mWeight = image.weight;
 	}
 
+private:
 	static const GLuint	mBadId = 0;	// Useful if on some platforms 0 can be used for a texture id
 
 	GLuint		mId = mBadId;
