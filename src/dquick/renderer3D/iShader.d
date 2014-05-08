@@ -1,5 +1,7 @@
 module dquick.renderer3D.iShader;
 
+import dquick.renderer3D.generic;
+
 interface IShader
 {
 public:
@@ -13,14 +15,6 @@ public:
 	void	setParameter(string name, ParameterType type, void* values);
 	void	execute();
 };
-
-enum ParameterType
-{
-	Int,
-	Float,
-	Float2D,
-	Matrix4f,
-}
 
 private
 struct Parameter

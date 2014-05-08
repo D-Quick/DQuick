@@ -1,5 +1,6 @@
 module dquick.renderer3D.openGL.shader;
 
+import dquick.renderer3D.generic;
 import dquick.renderer3D.iShader;
 import dquick.renderer3D.openGL.util;
 import dquick.utils.resourceManager;
@@ -247,14 +248,6 @@ private:
 
 	Parameter[string]	mParameters;
 };
-
-enum ParameterType
-{
-	Int,
-	Float,
-	Float2D,
-	Matrix4f,
-}
 
 private
 struct Parameter

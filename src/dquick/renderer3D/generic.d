@@ -25,3 +25,11 @@ enum PrimitiveType
 	Quads,
 	Polygon
 }
+
+enum ParameterType
+{
+	Int,
+	Float,
+	Float2D,
+	Matrix4f,
+}
