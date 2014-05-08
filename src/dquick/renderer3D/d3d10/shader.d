@@ -1,13 +1,9 @@
-module dquick.renderer3D.openGL.shader;
+module dquick.renderer3D.d3d10.shader;
 
-import dquick.renderer3D.generic;
-import dquick.renderer3D.iShader;
-import dquick.renderer3D.openGL.util;
+import dquick.renderer3D.d3d10.util;
 import dquick.utils.resourceManager;
 
 import dquick.utils.utils;
-
-import derelict.opengl3.gl;
 
 import std.string;
 import std.stdio;
@@ -17,8 +13,8 @@ import core.runtime;
 
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.OpenGL)
-final class Shader : IShader, IResource
+static if (renderer == RendererMode.D3D10)
+final class Shader : IResource
 {
 	mixin ResourceBase;
 
@@ -29,7 +25,7 @@ public:
 	
 	~this()
 	{
-		debug destructorAssert(mVertexShader == mBadId, "Shader.release method wasn't called.", mTrace);
+//		debug destructorAssert(mVertexShader == mBadId, "Shader.release method wasn't called.", mTrace);
 	}
 	
 	/// Take a filePath of which correspond to the fragment and vertex shaders files without extention (extentions are "frag" and "vert")
@@ -64,14 +60,14 @@ public:
 		mFilePath = filePath;
 	}
 
-	IShaderProgram	getProgram()
+/*	GLuint	getProgram()
 	{
-		return new ShaderProgram(mShaderProgram);
-	}
+		return mShaderProgram;
+	}*/
 
 	void	release()
 	{
-		if (mVertexShader != mBadId)
+/*		if (mVertexShader != mBadId)
 		{
 			checkgl!glDeleteShader(mVertexShader);
 			mVertexShader = mBadId;
@@ -85,49 +81,49 @@ public:
 		{
 			checkgl!glDeleteProgram(mShaderProgram);
 			mShaderProgram = mBadId;
-		}
+		}*/
 	}
 
 private:
-	uint	loadAndCompileShader(GLenum type, string source)
+/*	uint	loadAndCompileShader(GLenum type, string source)
 	{
 		GLint	length;
 
 		length = cast(GLint)source.length;
 
 		GLuint shader = checkgl!glCreateShader(type);
-		
+
 		auto	ssp = source.ptr;
 		checkgl!glShaderSource(shader, 1, &ssp, &length);
-		
+
 		checkgl!glCompileShader(shader);
-		
+
 		GLint status;
 		checkgl!glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-		
+
 		if (status == GL_FALSE)
 		{
 			GLint logLength;
 			checkgl!glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
-			
+
 			if (logLength > 0)
 			{
 				ubyte[]	log;
 
 				log.length = logLength;
 				checkgl!glGetShaderInfoLog(shader, logLength, &logLength, cast(GLchar*)log.ptr);
-				
+
 				writefln("\n%s", cast(string)log);
 			}
 			throw new Exception(format("Failed to compile shader: %s", filePath));
 		}
-		
+
 		return shader;
 	}
-	
+*/
 	void	compileAndLink()
 	{
-		scope(failure) release();
+/*		scope(failure) release();
 
 		mShaderProgram = checkgl!glCreateProgram();
 
@@ -146,13 +142,13 @@ private:
 		checkgl!glAttachShader(mShaderProgram, mVertexShader);
 		checkgl!glAttachShader(mShaderProgram, mFragmentShader);
 
-		linkProgram();
+		linkProgram();*/
 	}
 
 	void	linkProgram()
 	{
-		checkgl!glLinkProgram(mShaderProgram);
-		
+/*		checkgl!glLinkProgram(mShaderProgram);
+
 		GLint status;
 		checkgl!glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &status);
 		if (status == GL_FALSE)
@@ -172,88 +168,17 @@ private:
 				}
 			}
 			throw new Exception("Failed to link program");
-		}
+		}*/
 	}
-	
-	static const GLuint	mBadId = 0;
+
+/*	static const GLuint	mBadId = 0;
 
 	GLuint	mFragmentShader = mBadId;
 	GLuint	mVertexShader = mBadId;
-	GLuint	mShaderProgram = mBadId;
-	
+	GLuint	mShaderProgram = mBadId;*/
+
 	string	mFragmentShaderSource;
 	string	mVertexShaderSource;
 
 	debug Throwable.TraceInfo	mTrace;
-}
-
-static if (renderer == RendererMode.OpenGL)
-final class ShaderProgram : IShaderProgram
-{
-public:
-	this(GLuint programId)
-	{
-		mProgram = programId;
-	}
-
-	void	setParameter(string name, ParameterType type, void* values)
-	{
-		Parameter*	parameter;
-
-		parameter = (name in mParameters);
-		if (parameter is null)
-		{
-			Parameter	empty;
-			mParameters[name] = empty;
-
-			mParameters[name].id = checkgl!glGetUniformLocation(mProgram, name.toStringz);
-			parameter = (name in mParameters);
-			parameter.name = name;
-		}
-		parameter.type = type;
-		parameter.values = values;
-	}
-
-	void	execute()
-	{
-		assert(mProgram != 0);
-
-		checkgl!glUseProgram(mProgram);
-
-		// TODO see how to limit the number of types and doing something smarter
-		foreach (parameter; mParameters)
-		{
-			final switch (parameter.type)
-			{
-				case ParameterType.Int:
-					glUniform1i(parameter.id, *(cast(int*)parameter.values));
-					break;
-				case ParameterType.Float:
-					glUniform1f(parameter.id, *(cast(float*)parameter.values));
-					break;
-				case ParameterType.Float2D:
-					glUniform2fv(parameter.id, 1, cast(float*)parameter.values);
-					break;
-				case ParameterType.Matrix4f:
-					glUniformMatrix4fv(parameter.id, 1, false, cast(float*)parameter.values);
-					break;
-			}
-		}
-	}
-
-	GLuint	mProgram = badId;
-
-private:
-	static const GLuint	badId = 0;
-
-	Parameter[string]	mParameters;
 };
-
-private
-struct Parameter
-{
-	string			name;	// For debuging
-	GLint			id;
-	ParameterType	type;
-	void*			values;
-}

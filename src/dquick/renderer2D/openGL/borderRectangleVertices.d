@@ -1,21 +1,12 @@
 module dquick.renderer2D.openGL.borderRectangleVertices;
 
-import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.texture;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.shaderProgram;
-import dquick.renderer3D.openGL.VBO;
-import dquick.renderer3D.openGL.util;
-import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.mesh;
+import dquick.renderer3D.all;
 
 import dquick.maths.color;
 import dquick.maths.vector2s32;
 import dquick.maths.vector2f32;
 
 import dquick.utils.utils;
-
-import derelict.opengl3.gl;
 
 import std.stdio;
 import std.variant;
@@ -140,13 +131,13 @@ private:
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
 		mMesh.construct();
-		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
-		mShaderProgram.program = mShader.getProgram();
+		mShader = Renderer.resourceManager.getResource!Shader("rectangle", options);
+		mShaderProgram = cast(ShaderProgram)mShader.getProgram();
 		mMesh.setShader(mShader);
 		mMesh.setShaderProgram(mShaderProgram);
 
-		mMesh.indexes.setArray(indexesArray(), cast(GLenum)GL_DYNAMIC_DRAW);
-		mMesh.geometry.setArray(geometryArray(), cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.indexes.setArray(indexesArray(), VBOMode.Dynamic);
+		mMesh.geometry.setArray(geometryArray(), VBOMode.Dynamic);
 	}
 
 	void	updateMesh()
@@ -197,9 +188,9 @@ private:
 		return result;
 	}
 
-	GLuint[]	indexesArray()
+	uint[]	indexesArray()
 	{
-		return cast(GLuint[])[
+		return cast(uint[])[
 			0,	1,	4,	1,	5,	4,	// TopLeft quad
 			1,	2,	5,	2,	6,	5,
 			2,	3,	6,	3,	7,	6,
@@ -211,10 +202,10 @@ private:
 			10,	11,	14,	11,	15,	14];
 	}
 
-	GLfloat[]	geometryArray()
+	float[]	geometryArray()
 	{
-		GLfloat	rows[4];
-		GLfloat	columns[4];
+		float	rows[4];
+		float	columns[4];
 
 		rows[0] = 0.0f;
 		rows[1] = rows[0] + mTopBorder;
@@ -226,11 +217,11 @@ private:
 		columns[3] = mSize.x;
 		columns[2] = columns[3] - mRightBorder;
 
-		GLfloat	texRows[4];
-		GLfloat	texColumns[4];
+		float	texRows[4];
+		float	texColumns[4];
 
-		GLfloat	texWidth = 0.0f;
-		GLfloat	texHeight = 0.0f;
+		float	texWidth = 0.0f;
+		float	texHeight = 0.0f;
 
 		if (mMesh.texture())
 		{
@@ -248,7 +239,7 @@ private:
 		texColumns[3] = 1.0f;
 		texColumns[2] = texColumns[3] - mRightBorder / texWidth;
 
-		return cast(GLfloat[])[
+		return cast(float[])[
 			columns[0], rows[0], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[0], texRows[0],
 			columns[1], rows[0], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[1], texRows[0],
 			columns[2], rows[0], 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		texColumns[2], texRows[0],

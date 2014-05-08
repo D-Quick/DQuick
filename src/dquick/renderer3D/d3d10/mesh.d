@@ -1,15 +1,11 @@
-module dquick.renderer3D.openGL.mesh;
+module dquick.renderer3D.d3d10.mesh;
 
-import dquick.renderer3D.generic;
-import dquick.renderer3D.iMesh;
-import dquick.renderer3D.iTexture;
-import dquick.renderer3D.iShader;
-import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.texture;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.VBO;
-import dquick.renderer3D.openGL.util;
-import dquick.renderer3D.openGL.renderer;
+import dquick.renderer3D.d3d10.renderer;
+import dquick.renderer3D.d3d10.texture;
+import dquick.renderer3D.d3d10.shader;
+import dquick.renderer3D.d3d10.VBO;
+import dquick.renderer3D.d3d10.util;
+import dquick.renderer3D.d3d10.renderer;
 
 import dquick.maths.color;
 
@@ -17,22 +13,33 @@ import dquick.media.image;
 
 import dquick.utils.utils;
 
-import derelict.opengl3.gl;
-
 import std.stdio;
 import std.variant;
 
 import core.runtime;
 
 // TODO check an attribut with id 0 is always send for the shader (else some drivers have issues)
-// TODO see if mesh can't be generic (normally it can have no opengl or directX calls here), specific code must be on smaller graphics primitive 
 
 import dquick.buildSettings;
 
-static if (renderer == RendererMode.OpenGL)
-final class Mesh : IMesh
+static if (renderer == RendererMode.D3D10)
+struct Mesh
 {
 public:
+	enum PrimitiveType
+	{
+		Points,
+		LineStrip,
+		LineLoop,
+		Lines,
+		TriangleStrip,
+		TriangleFan,
+		Triangles,
+		QuadStrip,
+		Quads,
+		Polygon
+	}
+
 	~this()
 	{
 		debug destructorAssert(indexes is null, "Mesh.destruct method wasn't called.", mTrace);
@@ -52,38 +59,37 @@ public:
 		updateGeometryParameters();
 		return true;
 	}
-	bool	setTexture(ITexture texture)
+	bool	setTexture(Texture texture)
 	{
-		mTexture = cast(Texture)texture;
+		mTexture = texture;
 		updateGeometryParameters();
 		return true;
 	}
-	ITexture	texture() {return mTexture;}
+	Texture	texture() {return mTexture;}
 
-	void	setShader(IShader shader)
+	void	setShader(Shader shader)
 	{
-		mShader = cast(Shader)shader;
+		mShader = shader;
 
-		mPositionAttribute = checkgl!glGetAttribLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("a_position"));
-		mColorAttribute = checkgl!glGetAttribLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("a_color"));
-		mTexcoordAttribute = checkgl!glGetAttribLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("a_texcoord"));
-		mTextureUniform = checkgl!glGetUniformLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("u_texture"));
-		mMDVMatrixUniform = checkgl!glGetUniformLocation((cast(ShaderProgram)mShader.getProgram()).mProgram, cast(char*)("u_modelViewProjectionMatrix"));
+/*		mPositionAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_position"));
+		mColorAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_color"));
+		mTexcoordAttribute = checkgl!glGetAttribLocation(mShader.getProgram(), cast(char*)("a_texcoord"));
+		mTextureUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_texture"));
+		mMDVMatrixUniform = checkgl!glGetUniformLocation(mShader.getProgram(), cast(char*)("u_modelViewProjectionMatrix"));*/
 		updateGeometryParameters();
 	}
-	IShader	shader() {return mShader;}
+	Shader	shader() {return mShader;}
 
-	void			setShaderProgram(IShaderProgram program) {mShaderProgram = cast(ShaderProgram)program;}
-	IShaderProgram	shaderProgram() {return mShaderProgram;}
+	void			setShaderProgram(ShaderProgram program) {mShaderProgram = program;}
+	ShaderProgram	shaderProgram() {return mShaderProgram;}
 
-	void			setPrimitiveType(PrimitiveType type) {primitiveType = primitiveTypeToGLenum(type);}
-
-	VBO!GLuint		indexes = null;
-	VBO!GLfloat		geometry = null;	/// Put geometry in interleaved mode, in this order : vertex, color, texture coordinates
+	VBO!uint		indexes = null;
+	VBO!float		geometry = null;	/// Put geometry in interleaved mode, in this order : vertex, color, texture coordinates
+	PrimitiveType	primitiveType = PrimitiveType.Triangles;		/// Default type is Triangles
 
 	void	draw()
 	{
-		if (mShader)
+/*		if (mShader)
 		{
 			mShaderProgram.execute();
 
@@ -132,7 +138,7 @@ public:
 		geometry.unbind();	// One unbind per type
 		checkgl!glBindTexture(GL_TEXTURE_2D, mBadId);
 		checkgl!glBindBuffer(GL_ARRAY_BUFFER, mBadId);
-		checkgl!glUseProgram(mBadId);
+		checkgl!glUseProgram(mBadId);*/
 	}
 
 	void	construct()
@@ -167,50 +173,22 @@ public:
 	}
 
 private:
-	static const GLenum primitiveTypeToGLenum(PrimitiveType type)
-	{
-		final switch(type)
-		{
-			case PrimitiveType.Points:
-					return GL_POINTS;
-			case PrimitiveType.LineStrip:
-				return GL_LINE_STRIP;
-			case PrimitiveType.LineLoop:
-				return GL_LINE_LOOP;
-			case PrimitiveType.Lines:
-				return GL_LINES;
-			case PrimitiveType.TriangleStrip:
-				return GL_TRIANGLE_STRIP;
-			case PrimitiveType.TriangleFan:
-				return GL_TRIANGLE_FAN;
-			case PrimitiveType.Triangles:
-				return GL_TRIANGLES;
-			case PrimitiveType.QuadStrip:
-				return GL_QUAD_STRIP;
-			case PrimitiveType.Quads:
-				return GL_QUADS;
-			case PrimitiveType.Polygon:
-				return GL_POLYGON;
-		}
-	}
-
 	void	updateGeometryParameters()
 	{
-		mSliceSize = cast(GLsizei)((3 + 4) * GLfloat.sizeof);	// 3 for vertex, 4 for color
+/*		mSliceSize = cast(GLsizei)((3 + 4) * GLfloat.sizeof);	// 3 for vertex, 4 for color
 		if (mTexture)
-			mSliceSize += cast(GLsizei)((2) * GLfloat.sizeof);	// 2 for texCoords
+			mSliceSize += cast(GLsizei)((2) * GLfloat.sizeof);	// 2 for texCoords*/
 	}
 
-	static const GLuint		mBadId = 0;
+/*	static const GLuint		mBadId = 0;
 
-	GLenum					primitiveType = primitiveTypeToGLenum(PrimitiveType.Triangles);		/// Default type is Triangles
 	GLint					mPositionAttribute;
 	GLint					mColorAttribute;
 	GLint					mTexcoordAttribute;
 	GLint					mTextureUniform;
 	GLint					mMDVMatrixUniform;
 
-	GLsizei					mSliceSize;
+	GLsizei					mSliceSize;*/
 
 	Shader					mShader;
 	ShaderProgram			mShaderProgram;

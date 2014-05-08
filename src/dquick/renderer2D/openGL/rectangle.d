@@ -1,20 +1,12 @@
 module dquick.renderer2D.openGL.rectangle;
 
-import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.texture;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.shaderProgram;
-import dquick.renderer3D.openGL.VBO;
-import dquick.renderer3D.openGL.util;
-import dquick.renderer3D.openGL.mesh;
+import dquick.renderer3D.all;
 
 import dquick.maths.color;
 import dquick.maths.vector2f32;
 import dquick.maths.vector2s32;
 
 import dquick.utils.utils;
-
-import derelict.opengl3.gl;
 
 import std.stdio;
 import std.variant;
@@ -90,14 +82,14 @@ private:
 		Variant[] options;
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
-		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
-		mShaderProgram.program = mShader.getProgram();
+		mShader = Renderer.resourceManager.getResource!Shader("rectangle", options);
+		mShaderProgram = cast(ShaderProgram)mShader.getProgram();
 		mMesh.setShader(mShader);
 		mMesh.setShaderProgram(mShaderProgram);
 
-		mMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 1, 3, 2], cast(GLenum)GL_STATIC_DRAW);
+		mMesh.indexes.setArray(cast(uint[])[0, 1, 2, 1, 3, 2], VBOMode.Static);
 
-		mMesh.geometry.setArray(geometryArray(), cast(GLenum)GL_DYNAMIC_DRAW);
+		mMesh.geometry.setArray(geometryArray(), VBOMode.Dynamic);
 
 		mMeshIsDirty = false;
 	}
@@ -111,9 +103,9 @@ private:
 		mMeshIsDirty = false;
 	}
 
-	GLfloat[]	geometryArray()
+	float[]	geometryArray()
 	{
-		return cast(GLfloat[])[
+		return cast(float[])[
 			0.0f,		0.0f,		0.0f,	1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 0.0f,		
 			mSize.x,	0.0f,		0.0f,	1.0f, 1.0f, 1.0f, 1.0f,		1.0f, 0.0f,		
 			0.0f,		mSize.y,	0.0f,	1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f,		

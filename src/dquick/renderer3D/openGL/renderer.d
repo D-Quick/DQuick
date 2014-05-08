@@ -1,33 +1,38 @@
 module dquick.renderer3D.openGL.renderer;
 
-public import derelict.opengl3.gl;
-
+import dquick.renderer3D.iRenderer;
 import dquick.renderer3D.openGL.util;
 import dquick.maths.matrix4x4;
 import dquick.maths.vector2s32;
 import dquick.utils.resourceManager;
 
+import derelict.opengl3.gl;
+
 import std.math;
 import std.stdio;
-
-ResourceManager	resourceManager;	// TODO check the release of resource when it's destroy (need to be destroy before the context) also check it for images
 
 shared static this()
 {
 	writeln("dquick.renderer3D.openGL.renderer : shared static this()");
-	resourceManager = new ResourceManager();
-	resourceManager.maximumWeight(128 * 1000 * 1024);
+	Renderer.resourceManager = new ResourceManager();
+	Renderer.resourceManager.maximumWeight(128 * 1000 * 1024);
 }
 
 shared static ~this()
 {
 	writeln("dquick.renderer3D.openGL.renderer : shared static ~this()");
-	destroy(resourceManager);
-	resourceManager = null;
+	destroy(Renderer.resourceManager);
+	Renderer.resourceManager = null;
 }
 
-struct Renderer
+import dquick.buildSettings;
+
+static if (renderer == RendererMode.OpenGL)
+//struct Renderer
+final class Renderer : IRenderer
 {
+	static ResourceManager	resourceManager;	// TODO check the release of resource when it's destroy (need to be destroy before the context) also check it for images
+
 	static void	initialize()										// All Setup For OpenGL Goes Here
 	{
 		if (mInitialized)
@@ -93,6 +98,17 @@ struct Renderer
 	static Matrix4x4	currentCamera()
 	{
 		return mCurrentCamera;
+	}
+
+	static void	startScissor(int x, int y, int width, int height)
+	{
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(x, y, width, height);
+	}
+
+	static void	endScissor()
+	{
+		glDisable(GL_SCISSOR_TEST);
 	}
 
 private:
