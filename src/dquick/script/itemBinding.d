@@ -175,6 +175,9 @@ static string	BASE_ITEM_BINDING()
 					{
 						static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 						{
+							if (__traits(getMember, this, member) is null)
+								throw new Exception(format("property \"%s\" is null, you must instanciate it", getPropertyNameFromPropertyDeclaration(member)));
+
 							if (key == getPropertyNameFromPropertyDeclaration(member))
 							{
 								found = true;
