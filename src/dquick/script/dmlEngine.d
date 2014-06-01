@@ -13,7 +13,7 @@ import std.traits;
 import std.typetuple;
 import std.c.string;
 
-version(unittest)
+/+version(unittest)
 {
 	import dquick.item.declarativeItem;
 	import std.signals;
@@ -1769,7 +1769,7 @@ unittest
 		auto m = mismatch(e.msg, "too few or too many return values on delegate delegateError1Item.delegateProperty, got 2, expected 1");
 		assert(m[0] == "" && m[1] == "");
 	}
-}
+}+/
 
 class DMLEngine : dquick.script.dmlEngineCore.DMLEngineCore
 {

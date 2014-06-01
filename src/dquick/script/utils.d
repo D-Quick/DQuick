@@ -58,6 +58,11 @@ string	getPropertyNameFromSignalName(string signalName)
 	return "";
 }
 
+string	getDBindingNameFromPropertyName(string propertyName)
+{
+	return propertyName ~ "Binding";
+}
+
 string	getLuaTypeName(lua_State* L, int index)
 {
 	if (lua_isnil(L, index))
@@ -531,6 +536,10 @@ unittest
 	static assert(getSignalNameFromPropertyName("mouseX") == "onMouseXChanged");
 	static assert(getSignalNameFromPropertyName("X") == "onXChanged");
 	static assert(getSignalNameFromPropertyName("x") == "onXChanged");
+
+	static assert(getDBindingNameFromPropertyName("mouseX") == "mouseXBinding");
+	static assert(getDBindingNameFromPropertyName("X") == "XBinding");
+	static assert(getDBindingNameFromPropertyName("x") == "xBinding");
 
 	static assert(getPropertyNameFromSignalName("onMouseXChanged") == "mouseX");
 	static assert(getPropertyNameFromSignalName("onXChanged") == "x");

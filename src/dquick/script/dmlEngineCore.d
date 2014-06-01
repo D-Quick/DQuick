@@ -20,6 +20,91 @@ version(unittest)
 {
 	import dquick.item.declarativeItem;
 	import std.signals;
+
+	class DSubItem : dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			nativePropertyProperty = new typeof(nativePropertyProperty)(this, this);
+		}
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, DSubItem, "id")	idProperty;
+		string	id() { return mId; }
+		void	id(string value) { mId = value; }
+		string	mId;
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, DSubItem, "nativeProperty")	nativePropertyProperty;
+		void	nativeProperty(int value)
+		{
+			if (mNativeProperty != value)
+			{
+				mNativeProperty = value;
+				onNativePropertyChanged.emit(value);
+			}
+		}
+		int		nativeProperty()
+		{
+			return mNativeProperty;
+		}
+		mixin Signal!(int) onNativePropertyChanged;
+		int		mNativeProperty;
+	}
+	class DItem : dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			nativePropertyProperty = new typeof(nativePropertyProperty)(this, this);
+			subItemProperty = new typeof(subItemProperty)(this, this);
+		}
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, DItem, "id")	idProperty;
+		string	id() { return mId; }
+		void	id(string value) { mId = value; }
+		string	mId;
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, DItem, "nativeProperty")	nativePropertyProperty;
+		int		nativePropertyBinding()
+		{
+			return subItem.nativePropertyProperty.value() + 200;
+		}
+		void	nativeProperty(int value)
+		{
+			if (mNativeProperty != value)
+			{
+				mNativeProperty = value;
+				onNativePropertyChanged.emit(value);
+			}
+		}
+		int		nativeProperty()
+		{
+			return mNativeProperty;
+		}
+		mixin Signal!(int) onNativePropertyChanged;
+		int		mNativeProperty;
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(DSubItem, DItem, "subItem")	subItemProperty;
+		void	subItem(DSubItem value)
+		{
+			if (mSubItem != value)
+			{
+				mSubItem = value;
+				onSubItemChanged.emit(value);
+			}
+		}
+		DSubItem	subItem()
+		{
+			return mSubItem;
+		}
+		mixin Signal!(DSubItem) onSubItemChanged;
+		DSubItem		mSubItem;
+	}
+
 	class SimpleItem : dquick.script.iItemBinding.IItemBinding
 	{
 		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
@@ -271,6 +356,8 @@ unittest
 	{
 	DMLEngineCore	dmlEngine = new DMLEngineCore;
 	dmlEngine.create();
+	dmlEngine.addObjectBindingType!(DItem, "DItem");
+	dmlEngine.addObjectBindingType!(DSubItem, "DSubItem");
 	dmlEngine.addObjectBindingType!(Item, "Item");
 	dmlEngine.addObjectBindingType!(SimpleItem, "SimpleItem");
 
@@ -1821,6 +1908,23 @@ unittest
 		assert(m[0] == "" && m[1] == "");
 	}
 
+	// Test D property binding
+	{
+		string lua = q"(
+			DItem {
+				id = "dItem1",
+				subItem = DSubItem {
+					id = "dSubItem1",
+					nativeProperty = 100
+				}
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		assert(dmlEngine.getLuaGlobal!DItem("dItem1").nativeProperty == 300);
+		dmlEngine.getLuaGlobal!DSubItem("dSubItem1").nativeProperty = 400;
+		assert(dmlEngine.getLuaGlobal!DItem("dItem1").nativeProperty == 600);
+	}
+
 	}
 	catch (Throwable e)
 	{
@@ -2578,9 +2682,7 @@ extern(C)
 			static if (isAssociativeArray!T == false)
 			{
 				if (key >= array.length)
-				{
 					throw new Exception(format("the key value %d is out of bound", key));
-				}
 			}
 
 			ForeachType!(T)	value = void;
