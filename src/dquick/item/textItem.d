@@ -117,7 +117,7 @@ public:
 		startPaint(transformationUpdated);
 		if (mNeedRebuild)
 			rebuildMesh();
-		if (mMesh.indexes)
+		if (mMesh && mMesh.indexes)
 			mMesh.draw();
 		paintChildren();
 		endPaint();
@@ -157,6 +157,7 @@ public:
 		void	release()
 		{
 			mMesh.destruct();
+			mMesh = null;
 		}
 	}
 
@@ -175,7 +176,11 @@ private:
 	{
 		mNeedRebuild = false;
 
-		mMesh.destruct();
+		if (mMesh)
+		{
+			mMesh.destruct();
+			mMesh = null;
+		}
 
 		if (!mText.length)
 		{
@@ -345,6 +350,7 @@ private:
 				implicitSize.y = lines[$ - 1].verticalCursor + lines[$ - 1].maxHeightUnderOrigin;
 
 			// Building the Mesh
+			mMesh = new Mesh;
 			mMesh.construct();
 			mMesh.setShader(mShader);
 			mMesh.setShaderProgram(mShaderProgram);
@@ -393,7 +399,8 @@ private:
 		catch (Exception e)
 		{
 			writeln(e.toString());
-			mMesh.destruct();
+			clear(mMesh);
+			mMesh = null;
 		}
 	}
 
