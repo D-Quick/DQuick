@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{5E97499B-7F52-4782-A472-914AC4A1DBD5}</ProjectGuid>
     <UseDefaultCompiler>True</UseDefaultCompiler>
@@ -18,9 +18,9 @@
     </DependentProjectIds>
     <Includes>
       <Includes>
-        <Path>../src</Path>
-        <Path>../src/dquick/etc/derelict/import</Path>
-        <Path>../src/dquick/etc/gl3n</Path>
+        <Path>..\src</Path>
+        <Path>..\src\dquick\etc\derelict\import</Path>
+        <Path>..\src\dquick\etc\gl3n</Path>
       </Includes>
     </Includes>
   </PropertyGroup>
@@ -44,6 +44,16 @@
     <Target>Executable</Target>
     <OutputName>../../../data/Images</OutputName>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
+    <OutputPath>bin\Unittest</OutputPath>
+    <UnittestMode>true</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
+    <Externalconsole>true</Externalconsole>
+    <Target>Executable</Target>
+    <OutputName>../../../data/dquick-sample</OutputName>
+    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\src\samples\text\main.d">
