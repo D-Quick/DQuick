@@ -350,7 +350,7 @@ version(unittest)
 	}
 }
 
-unittest
+/+unittest
 {
 	try
 	{
@@ -1931,7 +1931,7 @@ unittest
 		writeln(e.toString());
 		int toto = 10;
 	}
-}
+}+/
 
 class DMLEngineCore
 {
