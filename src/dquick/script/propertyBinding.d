@@ -58,11 +58,19 @@ class PropertyBinding
 			result ~= format("%s.%s\n", dependent.itemBinding.id, dependent.propertyName);
 		return result;
 	}
+	string	displayDependencies()
+	{
+		string	result;
+		foreach (dependencie; dependencies)
+			result ~= format("%s.%s\n", dependencie.itemBinding.id, dependencie.propertyName);
+		return result;
+	}
 
 	void	executeBinding()
 	{
 		assert(itemBinding.dmlEngine !is null);
 
+		// No property binding or slot call while the item is in creation to ensure there is no particular initialisation order between properties of an object
 		if (dirty == false || itemBinding.creating == true)
 			return;
 
@@ -151,7 +159,7 @@ class PropertyBinding
 		if (itemBinding.dmlEngine is null)
 			return;
 
-		if (itemBinding.creating == false)
+		if (itemBinding.creating == false) // No property binding or slot call while the item is in creation
 		{
 			// Detect assignment from D that compete with his binding
 			if (itemBinding.dmlEngine.propertyBindingBeeingSet !is this && luaReference != -1)
@@ -168,13 +176,6 @@ class PropertyBinding
 			if (slotLuaReference != -1)
 				itemBinding.dmlEngine.execute(slotLuaReference);
 
-			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
-			{
-				assert(itemBinding.dmlEngine.lvl >= 1);
-				itemBinding.dmlEngine.lvl--;
-				writefln("%s}", replicate("|\t", itemBinding.dmlEngine.lvl));
-			}
-
 			auto dependentsCopy = dependents.dup;
 			foreach (dependent; dependentsCopy)
 			{
@@ -185,6 +186,13 @@ class PropertyBinding
 			{
 				if (dependent !is null)
 					dependent.executeBinding();
+			}
+
+			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
+			{
+				assert(itemBinding.dmlEngine.lvl >= 1);
+				itemBinding.dmlEngine.lvl--;
+				writefln("%s}", replicate("|\t", itemBinding.dmlEngine.lvl));
 			}
 		}
 	}

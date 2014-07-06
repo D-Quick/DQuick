@@ -26,8 +26,10 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 
 	override void	executeBinding()
 	{
-		assert(itemBinding.dmlEngine !is null);
+		if (itemBinding.dmlEngine is null)
+			throw new Exception(format("item \"%s\" is not in a dmlEngine\n", itemBinding.id));
 
+		// No property binding or slot call while the item is in creation to ensure there is no particular initialisation order between properties of an object
 		if (dirty == false || itemBinding.creating == true)
 			return;
 
@@ -166,6 +168,15 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 	{
 		super.valueToLua(null);
 		return __traits(getMember, cast(ItemType)(item), PropertyName);
+	}
+
+	void	value(ValueType value)
+	{
+		super.valueFromLua(null, 0);
+		static if (__traits(compiles, __traits(getMember, cast(ItemType)(item), PropertyName)(value)))
+			__traits(getMember, cast(ItemType)(item), PropertyName)(value);
+		else
+			throw new Exception(format("property \"%s\" is read only", PropertyName));	
 	}
 
 	template	type()
