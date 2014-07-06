@@ -147,6 +147,8 @@ class PropertyBinding
 					throw new Exception(format("too few or too many return values on property binding %s.%s, got %d, expected 1", itemBinding.id, propertyName, lua_gettop(itemBinding.dmlEngine.luaState) - top));
 			}
 
+			dirty = false;
+
 			// Put this so that onChanged can detect it's a value change from binding or from D
 			itemBinding.dmlEngine.propertyBindingBeeingSet = this;
 			valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
@@ -169,7 +171,6 @@ class PropertyBinding
 				return;
 			}
 
-			dirty = false;
 			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
 				writefln("%s%s.%s.onChanged {", replicate("|\t", itemBinding.dmlEngine.lvl++), itemBinding.id, propertyName);
 

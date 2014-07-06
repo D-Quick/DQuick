@@ -120,6 +120,8 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 					throw new Exception(format("too few or too many return values on property binding %s.%s, got %d, expected 1", itemBinding.id, propertyName, lua_gettop(itemBinding.dmlEngine.luaState) - top));
 			}
 
+			dirty = false;
+
 			// Put this so that onChanged can detect it's a value change from binding or from D
 			itemBinding.dmlEngine.propertyBindingBeeingSet = this;
 			scope(exit) itemBinding.dmlEngine.propertyBindingBeeingSet = null;

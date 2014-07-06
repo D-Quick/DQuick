@@ -1903,24 +1903,16 @@ unittest
 	{
 		DSubItem dSubItem1 = new DSubItem;
 		dSubItem1.id = "dSubItem1";
-		//writeln("----- addObjectBinding(dSubItem1);");
 		dmlEngine.addObjectBinding(dSubItem1, "dSubItem1");
 
 		DItem dItem1 = new DItem;
 		dItem1.id = "dItem1";
-		//writeln("----- addObjectBinding(dItem1);");
 		dmlEngine.addObjectBinding(dItem1, "dItem1");
 
-		//writeln("----- dItem1.subItemProperty.value = dSubItem1;");
 		dItem1.subItemProperty.value = dSubItem1;
-
-		//writeln("----- assert(dItem1.nativePropertyProperty.value == 200);");
 		assert(dItem1.nativePropertyProperty.value == 200);
 
-		//writeln("----- dSubItem1.nativePropertyProperty.value = 100;");
 		dSubItem1.nativePropertyProperty.value = 100;
-
-		//writeln("----- assert(dItem1.nativePropertyProperty.value == 300);");
 		assert(dItem1.nativePropertyProperty.value == 300);
 	}
 
