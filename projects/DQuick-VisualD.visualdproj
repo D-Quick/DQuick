@@ -1286,6 +1286,8 @@
     <File path="..\src\dquick\script\delegatePropertyBinding.d" />
     <File path="..\src\dquick\script\dmlEngine.d" />
     <File path="..\src\dquick\script\dmlEngineCore.d" />
+    <File path="..\src\dquick\script\dmlEngineCoreUnittests.d" />
+    <File path="..\src\dquick\script\dmlEngineUnittests.d" />
     <File path="..\src\dquick\script\iItemBinding.d" />
     <File path="..\src\dquick\script\itemBinding.d" />
     <File path="..\src\dquick\script\nativePropertyBinding.d" />

@@ -1,18 +1,19 @@
 module dquick.script.itemBinding;
 
-import std.traits;
-import std.typetuple;
-import std.string;
+public import std.traits;
+public import std.typetuple;
+public import std.string;
 import std.stdio;
 import std.signals;
-import std.conv;
-import derelict.lua.lua;
+public import std.conv;
+public import derelict.lua.lua;
 
 import dquick.item.declarativeItem;
 import dquick.script.nativePropertyBinding;
 import dquick.script.virtualPropertyBinding;
 import dquick.script.delegatePropertyBinding;
-import dquick.script.utils;
+public import dquick.script.utils;
+public import dquick.script.dmlEngineCore;
 
 static string	I_ITEM_BINDING()
 {
@@ -141,7 +142,7 @@ static string	BASE_ITEM_BINDING()
 					static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 					{
 						assert(__traits(getMember, this, member) !is null);
-						result ~= format("%s\n", member);
+						result ~= format("%s's dependents:\n", __traits(getMember, this, member).propertyName);
 						result ~= shiftRight(__traits(getMember, this, member).displayDependents(), "\t", 1);
 					}
 				}
@@ -152,6 +153,25 @@ static string	BASE_ITEM_BINDING()
 				}
 				return result;
 			}
+			override string	displayDependencies()
+			{
+				string	result;
+				foreach (member; __traits(allMembers, typeof(this)))
+				{
+					static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
+					{
+						assert(__traits(getMember, this, member) !is null);
+						result ~= format("%s's dependencies:\n", __traits(getMember, this, member).propertyName);
+						result ~= shiftRight(__traits(getMember, this, member).displayDependencies(), "\t", 1);
+					}
+				}
+				foreach (key, virtualProperty; virtualProperties)
+				{
+					result ~= format("%s\n", key);
+					result ~= shiftRight(virtualProperty.displayDependencies(), "\t", 1);
+				}
+				return result;
+			}
 		}
 
 		override void	valueFromLua(lua_State* L)
@@ -159,6 +179,7 @@ static string	BASE_ITEM_BINDING()
 			if (!lua_istable(L, -1))
 				throw new Exception("the lua value is not a table\n");
 
+			// No property binding or slot call while the item is in creation to ensure there is no particular initialisation order between properties of an object
 			mCreating = true;
 
 			/* table is in the stack at index 't' */

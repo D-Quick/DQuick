@@ -9,7 +9,10 @@ interface IItemBinding {
 	void										dmlEngine(dquick.script.dmlEngineCore.DMLEngineCore);
 	void	executeBindings();
 	static if (dquick.script.dmlEngineCore.DMLEngineCore.showDebug)
+	{
 		string	displayDependents();
+		string	displayDependencies();
+	}
 	bool	creating();
 	void	valueFromLua(lua_State* L);
 	void	pushToLua(lua_State* L);
