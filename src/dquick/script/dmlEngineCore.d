@@ -222,7 +222,7 @@ public:
 			{
 				writeln("execute: DEPENDANCY TREE ==================================================================================================");
 				for (size_t index = 0; index < mItems.length; index++)
-					writefln("%s\n%s", mItems[index].id, shiftRight(mItems[index].displayDependencies(), "\t", 1));
+					writefln("[%s]\n%s", mItems[index].id, shiftRight(mItems[index].displayDependencies(), "\t", 1));
 				writeln("=======================================================================================================");
 			}
 		}
@@ -265,7 +265,7 @@ public:
 		lua_setglobal(luaState, name.toStringz());
 	}
 
-	static immutable bool showDebug = 0;
+	static immutable bool showDebug = 1;
 
 	int		currentLuaEnv()
 	{

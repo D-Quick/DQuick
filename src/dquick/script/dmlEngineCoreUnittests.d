@@ -9,6 +9,118 @@ version(unittest)
 	import dquick.item.declarativeItem;
 	import std.signals;
 
+	class ListView1Component : dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+		}
+
+		// ID
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1Component, "id")	idProperty;
+		string	id() { return mId; }
+		void	id(string value) { mId = value; }
+		string	mId;
+	}
+	class ListView1 : dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			modelProperty = new typeof(modelProperty)(this, this);
+			mydelegateProperty = new typeof(mydelegateProperty)(this, this);
+		}
+
+		// ID
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1, "id")	idProperty;
+		string	id() { return mId; }
+		void	id(string value) { mId = value; }
+		string	mId;
+
+		// Model
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(int[], ListView1, "model")	modelProperty;
+		void	model(int[] value)
+		{
+			int[]	tete;
+			ListView1[]	toto;
+			Object[] titi;
+			titi = cast(Object[])(tete);
+
+			if (mModel != value)
+			{
+				mModel = value;
+				children = [];
+				foreach (int modelValue; mModel)
+				{
+					children ~= mMydelegate();
+				}
+				onModelChanged.emit(value);
+			}
+		}
+		int[]		model()
+		{
+			return mModel;
+		}
+		mixin Signal!(int[]) onModelChanged;
+		int[]		mModel;
+
+		// Delegate
+		dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(ListView1Component delegate(), ListView1, "mydelegate")	mydelegateProperty;
+		void	mydelegate(ListView1Component delegate() value)
+		{
+			if (mMydelegate != value)
+			{
+				mMydelegate = value;
+				onMydelegateChanged.emit(value);
+			}
+		}
+		ListView1Component delegate()		mydelegate()
+		{
+			return mMydelegate;
+		}
+		mixin Signal!(ListView1Component delegate()) onMydelegateChanged;
+		ListView1Component delegate() mMydelegate;
+
+		// Children
+		ListView1Component[]		children;
+	}
+	class Model1 : dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			arrayProperty = new typeof(arrayProperty)(this, this);
+		}
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, Model1, "id")	idProperty;
+		string	id() { return mId; }
+		void	id(string value) { mId = value; }
+		string	mId;
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(int[], Model1, "array")	arrayProperty;
+		void	array(int[] value)
+		{
+			if (mArray != value)
+			{
+				mArray = value;
+				onArrayChanged.emit(value);
+			}
+		}
+		int[]		array()
+		{
+			return mArray;
+		}
+		mixin Signal!(int[]) onArrayChanged;
+		int[]		mArray;
+	}
+
+
 	class DSubItem : dquick.script.iItemBinding.IItemBinding
 	{
 		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
@@ -17,6 +129,7 @@ version(unittest)
 		{
 			idProperty = new typeof(idProperty)(this, this);
 			nativePropertyProperty = new typeof(nativePropertyProperty)(this, this);
+			modelProperty = new typeof(modelProperty)(this, this);
 		}
 
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, DSubItem, "id")	idProperty;
@@ -39,6 +152,22 @@ version(unittest)
 		}
 		mixin Signal!(int) onNativePropertyChanged;
 		int		mNativeProperty;
+
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(int[], DSubItem, "model")	modelProperty;
+		void	model(int[] value)
+		{
+			if (mModel != value)
+			{
+				mModel = value;
+				onModelChanged.emit(value);
+			}
+		}
+		int[]		model()
+		{
+			return mModel;
+		}
+		mixin Signal!(int[]) onModelChanged;
+		int[]		mModel;
 	}
 	class DItem : dquick.script.iItemBinding.IItemBinding
 	{
@@ -352,7 +481,7 @@ unittest
 	dmlEngine.addObjectBindingType!(Item, "Item");
 	dmlEngine.addObjectBindingType!(SimpleItem, "SimpleItem");
 
-	// Test basic item
+	/+// Test basic item
 	string lua1 = q"(
 		Item {
 			id = "item1"
@@ -1931,6 +2060,32 @@ unittest
 		assert(dmlEngine.getLuaGlobal!DItem("dItem2").nativeProperty == 300);
 		dmlEngine.getLuaGlobal!DSubItem("dSubItem2").nativeProperty = 400;
 		assert(dmlEngine.getLuaGlobal!DItem("dItem2").nativeProperty == 600);
+	}+/
+
+	// Simulate a ListView
+	{
+		dmlEngine.addObjectBindingType!(Model1, "Model1");
+		dmlEngine.addObjectBindingType!(ListView1, "ListView1");
+		dmlEngine.addObjectBindingType!(ListView1Component, "ListView1Component");
+
+		Model1	listViewModel1 = new Model1;
+		listViewModel1.id = "listViewModel1";
+		dmlEngine.addObjectBinding(listViewModel1, "listViewModel1");
+		string lua = q"(
+			ListView1 {
+				id = "listView1",
+				model = function()
+					return listViewModel1.array
+				end,
+				mydelegate = function()
+					return ListView1Component {
+					}
+				end,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		listViewModel1.array = [1, 2, 3];
+		//assert(dmlEngine.getLuaGlobal!ListView1("listView1").children.length == 3);
 	}
 
 	}

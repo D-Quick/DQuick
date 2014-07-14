@@ -2,7 +2,7 @@ module dquick.script.dmlEngineUnittests;
 
 version(unittest)
 {
-	import dquick.item.declarativeItem;
+	/*import dquick.item.declarativeItem;
 	import std.signals;
 	import dquick.script.dmlEngine;
 	import std.algorithm;
@@ -201,12 +201,12 @@ version(unittest)
 	int	testSumFunctionBinding2(Item a, Interface b)
 	{
 		return a.nativeProperty + b.nativeProperty;
-	}
+	}*/
 }
 
 unittest
 {
-	DMLEngine	dmlEngine = new DMLEngine;
+	/+DMLEngine	dmlEngine = new DMLEngine;
 	dmlEngine.create();
 	dmlEngine.addItemType!(Item, "Item");
 	dmlEngine.addItemType!(SimpleItem, "SimpleItem");
@@ -1758,5 +1758,5 @@ unittest
 	{
 		auto m = mismatch(e.msg, "too few or too many return values on delegate delegateError1Item.delegateProperty, got 2, expected 1");
 		assert(m[0] == "" && m[1] == "");
-	}
+	}+/
 }

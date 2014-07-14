@@ -128,8 +128,8 @@ static string	BASE_ITEM_BINDING()
 					__traits(getMember, this, member).executeBinding();
 				}
 			}
-			foreach (member; virtualProperties)
-				member.executeBinding();
+			//foreach (member; virtualProperties)
+			//	member.executeBinding();
 		}
 
 		static if (dquick.script.dmlEngine.DMLEngine.showDebug)
@@ -137,37 +137,41 @@ static string	BASE_ITEM_BINDING()
 			override string	displayDependents()
 			{
 				string	result;
+				result ~= format("native properties:\n");
 				foreach (member; __traits(allMembers, typeof(this)))
 				{
 					static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 					{
 						assert(__traits(getMember, this, member) !is null);
-						result ~= format("%s's dependents:\n", __traits(getMember, this, member).propertyName);
-						result ~= shiftRight(__traits(getMember, this, member).displayDependents(), "\t", 1);
+						result ~= shiftRight(format("%s's dependents:\n", __traits(getMember, this, member).propertyName), "\t", 1);
+						result ~= shiftRight(__traits(getMember, this, member).displayDependents(), "\t", 2);
 					}
 				}
+				result ~= format("virtual properties:\n");
 				foreach (key, virtualProperty; virtualProperties)
 				{
-					result ~= format("%s\n", key);
-					result ~= shiftRight(virtualProperty.displayDependents(), "\t", 1);
+					result ~= shiftRight(format("%s's dependents:\n", key), "\t", 1);
+					result ~= shiftRight(virtualProperty.displayDependents(), "\t", 2);
 				}
 				return result;
 			}
 			override string	displayDependencies()
 			{
 				string	result;
+				result ~= format("native properties:\n");
 				foreach (member; __traits(allMembers, typeof(this)))
 				{
 					static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 					{
 						assert(__traits(getMember, this, member) !is null);
-						result ~= format("%s's dependencies:\n", __traits(getMember, this, member).propertyName);
+						result ~= shiftRight(format("%s's dependencies:\n", __traits(getMember, this, member).propertyName), "\t", 1);
 						result ~= shiftRight(__traits(getMember, this, member).displayDependencies(), "\t", 1);
 					}
 				}
+				result ~= format("virtual properties:\n");
 				foreach (key, virtualProperty; virtualProperties)
 				{
-					result ~= format("%s\n", key);
+					result ~= shiftRight(format("%s's dependencies:\n", key), "\t", 1);
 					result ~= shiftRight(virtualProperty.displayDependencies(), "\t", 1);
 				}
 				return result;
