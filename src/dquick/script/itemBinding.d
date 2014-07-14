@@ -128,8 +128,8 @@ static string	BASE_ITEM_BINDING()
 					__traits(getMember, this, member).executeBinding();
 				}
 			}
-			//foreach (member; virtualProperties)
-			//	member.executeBinding();
+			foreach (member; virtualProperties)
+				member.executeBinding();
 		}
 
 		static if (dquick.script.dmlEngine.DMLEngine.showDebug)
