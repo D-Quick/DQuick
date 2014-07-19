@@ -100,22 +100,27 @@ enum LuaUserDataType : byte
 	Array
 }
 
-struct LuaUserDataItem
+struct LuaUserDataObject
 {
 	LuaUserDataType								type = LuaUserDataType.Item;
-	dquick.script.iItemBinding.IItemBinding		iItemBinding;
+	Object										object;
 }
 
 struct LuaUserDataMethod
 {
 	LuaUserDataType								type = LuaUserDataType.Method;
-	dquick.script.iItemBinding.IItemBinding		iItemBinding;
+	Object										object;
 }
 
 struct LuaUserDataArray(T)
 {
 	LuaUserDataType								type = LuaUserDataType.Array;
 	T											array;
+}
+
+struct LuaValue
+{
+	int	valueRef = -1;
 }
 
 void	valueFromLua(T)(lua_State* L, int index, ref T value)
@@ -185,7 +190,7 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 			throw new Exception(format("Lua value at index %d is a %s, a string was expected", index, getLuaTypeName(L, index)));
 		value = to!(string)(lua_tostring(L, index));
 	}
-	else static if (is(T : dquick.script.iItemBinding.IItemBinding))
+	else static if (is(T : Object) || __traits(isAbstractClass, T) || __traits(isFinalClass, T))
 	{
 		if (lua_isnil(L, index))
 			value = null;
@@ -194,12 +199,12 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 			if (!lua_isuserdata(L, index))
 				throw new Exception(format("Lua value at index %d is a %s, a userdata or nil was expected", index, getLuaTypeName(L, index)));
 
-			LuaUserDataItem*	luaUserData = cast(LuaUserDataItem*)lua_touserdata(L, index);
+			LuaUserDataObject*	luaUserData = cast(LuaUserDataObject*)lua_touserdata(L, index);
 
 			if (luaUserData.type != LuaUserDataType.Item)
 				throw new Exception(format("Lua value at index %d is not an item", index));
 
-			value = cast(T)(luaUserData.iItemBinding);
+			value = cast(T)(luaUserData.object);
 		}
 	}
 	else static if (isDynamicArray!T || isStaticArray!T)
@@ -285,6 +290,11 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 	{
 		assert(false);
 	}
+	else static if (is(T : LuaValue))
+	{
+		lua_pushvalue(L, index); // To compensate the value poped by luaL_ref
+		value.valueRef = luaL_ref(L, LUA_REGISTRYINDEX);
+	}
 	else
 	{
 		static assert(false, fullyQualifiedName2!(T));
@@ -314,7 +324,7 @@ void	valueToLua(T)(lua_State* L, T value)
 		lua_pushstring(L, value.toStringz());
 	else static if (is(T == bool))
 		lua_pushboolean(L, value);
-	else static if (is(T : dquick.script.iItemBinding.IItemBinding))
+	else static if (is(T : Object) || __traits(isAbstractClass, T) || __traits(isFinalClass, T))
 	{
 		if (value is null)
 			lua_pushnil(L);
@@ -322,20 +332,24 @@ void	valueToLua(T)(lua_State* L, T value)
 		{
 			// Create a userdata that contains instance ptr and make it a global for user access
 			// It also contains a metatable for the member read and write acces
-			void*	userData = lua_newuserdata(L, LuaUserDataItem.sizeof);
-			(cast(LuaUserDataItem*)userData).type = LuaUserDataType.Item;
-			(cast(LuaUserDataItem*)userData).iItemBinding = value;
+			void*	userData = lua_newuserdata(L, LuaUserDataObject.sizeof);
 
-			lua_newtable(L);
+			(cast(LuaUserDataObject*)userData).type = LuaUserDataType.Item;
+			(cast(LuaUserDataObject*)userData).object = value;
 
-			lua_pushstring(L, "__index");
-			lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.indexLuaBind!T);
-			lua_settable(L, -3);
-			lua_pushstring(L, "__newindex");
-			lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.newindexLuaBind!T);
-			lua_settable(L, -3);
+			static if (is(T : dquick.script.iItemBinding.IItemBinding))
+			{
+				lua_newtable(L);
 
-			lua_setmetatable(L, -2);
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.indexLuaBind!T);
+				lua_settable(L, -3);
+				lua_pushstring(L, "__newindex");
+				lua_pushcfunction(L, cast(lua_CFunction)&dquick.script.dmlEngineCore.newindexLuaBind!T);
+				lua_settable(L, -3);
+
+				lua_setmetatable(L, -2);
+			}
 		}
 	}
 	else static if (isDynamicArray!T || isStaticArray!T)
@@ -394,6 +408,13 @@ void	valueToLua(T)(lua_State* L, T value)
 	{
 		assert(false);
 	}
+	else static if (is(T : LuaValue))
+	{
+		if (value.valueRef == -1)
+			lua_pushnil(L);
+		else
+			lua_rawgeti(L, LUA_REGISTRYINDEX, value.valueRef);
+	}
 	else
 	{
 		static assert(false);
@@ -404,7 +425,7 @@ void	methodFromLua(T)(lua_State* L, int index, ref T object)
 {
 	assert(isPointer!T == false);
 
-	static if (is(T : dquick.script.iItemBinding.IItemBinding))
+	static if (is(T : Object) || __traits(isAbstractClass, T) || __traits(isFinalClass, T))
 	{
 		if (lua_isnil(L, index))
 			object = null;
@@ -418,7 +439,7 @@ void	methodFromLua(T)(lua_State* L, int index, ref T object)
 			if (luaUserData.type != LuaUserDataType.Method)
 				throw new Exception(format("Lua value at index %d is not a method", index));
 
-			object = cast(T)(luaUserData.iItemBinding);
+			object = cast(T)(luaUserData.object);
 		}
 	}
 	else
@@ -431,13 +452,13 @@ void	methodToLua(T, string methodName)(lua_State* L, T object)
 {
 	assert(isPointer!T == false);
 
-	static if (is(T : dquick.script.iItemBinding.IItemBinding))
+	static if (is(T : Object) || __traits(isAbstractClass, T) || __traits(isFinalClass, T))
 	{
 		// Create a userdata that contains instance ptr and return it to emulate a method
 		// It also contains a metatable for calling
 		void*	userData = lua_newuserdata(L, LuaUserDataMethod.sizeof);
 		(cast(LuaUserDataMethod*)userData).type = LuaUserDataType.Method;
-		(cast(LuaUserDataMethod*)userData).iItemBinding = object;
+		(cast(LuaUserDataMethod*)userData).object = object;
 
 		// Create metatable
 		lua_newtable(L);

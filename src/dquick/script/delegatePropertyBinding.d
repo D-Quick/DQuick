@@ -47,19 +47,16 @@ class DelegatePropertyBinding(ValueType, ItemType, string PropertyName) : Native
 			super.bindingFromLua(L, index);
 
 			lua_State* luaState = itemBinding.dmlEngine.luaState;
+			// Get delegate type (first param of it's setter)
 			alias ParameterTypeTuple!(__traits(getMember, item, PropertyName))[0]	dgType;
-			dgType	func = delegate(ParameterTypeTuple!dgType params) // Create a closure that call the lua function
+			alias ParameterTypeTuple!dgType	delegateParamsTypes;
+			dgType	func = delegate(delegateParamsTypes params) // Create a closure that call the lua function
 			{
 				int	top = lua_gettop(itemBinding.dmlEngine.luaState);
 				lua_rawgeti(luaState, LUA_REGISTRYINDEX, luaReference);
 				foreach (param; params)
-					lua_pushnumber(luaState, param);
-				if (lua_pcall(luaState, params.length, LUA_MULTRET, 0) != LUA_OK)
-				{
-					string error = to!(string)(lua_tostring(itemBinding.dmlEngine.luaState, -1));
-					lua_pop(itemBinding.dmlEngine.luaState, 1);
-					throw new Exception(error);
-				}
+					dquick.script.utils.valueToLua(luaState, param);
+				itemBinding.dmlEngine.luaPCall(params.length);
 
 				if (lua_gettop(luaState) - top != 1)
 					throw new Exception(format("too few or too many return values on delegate %s.%s, got %d, expected 1", itemBinding.id, propertyName, lua_gettop(luaState) - top));
@@ -71,6 +68,7 @@ class DelegatePropertyBinding(ValueType, ItemType, string PropertyName) : Native
 				{
 					returnType returnVal;
 					dquick.script.utils.valueFromLua!(returnType)(luaState, -1, returnVal);
+					lua_pop(itemBinding.dmlEngine.luaState, 1); // Pop the result
 					return returnVal;
 				}
 			};

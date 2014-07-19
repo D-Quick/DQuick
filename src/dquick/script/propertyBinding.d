@@ -55,14 +55,14 @@ class PropertyBinding
 	{
 		string	result;
 		foreach (dependent; dependents)
-			result ~= format("%s.%s\n", dependent.itemBinding.id, dependent.propertyName);
+			result ~= format("\t%s.%s\n", dependent.itemBinding.id, dependent.propertyName);
 		return result;
 	}
 	string	displayDependencies()
 	{
 		string	result;
 		foreach (dependencie; dependencies)
-			result ~= format("%s.%s\n", dependencie.itemBinding.id, dependencie.propertyName);
+			result ~= format("\t%s.%s\n", dependencie.itemBinding.id, dependencie.propertyName);
 		return result;
 	}
 
@@ -116,7 +116,7 @@ class PropertyBinding
 
 			dependencies.clear();
 
-			{
+			{ // This scope is important for the scope(exit) and scope(failure)
 				itemBinding.dmlEngine.currentlyExecutedBindingStack ~= this;
 				scope(exit) itemBinding.dmlEngine.currentlyExecutedBindingStack.length--;
 				scope(failure) dependencies.clear();
@@ -126,12 +126,7 @@ class PropertyBinding
 
 				int	top = lua_gettop(itemBinding.dmlEngine.luaState);
 				lua_rawgeti(itemBinding.dmlEngine.luaState, LUA_REGISTRYINDEX, luaReference);
-				if (lua_pcall(itemBinding.dmlEngine.luaState, 0, LUA_MULTRET, 0) != LUA_OK)
-				{
-					string error = to!(string)(lua_tostring(itemBinding.dmlEngine.luaState, -1));
-					lua_pop(itemBinding.dmlEngine.luaState, 1);
-					throw new Exception(error);
-				}
+				itemBinding.dmlEngine.luaPCall(0);
 
 				static if (dquick.script.dmlEngine.DMLEngine.showDebug)
 				{
@@ -175,7 +170,10 @@ class PropertyBinding
 				writefln("%s%s.%s.onChanged {", replicate("|\t", itemBinding.dmlEngine.lvl++), itemBinding.id, propertyName);
 
 			if (slotLuaReference != -1)
-				itemBinding.dmlEngine.execute(slotLuaReference);
+			{
+				lua_rawgeti(itemBinding.dmlEngine.luaState, LUA_REGISTRYINDEX, slotLuaReference);
+				itemBinding.dmlEngine.luaPCall(0);
+			}
 
 			auto dependentsCopy = dependents.dup;
 			foreach (dependent; dependentsCopy)
@@ -208,6 +206,14 @@ class PropertyBinding
 		if (itemBinding.dmlEngine.currentlyExecutedBindingStack.length > 0)
 		{
 			assert(itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1] !is this);
+			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
+			{
+				writefln("[%s].%s became a dependency of [%s].%s",
+						 itemBinding.id,
+						 propertyName,
+						 itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1].itemBinding.id,
+						 itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1].propertyName);
+			}
 			itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1].dependencies ~= this;
 		}
 	}
