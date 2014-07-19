@@ -81,45 +81,44 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 
 			dependencies.clear();
 
-			itemBinding.dmlEngine.currentlyExecutedBindingStack ~= this;
-			scope(exit) itemBinding.dmlEngine.currentlyExecutedBindingStack.length--;
-			scope(failure) dependencies.clear();
+			ValueType resultValue = void;
+			{ // This scope is important for the scope(exit) and scope(failure)
+				itemBinding.dmlEngine.currentlyExecutedBindingStack ~= this;
+				scope(exit) itemBinding.dmlEngine.currentlyExecutedBindingStack.length--;
+				scope(failure) dependencies.clear();
 
-			//writefln("%sinitializationPhase = %d executeBinding %s", repeat("|\t", lvl), initializationPhase, item.id);
-			//writefln("top = %d", lua_gettop(luaState));
+				//writefln("%sinitializationPhase = %d executeBinding %s", repeat("|\t", lvl), initializationPhase, item.id);
+				//writefln("top = %d", lua_gettop(luaState));
 
-			static if (hasDBinding)
-			{
-				ValueType value = __traits(getMember, item, getDBindingNameFromPropertyName(PropertyName))();
-			}
-			else
-			{
-				int	top = lua_gettop(itemBinding.dmlEngine.luaState);
-				lua_rawgeti(itemBinding.dmlEngine.luaState, LUA_REGISTRYINDEX, luaReference);
-				if (lua_pcall(itemBinding.dmlEngine.luaState, 0, LUA_MULTRET, 0) != LUA_OK)
+				static if (hasDBinding)
 				{
-					string error = to!(string)(lua_tostring(itemBinding.dmlEngine.luaState, -1));
-					lua_pop(itemBinding.dmlEngine.luaState, 1);
-					throw new Exception(error);
+					resultValue = __traits(getMember, item, getDBindingNameFromPropertyName(PropertyName))();
 				}
-			}
+				else
+				{
+					int	top = lua_gettop(itemBinding.dmlEngine.luaState);
+					lua_rawgeti(itemBinding.dmlEngine.luaState, LUA_REGISTRYINDEX, luaReference);
+					itemBinding.dmlEngine.luaPCall(0);
+				}
 
-			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
-			{
+				static if (dquick.script.dmlEngine.DMLEngine.showDebug)
+				{
+					foreach (dependency; dependencies)
+					{
+						writefln("%sdepend on %s.%s", replicate("|\t", itemBinding.dmlEngine.lvl), dependency.itemBinding.id, dependency.propertyName);
+					}
+				}
 				foreach (dependency; dependencies)
+					dependency.dependents[this] = this;
+
+				static if (hasDBinding == false)
 				{
-					writefln("%sdepend on %s.%s", replicate("|\t", itemBinding.dmlEngine.lvl), dependency.itemBinding.id, dependency.propertyName);
+					if (lua_gettop(itemBinding.dmlEngine.luaState) - top != 1)
+						throw new Exception(format("too few or too many return values on property binding %s.%s, got %d, expected 1", itemBinding.id, propertyName, lua_gettop(itemBinding.dmlEngine.luaState) - top));
 				}
-			}
-			foreach (dependency; dependencies)
-				dependency.dependents[this] = this;
 
-			static if (hasDBinding == false)
-			{
-				if (lua_gettop(itemBinding.dmlEngine.luaState) - top != 1)
-					throw new Exception(format("too few or too many return values on property binding %s.%s, got %d, expected 1", itemBinding.id, propertyName, lua_gettop(itemBinding.dmlEngine.luaState) - top));
 			}
-
+			
 			dirty = false;
 
 			// Put this so that onChanged can detect it's a value change from binding or from D
@@ -127,8 +126,8 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 			scope(exit) itemBinding.dmlEngine.propertyBindingBeeingSet = null;
 			static if (hasDBinding)
 			{
-				static if (__traits(compiles, __traits(getMember, cast(ItemType)(item), PropertyName)(value)))
-					__traits(getMember, item, PropertyName)(value);
+				static if (__traits(compiles, __traits(getMember, cast(ItemType)(item), PropertyName)(resultValue)))
+					__traits(getMember, item, PropertyName)(resultValue);
 				else
 					throw new Exception(format("property \"%s\" is read only", PropertyName));
 			}
