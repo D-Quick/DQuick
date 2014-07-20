@@ -91,7 +91,7 @@ version(unittest)
 		{
 			idProperty = new typeof(idProperty)(this, this);
 			modelProperty = new typeof(modelProperty)(this, this);
-			mydelegateProperty = new typeof(mydelegateProperty)(this, this);
+			itemDelegateProperty = new typeof(itemDelegateProperty)(this, this);
 			currentIndexProperty = new typeof(currentIndexProperty)(this, this);
 		}
 
@@ -132,7 +132,7 @@ version(unittest)
 					lua_pop(dmlEngine.luaState, 1);
 
 					// Call the user delegate that create a child from a model object
-					children ~= mMydelegate(objectRef);
+					children ~= itemDelegate()(objectRef);
 
 					luaL_unref(dmlEngine.luaState, LUA_REGISTRYINDEX, objectRef.valueRef);
 				}
@@ -165,21 +165,21 @@ version(unittest)
 		LuaValue		mModel;
 
 		// Delegate
-		dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(ListView1Component delegate(LuaValue modeItem), ListView1, "mydelegate")	mydelegateProperty;
-		void	mydelegate(ListView1Component delegate(LuaValue modeItem) value)
+		dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(ListView1Component delegate(LuaValue modeItem), ListView1, "itemDelegate")	itemDelegateProperty;
+		void	itemDelegate(ListView1Component delegate(LuaValue modeItem) value)
 		{
-			if (mMydelegate != value)
+			if (mItemDelegate != value)
 			{
-				mMydelegate = value;
-				onMydelegateChanged.emit(value);
+				mItemDelegate = value;
+				onItemDelegateChanged.emit(value);
 			}
 		}
-		ListView1Component delegate(LuaValue modeItem)		mydelegate()
+		ListView1Component delegate(LuaValue modeItem)		itemDelegate()
 		{
-			return mMydelegate;
+			return mItemDelegate;
 		}
-		mixin Signal!(ListView1Component delegate(LuaValue modeItem)) onMydelegateChanged;
-		ListView1Component delegate(LuaValue modeItem) mMydelegate;
+		mixin Signal!(ListView1Component delegate(LuaValue modeItem)) onItemDelegateChanged;
+		ListView1Component delegate(LuaValue modeItem) mItemDelegate;
 
 		// currentIndex
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, ListView1, "currentIndex")	currentIndexProperty;
@@ -2236,7 +2236,7 @@ unittest
 				model = function()
 					return listViewModel1.array
 				end,
-				mydelegate = function(modelItem)
+				itemDelegate = function(modelItem)
 					return ListView1Component {
 						name = modelItem.name.."View"
 					}
@@ -2263,7 +2263,7 @@ unittest
 				model = function()
 					return listViewModel2.array
 				end,
-				mydelegate = function(modelItem)
+				itemDelegate = function(modelItem)
 					return ListView1Component {
 						name = modelItem.name.."View"
 					}
@@ -2291,7 +2291,7 @@ unittest
 				model = function()
 					return listViewModel3.array
 				end,
-				mydelegate = function(modelItem)
+				itemDelegate = function(modelItem)
 					return ListView1Component {
 						name = modelItem.name.."View"
 					}
@@ -2331,7 +2331,7 @@ unittest
 				model = function()
 					return listViewModel4.array
 				end,
-				mydelegate = function(modelItem)
+				itemDelegate = function(modelItem)
 					return ListView1Component {
 						name = function()
 							return modelItem.name.."View"
