@@ -5,6 +5,7 @@ import derelict.lua.lua;
 import dquick.script.propertyBinding;
 import dquick.script.utils;
 import dquick.script.itemBinding;
+import dquick.script.dmlEngine;
 
 import std.conv;
 import std.file, std.stdio;
@@ -753,8 +754,24 @@ extern(C)
 			}
 			
 			static if (is(typeof(array[key]) : dquick.script.iItemBinding.IItemBinding))
+			{
 				dmlEngine.addObjectBinding(*valuePtr);
-			dquick.script.utils.valueToLua!(typeof(array[key]))(L, *valuePtr);
+				dquick.script.utils.valueToLua!(typeof(array[key]))(L, *valuePtr);
+			}
+			else
+			{
+				static if (is(typeof(array[key]) : dquick.item.declarativeItem.DeclarativeItem))
+				{
+					DMLEngine	dmlEngine2 = cast(DMLEngine)dmlEngine;
+					assert(dmlEngine2);
+					dquick.script.itemBinding.ItemBinding!(typeof(array[key])) itemBinding = dmlEngine2.registerItem!(typeof(array[key]))(*valuePtr);
+					dquick.script.utils.valueToLua(dmlEngine.luaState, itemBinding);
+				}
+				else
+				{
+					dquick.script.utils.valueToLua!(typeof(array[key]))(L, *valuePtr);
+				}
+			}
 
 			return 1;
 		}

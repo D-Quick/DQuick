@@ -44,7 +44,7 @@ public:
 	{
 		lua_getglobal(luaState, name.toStringz());
 		T	value;
-		static if (is(T : dquick.item.declarativeItem.DeclarativeItem))
+		static if (is(T : dquick.item.declarativeItem.DeclarativeItem) && is(T : dquick.script.iItemBinding.IItemBinding) == false)
 		{
 			dquick.script.itemBinding.ItemBindingBase!T	itemBinding;
 			dquick.script.utils.valueFromLua!(dquick.script.itemBinding.ItemBindingBase!(T))(luaState, -1, itemBinding);

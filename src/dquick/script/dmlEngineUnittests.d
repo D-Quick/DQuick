@@ -2,10 +2,59 @@ module dquick.script.dmlEngineUnittests;
 
 version(unittest)
 {
-	/*import dquick.item.declarativeItem;
+	import dquick.item.declarativeItem;
 	import std.signals;
 	import dquick.script.dmlEngine;
+	import dquick.script.dmlEngineCoreUnittests;
 	import std.algorithm;
+
+	class ListView1ModelItem : DeclarativeItem
+	{
+		this()
+		{
+		}
+
+		this(string name)
+		{
+			this();
+			this.name = name;
+		}
+
+		// Name
+		void	name(string value)
+		{
+			if (mName != value)
+			{
+				mName = value;
+				onNameChanged.emit(value);
+			}
+		}
+		string		name()
+		{
+			return mName;
+		}
+		mixin Signal!(string) onNameChanged;
+		string mName;
+	}
+	class Model1 : DeclarativeItem
+	{
+		// Array
+		void	array(ListView1ModelItem[] value)
+		{
+			if (mArray != value)
+			{
+				mArray = value;
+				onArrayChanged.emit(value);
+			}
+		}
+		ListView1ModelItem[]		array()
+		{
+			return mArray;
+		}
+		mixin Signal!(ListView1ModelItem[]) onArrayChanged;
+		ListView1ModelItem[]		mArray;
+	}
+
 
 	class SimpleItem
 	{
@@ -201,15 +250,18 @@ version(unittest)
 	int	testSumFunctionBinding2(Item a, Interface b)
 	{
 		return a.nativeProperty + b.nativeProperty;
-	}*/
+	}
 }
 
 unittest
 {
-	/+DMLEngine	dmlEngine = new DMLEngine;
+	DMLEngine	dmlEngine = new DMLEngine;
 	dmlEngine.create();
 	dmlEngine.addItemType!(Item, "Item");
 	dmlEngine.addItemType!(SimpleItem, "SimpleItem");
+	dmlEngine.addItemType!(Model1, "Model1");
+	dmlEngine.addObjectBindingType!(dquick.script.dmlEngineCoreUnittests.ListView1, "ListView1");
+	dmlEngine.addObjectBindingType!(dquick.script.dmlEngineCoreUnittests.ListView1Component, "ListView1Component");
 
 	// Test basic item
 	string lua1 = q"(
@@ -1758,5 +1810,137 @@ unittest
 	{
 		auto m = mismatch(e.msg, "too few or too many return values on delegate delegateError1Item.delegateProperty, got 2, expected 1");
 		assert(m[0] == "" && m[1] == "");
-	}+/
+	}
+
+	// Simulate a ListView
+	{
+		Model1	listViewModel1 = new Model1;
+		listViewModel1.id = "listViewModel1";
+		listViewModel1.array = [new ListView1ModelItem("item0"), new ListView1ModelItem("item1"), new ListView1ModelItem("item2")];
+		dmlEngine.addObject(listViewModel1, "listViewModel1");
+		string lua = q"(
+			ListView1 {
+				id = "listView1",
+				model = function()
+					return listViewModel1.array
+				end,
+				itemDelegate = function(modelItem)
+					return ListView1Component {
+						name = listViewModel1.array[0].name.."View"
+					}
+				end,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		ListView1	listView1 = dmlEngine.getLuaGlobal!ListView1("listView1");
+		assert(listView1);
+		assert(listView1.children.length == 3);
+		assert((cast(ListView1Component)(listView1.children[0])).name == "item0View");
+		assert((cast(ListView1Component)(listView1.children[1])).name == "item0View");
+		assert((cast(ListView1Component)(listView1.children[2])).name == "item0View");
+	}
+
+	// Simulate a ListView, test model binding
+	{
+		Model1	listViewModel2 = new Model1;
+		listViewModel2.id = "listViewModel2";
+		dmlEngine.addObject(listViewModel2, "listViewModel2");
+		string lua = q"(
+			ListView1 {
+				id = "listView2",
+				model = function()
+					return listViewModel2.array
+				end,
+				itemDelegate = function(modelItem)
+					return ListView1Component {
+						name = modelItem.name.."View"
+					}
+				end,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		ListView1	listView2 = dmlEngine.getLuaGlobal!ListView1("listView2");
+		assert(listView2);
+		listViewModel2.array = [new ListView1ModelItem("item10"), new ListView1ModelItem("item11"), new ListView1ModelItem("item12")];
+		assert(listView2.children.length == 3);
+		assert((cast(ListView1Component)(listView2.children[0])).name == "item10View");
+		assert((cast(ListView1Component)(listView2.children[1])).name == "item11View");
+		assert((cast(ListView1Component)(listView2.children[2])).name == "item12View");
+	}
+
+	// Simulate a ListView, test current index
+	{
+		Model1	listViewModel3 = new Model1;
+		listViewModel3.id = "listViewModel3";
+		dmlEngine.addObject(listViewModel3, "listViewModel3");
+		string lua = q"(
+			ListView1 {
+				id = "listView3",
+				model = function()
+					return listViewModel3.array
+				end,
+				itemDelegate = function(modelItem)
+					return ListView1Component {
+						name = modelItem.name.."View"
+					}
+				end,
+				currentIndex = 1,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		ListView1	listView3 = dmlEngine.getLuaGlobal!ListView1("listView3");
+		assert(listView3);
+		assert(listView3.currentIndex == -1); // Model is empty at the moment
+		listViewModel3.array = [new ListView1ModelItem("item30"), new ListView1ModelItem("item31"), new ListView1ModelItem("item32")];
+		assert(listView3.children.length == 3);
+		assert((cast(ListView1Component)(listView3.children[0])).name == "item30View");
+		assert((cast(ListView1Component)(listView3.children[1])).name == "item31View");
+		assert((cast(ListView1Component)(listView3.children[2])).name == "item32View");
+		listView3.currentIndex = 1;
+		// Insert model item before the selected item
+		listViewModel3.array = [new ListView1ModelItem("item33"), listViewModel3.array[0], listViewModel3.array[1], listViewModel3.array[2]];
+		assert(listView3.children.length == 4);
+		assert((cast(ListView1Component)(listView3.children[0])).name == "item33View");
+		assert((cast(ListView1Component)(listView3.children[1])).name == "item30View");
+		assert((cast(ListView1Component)(listView3.children[2])).name == "item31View");
+		assert((cast(ListView1Component)(listView3.children[3])).name == "item32View");
+		assert(listView3.currentIndex == 2);
+	}
+
+	// Simulate a ListView, test model item binding
+	{
+		Model1	listViewModel4 = new Model1;
+		listViewModel4.id = "listViewModel1";
+		listViewModel4.array = [new ListView1ModelItem("item40"), new ListView1ModelItem("item41"), new ListView1ModelItem("item42")];
+		dmlEngine.addObject(listViewModel4, "listViewModel4");
+		string lua = q"(
+			ListView1 {
+				id = "listView4",
+				model = function()
+					return listViewModel4.array
+				end,
+				itemDelegate = function(modelItem)
+					return ListView1Component {
+						name = function()
+							return modelItem.name.."View"
+						end
+					}
+				end,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		ListView1	listView4 = dmlEngine.getLuaGlobal!ListView1("listView4");
+		assert(listView4);
+		assert(listView4.children.length == 3);
+		assert((cast(ListView1Component)(listView4.children[0])).name == "item40View");
+		assert((cast(ListView1Component)(listView4.children[1])).name == "item41View");
+		assert((cast(ListView1Component)(listView4.children[2])).name == "item42View");
+		listViewModel4.array[0].name = "item40_2";
+		listViewModel4.array[1].name = "item41_2";
+		listViewModel4.array[2].name = "item42_2";
+		assert(listView4.children.length == 3);
+		assert((cast(ListView1Component)(listView4.children[0])).name == "item40_2View");
+		assert((cast(ListView1Component)(listView4.children[1])).name == "item41_2View");
+		assert((cast(ListView1Component)(listView4.children[2])).name == "item42_2View");
+	}
 }
