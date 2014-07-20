@@ -5,6 +5,7 @@ import std.file, std.stdio;
 import std.conv;
 import std.string;
 import std.array;
+import std.c.string;
 
 import derelict.lua.lua;
 
@@ -225,12 +226,16 @@ class PropertyBinding
 			lua_pushvalue(L, index);// To compensate the value poped by luaL_ref
 
 			// Set _ENV upvalue
-			if (lua_getupvalue(L, -1, 1) != null)
+			const char*	upvalue = lua_getupvalue(L, -1, 1);
+			if (upvalue != null)
 			{
 				lua_pop(L, 1);
-				lua_rawgeti(L, LUA_REGISTRYINDEX, itemBinding.itemBindingLuaEnvDummyClosureReference);
-				lua_upvaluejoin(L, -2, 1, -1, 1);
-				lua_pop(L, 1);
+				if (strcmp(upvalue, "_ENV") == 0)
+				{					
+					lua_rawgeti(L, LUA_REGISTRYINDEX, itemBinding.itemBindingLuaEnvDummyClosureReference);
+					lua_upvaluejoin(L, -2, 1, -1, 1);
+					lua_pop(L, 1);
+				}
 			}
 
 			luaReference = luaL_ref(L, LUA_REGISTRYINDEX);

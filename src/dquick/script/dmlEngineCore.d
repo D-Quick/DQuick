@@ -182,8 +182,14 @@ public:
 		assert(isCreated());
 
 		// Save _ENV
-		if (lua_getupvalue(luaState, -1, 1) == null)
+		const char*	upvalue = lua_getupvalue(luaState, -1, 1);
+		if (upvalue == null)
 			throw new Exception("no _ENV upvalue");
+		if (strcmp(upvalue, "_ENV") != 0)
+		{
+			lua_pop(luaState, 1);
+			throw new Exception("no _ENV upvalue");
+		}
 		mEnvStack ~= luaL_ref(luaState, LUA_REGISTRYINDEX);
 
 		static if (showDebug)

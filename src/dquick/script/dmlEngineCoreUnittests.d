@@ -616,7 +616,7 @@ unittest
 	dmlEngine.addObjectBindingType!(ListView1, "ListView1");
 	dmlEngine.addObjectBindingType!(ListView1Component, "ListView1Component");
 
-	/+// Test basic item
+	// Test basic item
 	string lua1 = q"(
 		Item {
 			id = "item1"
@@ -2317,7 +2317,7 @@ unittest
 		assert((cast(ListView1Component)(listView3.children[2])).name == "item31View");
 		assert((cast(ListView1Component)(listView3.children[3])).name == "item32View");
 		assert(listView3.currentIndex == 2);
-	}+/
+	}
 
 	// Simulate a ListView, test model item binding
 	{
@@ -2333,9 +2333,8 @@ unittest
 				end,
 				mydelegate = function(modelItem)
 					return ListView1Component {
-						mymodelItem = modelItem,
 						name = function()
-							return mymodelItem.name.."View"
+							return modelItem.name.."View"
 						end
 					}
 				end,

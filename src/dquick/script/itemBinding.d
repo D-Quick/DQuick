@@ -7,6 +7,7 @@ import std.stdio;
 import std.signals;
 public import std.conv;
 public import derelict.lua.lua;
+public import std.c.string;
 
 import dquick.item.declarativeItem;
 import dquick.script.nativePropertyBinding;
@@ -55,6 +56,8 @@ static string	BASE_ITEM_BINDING()
 				}
 				local __itemBinding_env_mt = {
 					__index = function (_, n)
+						--for key,value in pairs(_) do print(key,value) end
+						--print("n = "..n)
 						if n == "this" then
 							return rawget(_, n)
 						else 
@@ -216,12 +219,16 @@ static string	BASE_ITEM_BINDING()
 								if (lua_isfunction(L, -1))
 								{
 									// Set _ENV upvalue
-									if (lua_getupvalue(L, -1, 1) != null)
+									const char*	upvalue = lua_getupvalue(L, -1, 1);
+									if (upvalue != null)
 									{
 										lua_pop(L, 1);
-										lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
-										lua_upvaluejoin(L, -2, 1, -1, 1);
-										lua_pop(L, 1);
+										if (strcmp(upvalue, "_ENV") == 0)
+										{					
+											lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
+											lua_upvaluejoin(L, -2, 1, -1, 1);
+											lua_pop(L, 1);
+										}
 									}
 
 									__traits(getMember, this, member).slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -255,12 +262,16 @@ static string	BASE_ITEM_BINDING()
 									virtualProperty = *virtualPropertyPtr;
 								}
 								// Set _ENV upvalue
-								if (lua_getupvalue(L, -1, 1) != null)
+								const char*	upvalue = lua_getupvalue(L, -1, 1);
+								if (upvalue != null)
 								{
 									lua_pop(L, 1);
-									lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
-									lua_upvaluejoin(L, -2, 1, -1, 1);
-									lua_pop(L, 1);
+									if (strcmp(upvalue, "_ENV") == 0)
+									{					
+										lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
+										lua_upvaluejoin(L, -2, 1, -1, 1);
+										lua_pop(L, 1);
+									}
 								}
 
 								virtualProperty.slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
