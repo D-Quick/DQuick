@@ -59,7 +59,7 @@ Global
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		BaseDirectory = src
-		StartupItem = projects\Minesweeper-MonoD.dproj
+		StartupItem = projects\DQuick-MonoD.dproj
 		outputpath = build\bin
 	EndGlobalSection
 EndGlobal

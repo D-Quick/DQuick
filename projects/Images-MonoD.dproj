@@ -18,9 +18,9 @@
     </DependentProjectIds>
     <Includes>
       <Includes>
-        <Path>..\src</Path>
-        <Path>..\src\dquick\etc\derelict\import</Path>
-        <Path>..\src\dquick\etc\gl3n</Path>
+        <Path>../src</Path>
+        <Path>../src/dquick/etc/derelict/import</Path>
+        <Path>../src/dquick/etc/gl3n</Path>
       </Includes>
     </Includes>
   </PropertyGroup>

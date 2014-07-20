@@ -12,8 +12,8 @@
     <IncrementalLinking>true</IncrementalLinking>
     <Includes>
       <Includes>
-        <Path>..\src\dquick\etc\derelict\import</Path>
-        <Path>..\src\dquick\etc\gl3n</Path>
+        <Path>../src/dquick/etc/derelict/import</Path>
+        <Path>../src/dquick/etc/gl3n</Path>
       </Includes>
     </Includes>
   </PropertyGroup>
