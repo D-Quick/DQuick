@@ -50,7 +50,7 @@ version(unittest)
 		mixin Signal!(string) onNameChanged;
 		string mName;
 	}
-	class ListView1Component : dquick.script.iItemBinding.IItemBinding
+	class ListView1Component : DeclarativeItem, dquick.script.iItemBinding.IItemBinding
 	{
 		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 
@@ -62,9 +62,8 @@ version(unittest)
 
 		// ID
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1Component, "id")	idProperty;
-		string	id() { return mId; }
-		void	id(string value) { mId = value; }
-		string	mId;
+		override string	id() { return DeclarativeItem.id(); }
+		override void	id(string value) { return DeclarativeItem.id(value); }
 
 		// Name
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1Component, "name")	nameProperty;
@@ -83,7 +82,7 @@ version(unittest)
 		mixin Signal!(string) onNameChanged;
 		string mName;
 	}
-	class ListView1 : dquick.script.iItemBinding.IItemBinding
+	class ListView1 : dquick.item.declarativeItem.DeclarativeItem, dquick.script.iItemBinding.IItemBinding
 	{
 		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 
@@ -97,9 +96,8 @@ version(unittest)
 
 		// ID
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1, "id")	idProperty;
-		string	id() { return mId; }
-		void	id(string value) { mId = value; }
-		string	mId;
+		override string	id() { return DeclarativeItem.id(); }
+		override void	id(string value) { return DeclarativeItem.id(value); }
 
 		// Model
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(LuaValue, ListView1, "model")	modelProperty;
@@ -112,6 +110,7 @@ version(unittest)
 
 				mModel = value;
 
+				int top00 = lua_gettop(dmlEngine.luaState);
 				// Get model userdata on the stack with the ref
 				lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, mModel.valueRef);
 
@@ -121,7 +120,9 @@ version(unittest)
 				dquick.script.utils.valueFromLua(dmlEngine.luaState, -1, modelItems);
 
 				// Regenerate children
-				children = [];
+				auto childrenCopy = children;
+				foreach (DeclarativeItem child; childrenCopy)
+					removeChild(child);
 				foreach (int i, Object modelItem; modelItems)
 				{
 					// Get object ref
@@ -132,10 +133,13 @@ version(unittest)
 					lua_pop(dmlEngine.luaState, 1);
 
 					// Call the user delegate that create a child from a model object
-					children ~= itemDelegate()(objectRef);
+					addChild(itemDelegate()(objectRef));
 
 					luaL_unref(dmlEngine.luaState, LUA_REGISTRYINDEX, objectRef.valueRef);
 				}
+
+				// Pop the userdata model
+				lua_pop(dmlEngine.luaState, 1);
 
 				// Calculate new currentIndex
 				int	newCurrentIndex = -1;
@@ -198,9 +202,6 @@ version(unittest)
 		mixin Signal!(int) onCurrentIndexChanged;
 		int		mCurrentIndex = -1;
 
-		// Children
-		ListView1Component[]		children;
-
 	protected:
 		Object[]	modelItems;
 	}
@@ -214,11 +215,13 @@ version(unittest)
 			arrayProperty = new typeof(arrayProperty)(this, this);
 		}
 
+		// Id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, Model1, "id")	idProperty;
 		string	id() { return mId; }
 		void	id(string value) { mId = value; }
 		string	mId;
 
+		// Array
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(ListView1ModelItem[], Model1, "array")	arrayProperty;
 		void	array(ListView1ModelItem[] value)
 		{

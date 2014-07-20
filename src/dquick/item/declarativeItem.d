@@ -50,12 +50,16 @@ public:
 			if (mChildren[i] is item)
 			{
 				mChildren[i].mParent = null;
-				mChildren[i].destroy();
 				mChildren = mChildren[0..i] ~ mChildren[i+1..$];
 			}
 			else
 				++i;
 		}
+	}
+
+	DeclarativeItem[]	children()
+	{
+		return mChildren;
 	}
 
 	void	paint(bool transformationUpdated)
