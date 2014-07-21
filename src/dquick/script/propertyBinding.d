@@ -238,13 +238,20 @@ class PropertyBinding
 				}
 			}
 
+			int oldLuaReference = luaReference;
 			luaReference = luaL_ref(L, LUA_REGISTRYINDEX);
+			if (oldLuaReference != -1) // Bug in lua
+				luaL_unref(L, LUA_REGISTRYINDEX, oldLuaReference);
 			dirty = true;
 			executeBinding();
 		}
 		else // Binding is just a value
 		{
-			luaReference = -1;
+			if (luaReference != -1)
+			{
+				luaL_unref(L, LUA_REGISTRYINDEX, luaReference);
+				luaReference = -1;
+			}
 			valueFromLua(L, index);
 		}
 	}

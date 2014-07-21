@@ -155,7 +155,6 @@ version(unittest)
 						}
 					}
 				}
-				writefln("newCurrentIndex = %d", newCurrentIndex);
 				currentIndex = newCurrentIndex;
 
 				onModelChanged.emit(value);
