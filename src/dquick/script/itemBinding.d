@@ -127,7 +127,7 @@ static string	BASE_ITEM_BINDING()
 			{
 				static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 				{
-					assert(__traits(getMember, this, member) !is null);
+					assert(__traits(getMember, this, member) !is null, format("[%s].%s is null", id, member));
 					__traits(getMember, this, member).executeBinding();
 				}
 			}

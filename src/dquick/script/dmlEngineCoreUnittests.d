@@ -256,11 +256,13 @@ version(unittest)
 			modelProperty = new typeof(modelProperty)(this, this);
 		}
 
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, DSubItem, "id")	idProperty;
 		string	id() { return mId; }
 		void	id(string value) { mId = value; }
 		string	mId;
 
+		// nativeProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, DSubItem, "nativeProperty")	nativePropertyProperty;
 		void	nativeProperty(int value)
 		{
@@ -277,6 +279,7 @@ version(unittest)
 		mixin Signal!(int) onNativePropertyChanged;
 		int		mNativeProperty;
 
+		// model
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int[], DSubItem, "model")	modelProperty;
 		void	model(int[] value)
 		{
@@ -304,11 +307,13 @@ version(unittest)
 			subItemProperty = new typeof(subItemProperty)(this, this);
 		}
 
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, DItem, "id")	idProperty;
 		string	id() { return mId; }
 		void	id(string value) { mId = value; }
 		string	mId;
 
+		// nativeProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, DItem, "nativeProperty")	nativePropertyProperty;
 		int		nativePropertyBinding()
 		{
@@ -332,6 +337,7 @@ version(unittest)
 		mixin Signal!(int) onNativePropertyChanged;
 		int		mNativeProperty;
 
+		// subItem
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(DSubItem, DItem, "subItem")	subItemProperty;
 		void	subItem(DSubItem value)
 		{
@@ -359,11 +365,13 @@ version(unittest)
 			readOnlyPropertyProperty = new typeof(readOnlyPropertyProperty)(this, this);
 		}
 
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SimpleItem, "id")	idProperty;
 		string	id() { return mId; }
 		void	id(string value) { mId = value; }
 		string	mId;
 
+		// readOnlyProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SimpleItem, "readOnlyProperty")	readOnlyPropertyProperty;
 		string	readOnlyProperty() { return "readOnlyProperty"; }
 	}
@@ -381,10 +389,18 @@ version(unittest)
 			nativePropertyProperty = new typeof(nativePropertyProperty)(this, this);
 		}
 
+		this(int nativeProperty)
+		{
+			this();
+			this.nativeProperty = nativeProperty;
+		}
+
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SubItem, "id")	idProperty;
 		override string	id() { return DeclarativeItem.id(); }
 		override void	id(string value) { return DeclarativeItem.id(value); }
 
+		// nativeProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, SubItem, "nativeProperty")	nativePropertyProperty;
 		void	nativeProperty(int value)
 		{
@@ -416,13 +432,16 @@ version(unittest)
 			nativePropertyDoubleArrayProperty = new typeof(nativePropertyDoubleArrayProperty)(this, this);
 			nativePropertyStaticDoubleArrayProperty = new typeof(nativePropertyStaticDoubleArrayProperty)(this, this);
 			nativePropertyDoubleMapProperty = new typeof(nativePropertyDoubleMapProperty)(this, this);
+			nativeObjectPropertyArrayProperty = new typeof(nativeObjectPropertyArrayProperty)(this, this);
 			delegatePropertyProperty = new typeof(delegatePropertyProperty)(this, this);
 		}
 
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, Item, "id")	idProperty;
 		override string	id() { return DeclarativeItem.id(); }
 		override void	id(string value) { return DeclarativeItem.id(value); }
 
+		// nativeProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, Item, "nativeProperty")	nativePropertyProperty;
 		void	nativeProperty(int value)
 		{
@@ -439,6 +458,7 @@ version(unittest)
 		mixin Signal!(int) onNativePropertyChanged;
 		int		mNativeProperty;
 
+		// nativeTotalProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, Item, "nativeTotalProperty")	nativeTotalPropertyProperty;
 		void	nativeTotalProperty(int value)
 		{
@@ -455,6 +475,7 @@ version(unittest)
 		mixin Signal!(int) onNativeTotalPropertyChanged;
 		int		mNativeTotalProperty;
 
+		// nativeEnumProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(Enum, Item, "nativeEnumProperty")	nativeEnumPropertyProperty;
 		enum Enum
 		{
@@ -477,15 +498,18 @@ version(unittest)
 		mixin Signal!(Enum) onNativeEnumPropertyChanged;
 		Enum		mNativeEnumProperty;
 
+		// testNormalMethod
 		int	testNormalMethod(int a, int b)
 		{
 			return a + b + nativeProperty;
 		}
+		// testNormalMethod2
 		int	testNormalMethod2(Item a, Interface b)
 		{
 			return a.nativeProperty + b.nativeProperty + nativeProperty;
 		}
 
+		// nativeSubItem
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(SubItem, Item, "nativeSubItem")	nativeSubItemProperty;
 		void	nativeSubItem(SubItem value)
 		{
@@ -502,6 +526,7 @@ version(unittest)
 		mixin Signal!(SubItem) onNativeSubItemChanged;
 		SubItem		mNativeSubItem;
 
+		// nativePropertyArray
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int[], Item, "nativePropertyArray")	nativePropertyArrayProperty;
 		void	nativePropertyArray(int[] value)
 		{
@@ -518,6 +543,7 @@ version(unittest)
 		mixin Signal!(int[]) onNativePropertyArrayChanged;
 		int[]		mNativePropertyArray;
 
+		// nativePropertyDoubleArray
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string[][], Item, "nativePropertyDoubleArray")	nativePropertyDoubleArrayProperty;
 		void	nativePropertyDoubleArray(string[][] value)
 		{
@@ -534,6 +560,7 @@ version(unittest)
 		mixin Signal!(string[][]) onNativePropertyDoubleArrayChanged;
 		string[][]		mNativePropertyDoubleArray;
 
+		// nativePropertyStaticDoubleArray
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(Enum[3][2], Item, "nativePropertyStaticDoubleArray")	nativePropertyStaticDoubleArrayProperty;
 		void	nativePropertyStaticDoubleArray(Enum[3][2] value)
 		{
@@ -550,6 +577,7 @@ version(unittest)
 		mixin Signal!(Enum[3][2]) onNativePropertyStaticDoubleArrayChanged;
 		Enum[3][2]		mNativePropertyStaticDoubleArray;
 
+		// nativePropertyDoubleMap
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(float[int][string], Item, "nativePropertyDoubleMap")	nativePropertyDoubleMapProperty;
 		void	nativePropertyDoubleMap(float[int][string] value)
 		{
@@ -566,8 +594,9 @@ version(unittest)
 		mixin Signal!(float[int][string]) onNativePropertyDoubleMapChanged;
 		float[int][string]		mNativePropertyDoubleMap;
 
-		/*dquick.script.nativePropertyBinding.NativePropertyBinding!(Object[], Item, "nativeObjectPropertyArray")	nativeObjectPropertyArrayProperty;
-		void	nativeObjectPropertyArray(Object[] value)
+		// nativeObjectPropertyArray
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(SubItem[], Item, "nativeObjectPropertyArray")	nativeObjectPropertyArrayProperty;
+		void	nativeObjectPropertyArray(SubItem[] value)
 		{
 			if (mNativeObjectPropertyArray != value)
 			{
@@ -575,13 +604,14 @@ version(unittest)
 				onNativeObjectPropertyArrayChanged.emit(value);
 			}
 		}
-		Object[]		nativeObjectPropertyArray()
+		SubItem[]		nativeObjectPropertyArray()
 		{
 			return mNativeObjectPropertyArray;
 		}
-		mixin Signal!(Object[]) onNativeObjectPropertyArrayChanged;
-		Object[]		mNativeObjectPropertyArray;*/
+		mixin Signal!(SubItem[]) onNativeObjectPropertyArrayChanged;
+		SubItem[]		mNativeObjectPropertyArray;
 
+		// delegateProperty
 		dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(int delegate(int), Item, "delegateProperty")	delegatePropertyProperty;
 		void	delegateProperty(int delegate(int) value)
 		{
@@ -599,11 +629,13 @@ version(unittest)
 		int delegate(int) mDelegateProperty;
 	}
 
+	// testSumFunctionBinding
 	int	testSumFunctionBinding(int a, int b)
 	{
 		return a + b;
 	}
 
+	// testSumFunctionBinding2
 	int	testSumFunctionBinding2(Item a, Interface b)
 	{
 		return a.nativeProperty + b.nativeProperty;
@@ -809,7 +841,7 @@ unittest
 	)";
 	dmlEngine.execute(lua7_2, "");
 
-	/+// Test simple property alias (parent to child)
+	// Test simple property alias (parent to child)
 	string lua8 = q"(
 		Item {
 			id = "item12",
@@ -825,7 +857,7 @@ unittest
 		item12.nativePropertyAlias = 200
 	)";
 	dmlEngine.execute(lua8, "");
-	assert(dmlEngine.getLuaGlobal!Item("item13").nativeProperty == 200);+/
+	assert(dmlEngine.getLuaGlobal!Item("item13").nativeProperty == 200);
 
 	// Test 2 ways property alias (parent to child and parent to child, usefull for buttons that can be checked from qml or mouse input)
 	string lua9 = q"(
@@ -2132,16 +2164,42 @@ unittest
 	// Simple Objects array from D to lua to D
 	{
 		Item	array14 = new Item;
-		//array14.nativeObjectPropertyArray([new Object, new Object, new Object]);
+		array14.id = "array14";
+		array14.nativeObjectPropertyArray([new SubItem(0), new SubItem(1), new SubItem(2)]);
 		dmlEngine.addObjectBinding(array14, "array14");
-		/*string lua = q"(
+		string lua = q"(
 			Item {
 				id = "array15",
-				nativeObjectPropertyArray = array14.nativeObjectPropertyArray
+				nativeObjectPropertyArray = function()
+					return array14.nativeObjectPropertyArray
+				end,
+				object0 = function()
+					return nativeObjectPropertyArray[0]
+				end,
+				object2 = function()
+					return nativeObjectPropertyArray[2]
+				end,
+				nativeProperty = function()
+					return object0.nativeProperty
+				end,
+				nativeTotalProperty = function()
+					return object2.nativeProperty
+				end
 			}
 		)";
 		dmlEngine.execute(lua, "Simple Objects array from D to lua to D");
-		assert(dmlEngine.getLuaGlobal!Item("array15").nativeObjectPropertyArray == array14.nativeObjectPropertyArray);*/
+		Item	array15 = dmlEngine.getLuaGlobal!Item("array15");
+		assert(array15);
+		assert(array15.nativeObjectPropertyArray == array14.nativeObjectPropertyArray);
+		assert(array15.nativeProperty == array14.nativeObjectPropertyArray[0].nativeProperty);
+		assert(array15.nativeTotalProperty == array14.nativeObjectPropertyArray[2].nativeProperty);
+		array14.nativeObjectPropertyArray[0].nativeProperty = 10;
+		assert(array15.nativeProperty == array14.nativeObjectPropertyArray[0].nativeProperty);
+		array14.nativeObjectPropertyArray[2].nativeProperty = 100;
+		assert(array15.nativeTotalProperty == array14.nativeObjectPropertyArray[2].nativeProperty);
+		array14.nativeObjectPropertyArray([new SubItem(1000), new SubItem(1001), new SubItem(1002)]);
+		assert(array15.nativeProperty == array14.nativeObjectPropertyArray[0].nativeProperty);
+		assert(array15.nativeTotalProperty == array14.nativeObjectPropertyArray[2].nativeProperty);
 	}
 
 	// Delegate

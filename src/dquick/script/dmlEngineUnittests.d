@@ -62,6 +62,7 @@ version(unittest)
 		void	id(string value) { mId = value; }
 		string	mId;
 
+		// readOnlyProperty
 		string	readOnlyProperty() { return "readOnlyProperty"; }
 	}
 	interface Interface
@@ -70,6 +71,16 @@ version(unittest)
 	}
 	class SubItem : DeclarativeItem
 	{
+		this()
+		{
+		}
+
+		this(int nativeProperty)
+		{
+			this.nativeProperty = nativeProperty;
+		}
+
+		// nativeProperty
 		void	nativeProperty(int value)
 		{
 			if (mNativeProperty != value)
@@ -91,6 +102,7 @@ version(unittest)
 		{
 		}
 
+		// nativeProperty
 		void	nativeProperty(int value)
 		{
 			if (mNativeProperty != value)
@@ -106,6 +118,7 @@ version(unittest)
 		mixin Signal!(int) onNativePropertyChanged;
 		int		mNativeProperty;
 
+		// nativeTotalProperty
 		void	nativeTotalProperty(int value)
 		{
 			if (mNativeTotalProperty != value)
@@ -121,6 +134,7 @@ version(unittest)
 		mixin Signal!(int) onNativeTotalPropertyChanged;
 		int		mNativeTotalProperty;
 
+		// nativeEnumProperty
 		enum Enum
 		{
 			enumVal1,
@@ -142,15 +156,18 @@ version(unittest)
 		mixin Signal!(Enum) onNativeEnumPropertyChanged;
 		Enum		mNativeEnumProperty;
 
+		// testNormalMethod
 		int	testNormalMethod(int a, int b)
 		{
 			return a + b + nativeProperty;
 		}
+		// testNormalMethod2
 		int	testNormalMethod2(Item a, Interface b)
 		{
 			return a.nativeProperty + b.nativeProperty + nativeProperty;
 		}
 
+		// nativeSubItem
 		void	nativeSubItem(SubItem value)
 		{
 			if (mNativeSubItem != value)
@@ -166,6 +183,7 @@ version(unittest)
 		mixin Signal!(SubItem) onNativeSubItemChanged;
 		SubItem		mNativeSubItem;
 
+		// nativePropertyArray
 		void	nativePropertyArray(int[] value)
 		{
 			if (mNativePropertyArray != value)
@@ -181,6 +199,7 @@ version(unittest)
 		mixin Signal!(int[]) onNativePropertyArrayChanged;
 		int[]		mNativePropertyArray;
 
+		// nativePropertyDoubleArray
 		void	nativePropertyDoubleArray(string[][] value)
 		{
 			if (mNativePropertyDoubleArray != value)
@@ -196,6 +215,7 @@ version(unittest)
 		mixin Signal!(string[][]) onNativePropertyDoubleArrayChanged;
 		string[][]		mNativePropertyDoubleArray;
 
+		// nativePropertyStaticDoubleArray
 		void	nativePropertyStaticDoubleArray(Enum[3][2] value)
 		{
 			if (mNativePropertyStaticDoubleArray != value)
@@ -211,6 +231,7 @@ version(unittest)
 		mixin Signal!(Enum[3][2]) onNativePropertyStaticDoubleArrayChanged;
 		Enum[3][2]		mNativePropertyStaticDoubleArray;
 
+		// nativePropertyDoubleMap
 		void	nativePropertyDoubleMap(float[int][string] value)
 		{
 			if (mNativePropertyDoubleMap != value)
@@ -226,6 +247,23 @@ version(unittest)
 		mixin Signal!(float[int][string]) onNativePropertyDoubleMapChanged;
 		float[int][string]		mNativePropertyDoubleMap;
 
+		// nativeObjectPropertyArray
+		void	nativeObjectPropertyArray(SubItem[] value)
+		{
+			if (mNativeObjectPropertyArray != value)
+			{
+				mNativeObjectPropertyArray = value;
+				onNativeObjectPropertyArrayChanged.emit(value);
+			}
+		}
+		SubItem[]		nativeObjectPropertyArray()
+		{
+			return mNativeObjectPropertyArray;
+		}
+		mixin Signal!(SubItem[]) onNativeObjectPropertyArrayChanged;
+		SubItem[]		mNativeObjectPropertyArray;
+
+		// delegateProperty
 		void	delegateProperty(int delegate(int) value)
 		{
 			if (mDelegateProperty != value)
@@ -242,11 +280,13 @@ version(unittest)
 		int delegate(int) mDelegateProperty;
 	}
 
+	// testSumFunctionBinding
 	int	testSumFunctionBinding(int a, int b)
 	{
 		return a + b;
 	}
 
+	// testSumFunctionBinding2
 	int	testSumFunctionBinding2(Item a, Interface b)
 	{
 		return a.nativeProperty + b.nativeProperty;
@@ -1756,6 +1796,47 @@ unittest
 	{
 		auto m = mismatch(e.msg, "the key value 0 is out of bound\n\t[D] in function __newindex\n\t[string \"Array error 6\"]:8");
 		assert(m[0] == "" && m[1] == "");
+	}
+
+	// Simple Objects array from D to lua to D
+	{
+		Item	array14 = new Item;
+		array14.id = "array14";
+		array14.nativeObjectPropertyArray([new SubItem(0), new SubItem(1), new SubItem(2)]);
+		dmlEngine.addObject(array14, "array14");
+		string lua = q"(
+			Item {
+				id = "array15",
+				nativeObjectPropertyArray = function()
+					return array14.nativeObjectPropertyArray
+				end,
+				object0 = function()
+					return nativeObjectPropertyArray[0]
+				end,
+				object2 = function()
+					return nativeObjectPropertyArray[2]
+				end,
+				nativeProperty = function()
+					return object0.nativeProperty
+				end,
+				nativeTotalProperty = function()
+					return object2.nativeProperty
+				end
+			}
+		)";
+		dmlEngine.execute(lua, "Simple Objects array from D to lua to D");
+		Item	array15 = dmlEngine.getLuaGlobal!Item("array15");
+		assert(array15);
+		assert(array15.nativeObjectPropertyArray == array14.nativeObjectPropertyArray);
+		assert(array15.nativeProperty == array14.nativeObjectPropertyArray[0].nativeProperty);
+		assert(array15.nativeTotalProperty == array14.nativeObjectPropertyArray[2].nativeProperty);
+		array14.nativeObjectPropertyArray[0].nativeProperty = 10;
+		assert(array15.nativeProperty == array14.nativeObjectPropertyArray[0].nativeProperty);
+		array14.nativeObjectPropertyArray[2].nativeProperty = 100;
+		assert(array15.nativeTotalProperty == array14.nativeObjectPropertyArray[2].nativeProperty);
+		array14.nativeObjectPropertyArray([new SubItem(1000), new SubItem(1001), new SubItem(1002)]);
+		assert(array15.nativeProperty == array14.nativeObjectPropertyArray[0].nativeProperty);
+		assert(array15.nativeTotalProperty == array14.nativeObjectPropertyArray[2].nativeProperty);
 	}
 
 	// Delegate

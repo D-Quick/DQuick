@@ -228,7 +228,7 @@ public:
 		lua_setglobal(luaState, name.toStringz());
 	}
 
-	static immutable bool showDebug = 1;
+	static immutable bool showDebug = 0;
 
 	int		currentLuaEnv()
 	{
