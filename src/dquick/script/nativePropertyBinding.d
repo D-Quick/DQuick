@@ -122,18 +122,20 @@ class NativePropertyBinding(ValueType, ItemType, string PropertyName) : Property
 			dirty = false;
 
 			// Put this so that onChanged can detect it's a value change from binding or from D
-			itemBinding.dmlEngine.propertyBindingBeeingSet = this;
-			scope(exit) itemBinding.dmlEngine.propertyBindingBeeingSet = null;
-			static if (hasDBinding)
-			{
-				static if (__traits(compiles, __traits(getMember, cast(ItemType)(item), PropertyName)(resultValue)))
-					__traits(getMember, item, PropertyName)(resultValue);
+			{ // This scope is important for the scope(exit)
+				itemBinding.dmlEngine.propertyBindingBeeingSet ~= this;
+				scope(exit) itemBinding.dmlEngine.propertyBindingBeeingSet.length--;
+				static if (hasDBinding)
+				{
+					static if (__traits(compiles, __traits(getMember, cast(ItemType)(item), PropertyName)(resultValue)))
+						__traits(getMember, item, PropertyName)(resultValue);
+					else
+						throw new Exception(format("property \"%s\" is read only", PropertyName));
+				}
 				else
-					throw new Exception(format("property \"%s\" is read only", PropertyName));
-			}
-			else
-			{
-				valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
+				{
+					valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
+				}
 			}
 		}
 	}

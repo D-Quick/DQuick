@@ -236,25 +236,15 @@ public:
 		return mEnvStack[mEnvStack.length - 1];
 	}
 
-	uint	propertyBindingStackSize = 50;
-
-	lua_State*	luaState() { return mLuaState; }
-protected:
-	package void	luaPCall(int paramCount)
+	void	beginTransaction()
 	{
-		assert(isCreated());
-
 		mReentrencyLevel++;
-		scope(exit) mReentrencyLevel--;
+	}
 
-		if (lua_pcall(luaState, paramCount, LUA_MULTRET, 0) != LUA_OK)
-		{
-			string error = to!(string)(lua_tostring(luaState, -1));
-			lua_pop(luaState, 1);
-			throw new Exception(error);
-		}
-
-		if (mReentrencyLevel == 1) // Call bindings only after the last execute to avoid errors in bindings due to partial creation
+	void	endTransaction()
+	{
+		mReentrencyLevel--;
+		if (mReentrencyLevel == 0) // Call bindings only after the last execute to avoid errors in bindings due to partial creation
 		{
 			static if (showDebug)
 				writeln("execute: INIT ==================================================================================================");
@@ -282,13 +272,32 @@ protected:
 		}
 	}
 
+	uint	propertyBindingStackSize = 50;
+
+	lua_State*	luaState() { return mLuaState; }
+protected:
+	package void	luaPCall(int paramCount)
+	{
+		assert(isCreated());
+
+		beginTransaction();
+		scope(exit) endTransaction();
+
+		if (lua_pcall(luaState, paramCount, LUA_MULTRET, 0) != LUA_OK)
+		{
+			string error = to!(string)(lua_tostring(luaState, -1));
+			lua_pop(luaState, 1);
+			throw new Exception(error);
+		}
+	}
+
 	dquick.script.iItemBinding.IItemBinding[]		mItems;
 	int												mInitializedItemCount;
 	dquick.script.iItemBinding.IItemBinding			mLastItemBindingCreated;
 	
 	package lua_State*	mLuaState;
 	package dquick.script.propertyBinding.PropertyBinding[]		currentlyExecutedBindingStack;
-	package dquick.script.propertyBinding.PropertyBinding		propertyBindingBeeingSet;
+	package dquick.script.propertyBinding.PropertyBinding[]		propertyBindingBeeingSet;
 	string		itemTypeIds;
 	package int	mReentrencyLevel;
 	int[string]	mComponentLuaReferences;
@@ -334,7 +343,7 @@ extern(C)
 			dmlEngine.addObjectBinding!T(itemBinding);
 
 			lua_remove(L, 1);
-			itemBinding.valueFromLua(L);
+			itemBinding.valuesFromLuaTable(L);
 
 			dquick.script.utils.valueToLua!T(L, itemBinding);
 
@@ -677,7 +686,7 @@ extern(C)
 				componentId = to!(string)(lua_tostring(L, -1));
 			lua_pop(L, 1);
 
-			iItemBinding.valueFromLua(L);
+			iItemBinding.valuesFromLuaTable(L);
 			iItemBinding.pushToLua(L);
 
 			// Set global from id

@@ -110,7 +110,6 @@ version(unittest)
 
 				mModel = value;
 
-				int top00 = lua_gettop(dmlEngine.luaState);
 				// Get model userdata on the stack with the ref
 				lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, mModel.valueRef);
 
@@ -123,23 +122,30 @@ version(unittest)
 				auto childrenCopy = children;
 				foreach (DeclarativeItem child; childrenCopy)
 					removeChild(child);
-				foreach (int i, Object modelItem; modelItems)
-				{
-					// Get object ref
-					lua_pushinteger(dmlEngine.luaState, i);
-					lua_gettable(dmlEngine.luaState, -2);
-					LuaValue	objectRef;
-					dquick.script.utils.valueFromLua(dmlEngine.luaState, -1, objectRef);
+
+				{ // For the scope(exit)
+					dmlEngine.beginTransaction();
+					scope(exit) dmlEngine.endTransaction();
+
+					foreach (int i, Object modelItem; modelItems)
+					{
+						// Call the user delegate that create a child from a model object
+						ListView1Component	child = itemDelegate()();
+
+						// Get model item and set it as "model" property to child
+						lua_pushinteger(dmlEngine.luaState, i); // Push model table index
+						lua_gettable(dmlEngine.luaState, -2); // Index the model table
+						lua_pushstring(dmlEngine.luaState, "model"); // Push key
+						lua_insert(dmlEngine.luaState, -2); // Move key before value
+						child.valueFromLua(dmlEngine.luaState); // Set it as property
+						lua_pop(dmlEngine.luaState, 2);
+
+						addChild(child);
+					}
+
+					// Pop the userdata model
 					lua_pop(dmlEngine.luaState, 1);
-
-					// Call the user delegate that create a child from a model object
-					addChild(itemDelegate()(objectRef));
-
-					luaL_unref(dmlEngine.luaState, LUA_REGISTRYINDEX, objectRef.valueRef);
 				}
-
-				// Pop the userdata model
-				lua_pop(dmlEngine.luaState, 1);
 
 				// Calculate new currentIndex
 				int	newCurrentIndex = -1;
@@ -168,8 +174,8 @@ version(unittest)
 		LuaValue		mModel;
 
 		// Delegate
-		dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(ListView1Component delegate(LuaValue modeItem), ListView1, "itemDelegate")	itemDelegateProperty;
-		void	itemDelegate(ListView1Component delegate(LuaValue modeItem) value)
+		dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(ListView1Component delegate(), ListView1, "itemDelegate")	itemDelegateProperty;
+		void	itemDelegate(ListView1Component delegate() value)
 		{
 			if (mItemDelegate != value)
 			{
@@ -177,12 +183,12 @@ version(unittest)
 				onItemDelegateChanged.emit(value);
 			}
 		}
-		ListView1Component delegate(LuaValue modeItem)		itemDelegate()
+		ListView1Component delegate()		itemDelegate()
 		{
 			return mItemDelegate;
 		}
-		mixin Signal!(ListView1Component delegate(LuaValue modeItem)) onItemDelegateChanged;
-		ListView1Component delegate(LuaValue modeItem) mItemDelegate;
+		mixin Signal!(ListView1Component delegate()) onItemDelegateChanged;
+		ListView1Component delegate() mItemDelegate;
 
 		// currentIndex
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, ListView1, "currentIndex")	currentIndexProperty;
@@ -2238,9 +2244,11 @@ unittest
 				model = function()
 					return listViewModel1.array
 				end,
-				itemDelegate = function(modelItem)
+				itemDelegate = function()
 					return ListView1Component {
-						name = modelItem.name.."View"
+						name = function()
+							return model.name.."View"
+						end
 					}
 				end,
 			}
@@ -2265,9 +2273,11 @@ unittest
 				model = function()
 					return listViewModel2.array
 				end,
-				itemDelegate = function(modelItem)
+				itemDelegate = function()
 					return ListView1Component {
-						name = modelItem.name.."View"
+						name = function()
+							return model.name.."View"
+						end
 					}
 				end,
 			}
@@ -2293,9 +2303,11 @@ unittest
 				model = function()
 					return listViewModel3.array
 				end,
-				itemDelegate = function(modelItem)
+				itemDelegate = function()
 					return ListView1Component {
-						name = modelItem.name.."View"
+						name = function()
+							return model.name.."View"
+						end
 					}
 				end,
 				currentIndex = 1,
@@ -2333,10 +2345,10 @@ unittest
 				model = function()
 					return listViewModel4.array
 				end,
-				itemDelegate = function(modelItem)
+				itemDelegate = function()
 					return ListView1Component {
 						name = function()
-							return modelItem.name.."View"
+							return model.name.."View"
 						end
 					}
 				end,

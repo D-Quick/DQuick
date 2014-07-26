@@ -1824,9 +1824,11 @@ unittest
 				model = function()
 					return listViewModel1.array
 				end,
-				itemDelegate = function(modelItem)
+				itemDelegate = function()
 					return ListView1Component {
-						name = listViewModel1.array[0].name.."View"
+						name = function()
+							return model.name.."View"
+						end
 					}
 				end,
 			}
@@ -1836,8 +1838,8 @@ unittest
 		assert(listView1);
 		assert(listView1.children.length == 3);
 		assert((cast(ListView1Component)(listView1.children[0])).name == "item0View");
-		assert((cast(ListView1Component)(listView1.children[1])).name == "item0View");
-		assert((cast(ListView1Component)(listView1.children[2])).name == "item0View");
+		assert((cast(ListView1Component)(listView1.children[1])).name == "item1View");
+		assert((cast(ListView1Component)(listView1.children[2])).name == "item2View");
 	}
 
 	// Simulate a ListView, test model binding
@@ -1851,9 +1853,11 @@ unittest
 				model = function()
 					return listViewModel2.array
 				end,
-				itemDelegate = function(modelItem)
+				itemDelegate = function()
 					return ListView1Component {
-						name = modelItem.name.."View"
+						name = function()
+							return model.name.."View"
+						end
 					}
 				end,
 			}
@@ -1879,9 +1883,11 @@ unittest
 				model = function()
 					return listViewModel3.array
 				end,
-				itemDelegate = function(modelItem)
+				itemDelegate = function()
 					return ListView1Component {
-						name = modelItem.name.."View"
+						name = function()
+							return model.name.."View"
+						end
 					}
 				end,
 				currentIndex = 1,
@@ -1919,10 +1925,10 @@ unittest
 				model = function()
 					return listViewModel4.array
 				end,
-				itemDelegate = function(modelItem)
+				itemDelegate = function()
 					return ListView1Component {
 						name = function()
-							return modelItem.name.."View"
+							return model.name.."View"
 						end
 					}
 				end,

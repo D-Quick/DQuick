@@ -146,9 +146,11 @@ class PropertyBinding
 			dirty = false;
 
 			// Put this so that onChanged can detect it's a value change from binding or from D
-			itemBinding.dmlEngine.propertyBindingBeeingSet = this;
-			valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
-			itemBinding.dmlEngine.propertyBindingBeeingSet = null;
+			{ // This scope is important for the scope(exit)
+				itemBinding.dmlEngine.propertyBindingBeeingSet ~= this;
+				scope(exit) itemBinding.dmlEngine.propertyBindingBeeingSet.length--;
+				valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
+			}
 		}
 	}
 
@@ -160,7 +162,7 @@ class PropertyBinding
 		if (itemBinding.creating == false) // No property binding or slot call while the item is in creation
 		{
 			// Detect assignment from D that compete with his binding
-			if (itemBinding.dmlEngine.propertyBindingBeeingSet !is this && luaReference != -1)
+			if ((itemBinding.dmlEngine.propertyBindingBeeingSet.length == 0 || itemBinding.dmlEngine.propertyBindingBeeingSet[$ - 1] !is this) && luaReference != -1)
 			{
 				dirty = true;
 				executeBinding();
