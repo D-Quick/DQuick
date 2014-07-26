@@ -5,6 +5,7 @@ import derelict.lua.lua;
 import dquick.script.propertyBinding;
 import dquick.script.utils;
 import dquick.script.itemBinding;
+import dquick.script.dmlEngine;
 
 import std.conv;
 import std.file, std.stdio;
@@ -32,7 +33,7 @@ public:
 	{
 		destroy();
 
-		luaState = luaL_newstate();
+		mLuaState = luaL_newstate();
 		luaL_openlibs(luaState);
 		lua_atpanic(luaState, cast(lua_CFunction)&luaPanicFunction);
 		mReentrencyLevel = 0;
@@ -62,7 +63,7 @@ public:
 		if (luaState)
 		{
 			lua_close(luaState);
-			luaState = null;
+			mLuaState = null;
 		}
 	}
 
@@ -181,68 +182,30 @@ public:
 	{
 		assert(isCreated());
 
-		mReentrencyLevel++;
-		scope(exit) mReentrencyLevel--;
-
 		// Save _ENV
-		if (lua_getupvalue(luaState, -1, 1) == null)
+		const char*	upvalue = lua_getupvalue(luaState, -1, 1);
+		if (upvalue == null)
 			throw new Exception("no _ENV upvalue");
+		if (strcmp(upvalue, "_ENV") != 0)
+		{
+			lua_pop(luaState, 1);
+			throw new Exception("no _ENV upvalue");
+		}
 		mEnvStack ~= luaL_ref(luaState, LUA_REGISTRYINDEX);
 
 		static if (showDebug)
 			writeln("execute: CREATE ==================================================================================================");
 
-		if (lua_pcall(luaState, 0, LUA_MULTRET, 0) != LUA_OK)
-		{
-			string error = to!(string)(lua_tostring(luaState, -1));
-			lua_pop(luaState, 1);
-			throw new Exception(error);
-		}
+		luaPCall(0);
 
 		luaL_unref(luaState, LUA_REGISTRYINDEX, mEnvStack[mEnvStack.length - 1]);
 		mEnvStack.length--;
-
-		if (mReentrencyLevel == 1) // Call bindings only after the last execute to avoid errors in bindings due to partial creation
-		{
-			static if (showDebug)
-				writeln("execute: INIT ==================================================================================================");
-			{
-				size_t index = mInitializedItemCount; // Begin at mInitializedItemCount to avoid calling already initialized objects
-				// Increment before in case executeBindings throws an exception:
-				// The current execute will be invalid but the dmlEngine must stay fully usable
-				mInitializedItemCount = mItems.length;
-				while (index < mItems.length) 
-				{
-					mItems[index].executeBindings();
-					index++;
-				}
-			}
-
-			static if (showDebug)
-			{
-				writeln("execute: DEPENDANCY TREE ==================================================================================================");
-				for (size_t index = 0; index < mItems.length; index++)
-					writefln("%s\n%s", mItems[index].id, shiftRight(mItems[index].displayDependencies(), "\t", 1));
-				writeln("=======================================================================================================");
-			}
-		}
 	}
 
 	void	execute(string text, string filePath)
 	{
 		load(text, filePath);
 		execute();
-	}
-
-	void	execute(int functionRef)
-	{
-		lua_rawgeti(luaState, LUA_REGISTRYINDEX, functionRef);
-		if (lua_pcall(luaState, 0, LUA_MULTRET, 0) != LUA_OK)
-		{
-			string error = to!(string)(lua_tostring(luaState, -1));
-			lua_pop(luaState, 1);
-			throw new Exception(error);
-		}
 	}
 
 	T	rootItemBinding(T)()
@@ -273,15 +236,68 @@ public:
 		return mEnvStack[mEnvStack.length - 1];
 	}
 
+	void	beginTransaction()
+	{
+		mReentrencyLevel++;
+	}
+
+	void	endTransaction()
+	{
+		mReentrencyLevel--;
+		if (mReentrencyLevel == 0) // Call bindings only after the last execute to avoid errors in bindings due to partial creation
+		{
+			static if (showDebug)
+				writeln("execute: INIT ==================================================================================================");
+			{
+				size_t index = mInitializedItemCount; // Begin at mInitializedItemCount to avoid calling already initialized objects
+				// Increment before in case executeBindings throws an exception:
+				// The current execute will be invalid but the dmlEngine must stay fully usable
+				mInitializedItemCount = mItems.length;
+				while (index < mItems.length) 
+				{
+					static if (showDebug)
+						writefln("[%s]", mItems[index].id);
+					mItems[index].executeBindings();
+					index++;
+				}
+			}
+
+			static if (showDebug)
+			{
+				writeln("execute: DEPENDANCY TREE ==================================================================================================");
+				for (size_t index = 0; index < mItems.length; index++)
+					writefln("[%s]\n%s", mItems[index].id, shiftRight(mItems[index].displayDependencies(), "\t", 1));
+				writeln("=======================================================================================================");
+			}
+		}
+	}
+
 	uint	propertyBindingStackSize = 50;
+
+	lua_State*	luaState() { return mLuaState; }
 protected:
+	package void	luaPCall(int paramCount)
+	{
+		assert(isCreated());
+
+		beginTransaction();
+		scope(exit) endTransaction();
+
+		if (lua_pcall(luaState, paramCount, LUA_MULTRET, 0) != LUA_OK)
+		{
+			string error = to!(string)(lua_tostring(luaState, -1));
+			lua_pop(luaState, 1);
+			throw new Exception(error);
+		}
+	}
+
 	dquick.script.iItemBinding.IItemBinding[]		mItems;
 	int												mInitializedItemCount;
 	dquick.script.iItemBinding.IItemBinding			mLastItemBindingCreated;
 	
-	package lua_State*	luaState;
+	package lua_State*	mLuaState;
 	package dquick.script.propertyBinding.PropertyBinding[]		currentlyExecutedBindingStack;
-	package dquick.script.propertyBinding.PropertyBinding		propertyBindingBeeingSet;
+	package dquick.script.propertyBinding.PropertyBinding[]		propertyBindingBeeingSet;
 	string		itemTypeIds;
 	package int	mReentrencyLevel;
 	int[string]	mComponentLuaReferences;
@@ -327,7 +343,7 @@ extern(C)
 			dmlEngine.addObjectBinding!T(itemBinding);
 
 			lua_remove(L, 1);
-			itemBinding.valueFromLua(L);
+			itemBinding.valuesFromLuaTable(L);
 
 			dquick.script.utils.valueToLua!T(L, itemBinding);
 
@@ -670,7 +686,7 @@ extern(C)
 				componentId = to!(string)(lua_tostring(L, -1));
 			lua_pop(L, 1);
 
-			iItemBinding.valueFromLua(L);
+			iItemBinding.valuesFromLuaTable(L);
 			iItemBinding.pushToLua(L);
 
 			// Set global from id
@@ -714,6 +730,11 @@ extern(C)
 			if (lua_gettop(L) > 2)
 				throw new Exception("too many arguments, only a userdata as self and a string as key was expected as arguments");
 
+			lua_pushstring(L, "__This");
+			lua_gettable(L, LUA_REGISTRYINDEX);
+			DMLEngineCore	dmlEngine = cast(DMLEngineCore)lua_touserdata(L, -1);
+			lua_pop(L, 1);
+
 			T	array;
 			dquick.script.utils.valueFromLua!(T)(L, 1, array);
 			static if (isAssociativeArray!T)
@@ -741,7 +762,25 @@ extern(C)
 				ForeachType!(T)*	valuePtr = &array[key];
 			}
 			
-			dquick.script.utils.valueToLua!(typeof(array[key]))(L, *valuePtr);
+			static if (is(typeof(array[key]) : dquick.script.iItemBinding.IItemBinding))
+			{
+				dmlEngine.addObjectBinding(*valuePtr);
+				dquick.script.utils.valueToLua!(typeof(array[key]))(L, *valuePtr);
+			}
+			else
+			{
+				static if (is(typeof(array[key]) : dquick.item.declarativeItem.DeclarativeItem))
+				{
+					DMLEngine	dmlEngine2 = cast(DMLEngine)dmlEngine;
+					assert(dmlEngine2);
+					dquick.script.itemBinding.ItemBinding!(typeof(array[key])) itemBinding = dmlEngine2.registerItem!(typeof(array[key]))(*valuePtr);
+					dquick.script.utils.valueToLua(dmlEngine.luaState, itemBinding);
+				}
+				else
+				{
+					dquick.script.utils.valueToLua!(typeof(array[key]))(L, *valuePtr);
+				}
+			}
 
 			return 1;
 		}

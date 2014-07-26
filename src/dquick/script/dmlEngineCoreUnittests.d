@@ -8,6 +8,242 @@ version(unittest)
 	import std.stdio;
 	import dquick.item.declarativeItem;
 	import std.signals;
+	import dquick.script.utils;
+	import derelict.lua.lua;
+
+	class ListView1ModelItem : dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			nameProperty = new typeof(nameProperty)(this, this);
+		}
+
+		this(string name)
+		{
+			this();
+			this.name = name;
+		}
+
+		// ID
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1ModelItem, "id")	idProperty;
+		string	id() { return mId; }
+		void	id(string value) { mId = value; }
+		string	mId;
+
+		// Name
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1ModelItem, "name")	nameProperty;
+		void	name(string value)
+		{
+			if (mName != value)
+			{
+				mName = value;
+				onNameChanged.emit(value);
+			}
+		}
+		string		name()
+		{
+			return mName;
+		}
+		mixin Signal!(string) onNameChanged;
+		string mName;
+	}
+	class ListView1Component : DeclarativeItem, dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			nameProperty = new typeof(nameProperty)(this, this);
+		}
+
+		// ID
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1Component, "id")	idProperty;
+		override string	id() { return DeclarativeItem.id(); }
+		override void	id(string value) { return DeclarativeItem.id(value); }
+
+		// Name
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1Component, "name")	nameProperty;
+		void	name(string value)
+		{
+			if (mName != value)
+			{
+				mName = value;
+				onNameChanged.emit(value);
+			}
+		}
+		string		name()
+		{
+			return mName;
+		}
+		mixin Signal!(string) onNameChanged;
+		string mName;
+	}
+	class ListView1 : dquick.item.declarativeItem.DeclarativeItem, dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			modelProperty = new typeof(modelProperty)(this, this);
+			itemDelegateProperty = new typeof(itemDelegateProperty)(this, this);
+			currentIndexProperty = new typeof(currentIndexProperty)(this, this);
+		}
+
+		// ID
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1, "id")	idProperty;
+		override string	id() { return DeclarativeItem.id(); }
+		override void	id(string value) { return DeclarativeItem.id(value); }
+
+		// Model
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(LuaValue, ListView1, "model")	modelProperty;
+		void	model(LuaValue value)
+		{
+			if (mModel != value)
+			{
+				if (mModel.valueRef != -1)
+					luaL_unref(dmlEngine.luaState, LUA_REGISTRYINDEX, mModel.valueRef);
+
+				mModel = value;
+
+				// Get model userdata on the stack with the ref
+				lua_rawgeti(dmlEngine.luaState, LUA_REGISTRYINDEX, mModel.valueRef);
+
+				// Get items list
+				// (used to get pointers and identify model items to keep the view stable when item are inserted before the current scrolling)
+				auto oldModelItems = modelItems;
+				dquick.script.utils.valueFromLua(dmlEngine.luaState, -1, modelItems);
+
+				// Regenerate children
+				auto childrenCopy = children;
+				foreach (DeclarativeItem child; childrenCopy)
+					removeChild(child);
+
+				{ // For the scope(exit)
+					dmlEngine.beginTransaction();
+					scope(exit) dmlEngine.endTransaction();
+
+					foreach (int i, Object modelItem; modelItems)
+					{
+						// Call the user delegate that create a child from a model object
+						ListView1Component	child = itemDelegate()();
+
+						// Get model item and set it as "model" property to child
+						lua_pushinteger(dmlEngine.luaState, i); // Push model table index
+						lua_gettable(dmlEngine.luaState, -2); // Index the model table
+						lua_pushstring(dmlEngine.luaState, "model"); // Push key
+						lua_insert(dmlEngine.luaState, -2); // Move key before value
+						child.valueFromLua(dmlEngine.luaState); // Set it as property
+						lua_pop(dmlEngine.luaState, 2);
+
+						addChild(child);
+					}
+
+					// Pop the userdata model
+					lua_pop(dmlEngine.luaState, 1);
+				}
+
+				// Calculate new currentIndex
+				int	newCurrentIndex = -1;
+				if (currentIndex < oldModelItems.length)
+				{
+					Object	oldCurrentModelItem = oldModelItems[currentIndex];
+					foreach (int i, Object modelItem; modelItems)
+					{
+						if (modelItem is oldCurrentModelItem)
+						{
+							newCurrentIndex = i;
+							break;
+						}
+					}
+				}
+				currentIndex = newCurrentIndex;
+
+				onModelChanged.emit(value);
+			}
+		}
+		LuaValue		model()
+		{
+			return mModel;
+		}
+		mixin Signal!(LuaValue) onModelChanged;
+		LuaValue		mModel;
+
+		// Delegate
+		dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(ListView1Component delegate(), ListView1, "itemDelegate")	itemDelegateProperty;
+		void	itemDelegate(ListView1Component delegate() value)
+		{
+			if (mItemDelegate != value)
+			{
+				mItemDelegate = value;
+				onItemDelegateChanged.emit(value);
+			}
+		}
+		ListView1Component delegate()		itemDelegate()
+		{
+			return mItemDelegate;
+		}
+		mixin Signal!(ListView1Component delegate()) onItemDelegateChanged;
+		ListView1Component delegate() mItemDelegate;
+
+		// currentIndex
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, ListView1, "currentIndex")	currentIndexProperty;
+		void	currentIndex(int value)
+		{
+			if (mCurrentIndex != value)
+			{
+				mCurrentIndex = value;
+				onCurrentIndexChanged.emit(value);
+			}
+		}
+		int		currentIndex()
+		{
+			return mCurrentIndex;
+		}
+		mixin Signal!(int) onCurrentIndexChanged;
+		int		mCurrentIndex = -1;
+
+	protected:
+		Object[]	modelItems;
+	}
+	class Model1 : dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			arrayProperty = new typeof(arrayProperty)(this, this);
+		}
+
+		// Id
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, Model1, "id")	idProperty;
+		string	id() { return mId; }
+		void	id(string value) { mId = value; }
+		string	mId;
+
+		// Array
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(ListView1ModelItem[], Model1, "array")	arrayProperty;
+		void	array(ListView1ModelItem[] value)
+		{
+			if (mArray != value)
+			{
+				mArray = value;
+				onArrayChanged.emit(value);
+			}
+		}
+		ListView1ModelItem[]		array()
+		{
+			return mArray;
+		}
+		mixin Signal!(ListView1ModelItem[]) onArrayChanged;
+		ListView1ModelItem[]		mArray;
+	}
+
 
 	class DSubItem : dquick.script.iItemBinding.IItemBinding
 	{
@@ -17,13 +253,16 @@ version(unittest)
 		{
 			idProperty = new typeof(idProperty)(this, this);
 			nativePropertyProperty = new typeof(nativePropertyProperty)(this, this);
+			modelProperty = new typeof(modelProperty)(this, this);
 		}
 
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, DSubItem, "id")	idProperty;
 		string	id() { return mId; }
 		void	id(string value) { mId = value; }
 		string	mId;
 
+		// nativeProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, DSubItem, "nativeProperty")	nativePropertyProperty;
 		void	nativeProperty(int value)
 		{
@@ -39,6 +278,23 @@ version(unittest)
 		}
 		mixin Signal!(int) onNativePropertyChanged;
 		int		mNativeProperty;
+
+		// model
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(int[], DSubItem, "model")	modelProperty;
+		void	model(int[] value)
+		{
+			if (mModel != value)
+			{
+				mModel = value;
+				onModelChanged.emit(value);
+			}
+		}
+		int[]		model()
+		{
+			return mModel;
+		}
+		mixin Signal!(int[]) onModelChanged;
+		int[]		mModel;
 	}
 	class DItem : dquick.script.iItemBinding.IItemBinding
 	{
@@ -51,11 +307,13 @@ version(unittest)
 			subItemProperty = new typeof(subItemProperty)(this, this);
 		}
 
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, DItem, "id")	idProperty;
 		string	id() { return mId; }
 		void	id(string value) { mId = value; }
 		string	mId;
 
+		// nativeProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, DItem, "nativeProperty")	nativePropertyProperty;
 		int		nativePropertyBinding()
 		{
@@ -79,6 +337,7 @@ version(unittest)
 		mixin Signal!(int) onNativePropertyChanged;
 		int		mNativeProperty;
 
+		// subItem
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(DSubItem, DItem, "subItem")	subItemProperty;
 		void	subItem(DSubItem value)
 		{
@@ -106,11 +365,13 @@ version(unittest)
 			readOnlyPropertyProperty = new typeof(readOnlyPropertyProperty)(this, this);
 		}
 
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SimpleItem, "id")	idProperty;
 		string	id() { return mId; }
 		void	id(string value) { mId = value; }
 		string	mId;
 
+		// readOnlyProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SimpleItem, "readOnlyProperty")	readOnlyPropertyProperty;
 		string	readOnlyProperty() { return "readOnlyProperty"; }
 	}
@@ -128,10 +389,18 @@ version(unittest)
 			nativePropertyProperty = new typeof(nativePropertyProperty)(this, this);
 		}
 
+		this(int nativeProperty)
+		{
+			this();
+			this.nativeProperty = nativeProperty;
+		}
+
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SubItem, "id")	idProperty;
 		override string	id() { return DeclarativeItem.id(); }
 		override void	id(string value) { return DeclarativeItem.id(value); }
 
+		// nativeProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, SubItem, "nativeProperty")	nativePropertyProperty;
 		void	nativeProperty(int value)
 		{
@@ -163,13 +432,16 @@ version(unittest)
 			nativePropertyDoubleArrayProperty = new typeof(nativePropertyDoubleArrayProperty)(this, this);
 			nativePropertyStaticDoubleArrayProperty = new typeof(nativePropertyStaticDoubleArrayProperty)(this, this);
 			nativePropertyDoubleMapProperty = new typeof(nativePropertyDoubleMapProperty)(this, this);
+			nativeObjectPropertyArrayProperty = new typeof(nativeObjectPropertyArrayProperty)(this, this);
 			delegatePropertyProperty = new typeof(delegatePropertyProperty)(this, this);
 		}
 
+		// id
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, Item, "id")	idProperty;
 		override string	id() { return DeclarativeItem.id(); }
 		override void	id(string value) { return DeclarativeItem.id(value); }
 
+		// nativeProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, Item, "nativeProperty")	nativePropertyProperty;
 		void	nativeProperty(int value)
 		{
@@ -186,6 +458,7 @@ version(unittest)
 		mixin Signal!(int) onNativePropertyChanged;
 		int		mNativeProperty;
 
+		// nativeTotalProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, Item, "nativeTotalProperty")	nativeTotalPropertyProperty;
 		void	nativeTotalProperty(int value)
 		{
@@ -202,6 +475,7 @@ version(unittest)
 		mixin Signal!(int) onNativeTotalPropertyChanged;
 		int		mNativeTotalProperty;
 
+		// nativeEnumProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(Enum, Item, "nativeEnumProperty")	nativeEnumPropertyProperty;
 		enum Enum
 		{
@@ -224,15 +498,18 @@ version(unittest)
 		mixin Signal!(Enum) onNativeEnumPropertyChanged;
 		Enum		mNativeEnumProperty;
 
+		// testNormalMethod
 		int	testNormalMethod(int a, int b)
 		{
 			return a + b + nativeProperty;
 		}
+		// testNormalMethod2
 		int	testNormalMethod2(Item a, Interface b)
 		{
 			return a.nativeProperty + b.nativeProperty + nativeProperty;
 		}
 
+		// nativeSubItem
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(SubItem, Item, "nativeSubItem")	nativeSubItemProperty;
 		void	nativeSubItem(SubItem value)
 		{
@@ -249,6 +526,7 @@ version(unittest)
 		mixin Signal!(SubItem) onNativeSubItemChanged;
 		SubItem		mNativeSubItem;
 
+		// nativePropertyArray
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int[], Item, "nativePropertyArray")	nativePropertyArrayProperty;
 		void	nativePropertyArray(int[] value)
 		{
@@ -265,6 +543,7 @@ version(unittest)
 		mixin Signal!(int[]) onNativePropertyArrayChanged;
 		int[]		mNativePropertyArray;
 
+		// nativePropertyDoubleArray
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string[][], Item, "nativePropertyDoubleArray")	nativePropertyDoubleArrayProperty;
 		void	nativePropertyDoubleArray(string[][] value)
 		{
@@ -281,6 +560,7 @@ version(unittest)
 		mixin Signal!(string[][]) onNativePropertyDoubleArrayChanged;
 		string[][]		mNativePropertyDoubleArray;
 
+		// nativePropertyStaticDoubleArray
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(Enum[3][2], Item, "nativePropertyStaticDoubleArray")	nativePropertyStaticDoubleArrayProperty;
 		void	nativePropertyStaticDoubleArray(Enum[3][2] value)
 		{
@@ -297,6 +577,7 @@ version(unittest)
 		mixin Signal!(Enum[3][2]) onNativePropertyStaticDoubleArrayChanged;
 		Enum[3][2]		mNativePropertyStaticDoubleArray;
 
+		// nativePropertyDoubleMap
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(float[int][string], Item, "nativePropertyDoubleMap")	nativePropertyDoubleMapProperty;
 		void	nativePropertyDoubleMap(float[int][string] value)
 		{
@@ -313,6 +594,24 @@ version(unittest)
 		mixin Signal!(float[int][string]) onNativePropertyDoubleMapChanged;
 		float[int][string]		mNativePropertyDoubleMap;
 
+		// nativeObjectPropertyArray
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(SubItem[], Item, "nativeObjectPropertyArray")	nativeObjectPropertyArrayProperty;
+		void	nativeObjectPropertyArray(SubItem[] value)
+		{
+			if (mNativeObjectPropertyArray != value)
+			{
+				mNativeObjectPropertyArray = value;
+				onNativeObjectPropertyArrayChanged.emit(value);
+			}
+		}
+		SubItem[]		nativeObjectPropertyArray()
+		{
+			return mNativeObjectPropertyArray;
+		}
+		mixin Signal!(SubItem[]) onNativeObjectPropertyArrayChanged;
+		SubItem[]		mNativeObjectPropertyArray;
+
+		// delegateProperty
 		dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(int delegate(int), Item, "delegateProperty")	delegatePropertyProperty;
 		void	delegateProperty(int delegate(int) value)
 		{
@@ -330,11 +629,13 @@ version(unittest)
 		int delegate(int) mDelegateProperty;
 	}
 
+	// testSumFunctionBinding
 	int	testSumFunctionBinding(int a, int b)
 	{
 		return a + b;
 	}
 
+	// testSumFunctionBinding2
 	int	testSumFunctionBinding2(Item a, Interface b)
 	{
 		return a.nativeProperty + b.nativeProperty;
@@ -351,6 +652,9 @@ unittest
 	dmlEngine.addObjectBindingType!(DSubItem, "DSubItem");
 	dmlEngine.addObjectBindingType!(Item, "Item");
 	dmlEngine.addObjectBindingType!(SimpleItem, "SimpleItem");
+	dmlEngine.addObjectBindingType!(Model1, "Model1");
+	dmlEngine.addObjectBindingType!(ListView1, "ListView1");
+	dmlEngine.addObjectBindingType!(ListView1Component, "ListView1Component");
 
 	// Test basic item
 	string lua1 = q"(
@@ -524,6 +828,18 @@ unittest
 	)";
 	dmlEngine.execute(lua7, "");
 	assert(dmlEngine.getLuaGlobal!Item("item11").nativeEnumProperty == Item.Enum.enumVal2);
+
+	// Test simple property alias (parent to child)
+	string lua7_2 = q"(
+		Item {
+			id = "item7_2",
+
+			Item {
+				id = "item7_3",
+			}
+		}
+	)";
+	dmlEngine.execute(lua7_2, "");
 
 	// Test simple property alias (parent to child)
 	string lua8 = q"(
@@ -1845,6 +2161,47 @@ unittest
 		assert(m[0] == "" && m[1] == "");
 	}
 
+	// Simple Objects array from D to lua to D
+	{
+		Item	array14 = new Item;
+		array14.id = "array14";
+		array14.nativeObjectPropertyArray([new SubItem(0), new SubItem(1), new SubItem(2)]);
+		dmlEngine.addObjectBinding(array14, "array14");
+		string lua = q"(
+			Item {
+				id = "array15",
+				nativeObjectPropertyArray = function()
+					return array14.nativeObjectPropertyArray
+				end,
+				object0 = function()
+					return nativeObjectPropertyArray[0]
+				end,
+				object2 = function()
+					return nativeObjectPropertyArray[2]
+				end,
+				nativeProperty = function()
+					return object0.nativeProperty
+				end,
+				nativeTotalProperty = function()
+					return object2.nativeProperty
+				end
+			}
+		)";
+		dmlEngine.execute(lua, "Simple Objects array from D to lua to D");
+		Item	array15 = dmlEngine.getLuaGlobal!Item("array15");
+		assert(array15);
+		assert(array15.nativeObjectPropertyArray == array14.nativeObjectPropertyArray);
+		assert(array15.nativeProperty == array14.nativeObjectPropertyArray[0].nativeProperty);
+		assert(array15.nativeTotalProperty == array14.nativeObjectPropertyArray[2].nativeProperty);
+		array14.nativeObjectPropertyArray[0].nativeProperty = 10;
+		assert(array15.nativeProperty == array14.nativeObjectPropertyArray[0].nativeProperty);
+		array14.nativeObjectPropertyArray[2].nativeProperty = 100;
+		assert(array15.nativeTotalProperty == array14.nativeObjectPropertyArray[2].nativeProperty);
+		array14.nativeObjectPropertyArray([new SubItem(1000), new SubItem(1001), new SubItem(1002)]);
+		assert(array15.nativeProperty == array14.nativeObjectPropertyArray[0].nativeProperty);
+		assert(array15.nativeTotalProperty == array14.nativeObjectPropertyArray[2].nativeProperty);
+	}
+
 	// Delegate
 	{
 		Item	dgItem = new Item;
@@ -1931,6 +2288,144 @@ unittest
 		assert(dmlEngine.getLuaGlobal!DItem("dItem2").nativeProperty == 300);
 		dmlEngine.getLuaGlobal!DSubItem("dSubItem2").nativeProperty = 400;
 		assert(dmlEngine.getLuaGlobal!DItem("dItem2").nativeProperty == 600);
+	}
+
+	// Simulate a ListView
+	{
+		Model1	listViewModel1 = new Model1;
+		listViewModel1.id = "listViewModel1";
+		listViewModel1.array = [new ListView1ModelItem("item0"), new ListView1ModelItem("item1"), new ListView1ModelItem("item2")];
+		dmlEngine.addObjectBinding(listViewModel1, "listViewModel1");
+		string lua = q"(
+			ListView1 {
+				id = "listView1",
+				model = function()
+					return listViewModel1.array
+				end,
+				itemDelegate = function()
+					return ListView1Component {
+						name = function()
+							return model.name.."View"
+						end
+					}
+				end,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		ListView1	listView1 = dmlEngine.getLuaGlobal!ListView1("listView1");
+		assert(listView1);
+		assert(listView1.children.length == 3);
+		assert((cast(ListView1Component)(listView1.children[0])).name == "item0View");
+		assert((cast(ListView1Component)(listView1.children[1])).name == "item1View");
+		assert((cast(ListView1Component)(listView1.children[2])).name == "item2View");
+	}
+
+	// Simulate a ListView, test model binding
+	{
+		Model1	listViewModel2 = new Model1;
+		listViewModel2.id = "listViewModel2";
+		dmlEngine.addObjectBinding(listViewModel2, "listViewModel2");
+		string lua = q"(
+			ListView1 {
+				id = "listView2",
+				model = function()
+					return listViewModel2.array
+				end,
+				itemDelegate = function()
+					return ListView1Component {
+						name = function()
+							return model.name.."View"
+						end
+					}
+				end,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		ListView1	listView2 = dmlEngine.getLuaGlobal!ListView1("listView2");
+		assert(listView2);
+		listViewModel2.array = [new ListView1ModelItem("item10"), new ListView1ModelItem("item11"), new ListView1ModelItem("item12")];
+		assert(listView2.children.length == 3);
+		assert((cast(ListView1Component)(listView2.children[0])).name == "item10View");
+		assert((cast(ListView1Component)(listView2.children[1])).name == "item11View");
+		assert((cast(ListView1Component)(listView2.children[2])).name == "item12View");
+	}
+
+	// Simulate a ListView, test current index
+	{
+		Model1	listViewModel3 = new Model1;
+		listViewModel3.id = "listViewModel3";
+		dmlEngine.addObjectBinding(listViewModel3, "listViewModel3");
+		string lua = q"(
+			ListView1 {
+				id = "listView3",
+				model = function()
+					return listViewModel3.array
+				end,
+				itemDelegate = function()
+					return ListView1Component {
+						name = function()
+							return model.name.."View"
+						end
+					}
+				end,
+				currentIndex = 1,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		ListView1	listView3 = dmlEngine.getLuaGlobal!ListView1("listView3");
+		assert(listView3);
+		assert(listView3.currentIndex == -1); // Model is empty at the moment
+		listViewModel3.array = [new ListView1ModelItem("item30"), new ListView1ModelItem("item31"), new ListView1ModelItem("item32")];
+		assert(listView3.children.length == 3);
+		assert((cast(ListView1Component)(listView3.children[0])).name == "item30View");
+		assert((cast(ListView1Component)(listView3.children[1])).name == "item31View");
+		assert((cast(ListView1Component)(listView3.children[2])).name == "item32View");
+		listView3.currentIndex = 1;
+		// Insert model item before the selected item
+		listViewModel3.array = [new ListView1ModelItem("item33"), listViewModel3.array[0], listViewModel3.array[1], listViewModel3.array[2]];
+		assert(listView3.children.length == 4);
+		assert((cast(ListView1Component)(listView3.children[0])).name == "item33View");
+		assert((cast(ListView1Component)(listView3.children[1])).name == "item30View");
+		assert((cast(ListView1Component)(listView3.children[2])).name == "item31View");
+		assert((cast(ListView1Component)(listView3.children[3])).name == "item32View");
+		assert(listView3.currentIndex == 2);
+	}
+
+	// Simulate a ListView, test model item binding
+	{
+		Model1	listViewModel4 = new Model1;
+		listViewModel4.id = "listViewModel1";
+		listViewModel4.array = [new ListView1ModelItem("item40"), new ListView1ModelItem("item41"), new ListView1ModelItem("item42")];
+		dmlEngine.addObjectBinding(listViewModel4, "listViewModel4");
+		string lua = q"(
+			ListView1 {
+				id = "listView4",
+				model = function()
+					return listViewModel4.array
+				end,
+				itemDelegate = function()
+					return ListView1Component {
+						name = function()
+							return model.name.."View"
+						end
+					}
+				end,
+			}
+		)";
+		dmlEngine.execute(lua, "");
+		ListView1	listView4 = dmlEngine.getLuaGlobal!ListView1("listView4");
+		assert(listView4);
+		assert(listView4.children.length == 3);
+		assert((cast(ListView1Component)(listView4.children[0])).name == "item40View");
+		assert((cast(ListView1Component)(listView4.children[1])).name == "item41View");
+		assert((cast(ListView1Component)(listView4.children[2])).name == "item42View");
+		listViewModel4.array[0].name = "item40_2";
+		listViewModel4.array[1].name = "item41_2";
+		listViewModel4.array[2].name = "item42_2";
+		assert(listView4.children.length == 3);
+		assert((cast(ListView1Component)(listView4.children[0])).name == "item40_2View");
+		assert((cast(ListView1Component)(listView4.children[1])).name == "item41_2View");
+		assert((cast(ListView1Component)(listView4.children[2])).name == "item42_2View");
 	}
 
 	}

@@ -7,6 +7,7 @@ import std.stdio;
 import std.signals;
 public import std.conv;
 public import derelict.lua.lua;
+public import std.c.string;
 
 import dquick.item.declarativeItem;
 import dquick.script.nativePropertyBinding;
@@ -55,6 +56,8 @@ static string	BASE_ITEM_BINDING()
 				}
 				local __itemBinding_env_mt = {
 					__index = function (_, n)
+						--for key,value in pairs(_) do print(key,value) end
+						--print("n = "..n)
 						if n == "this" then
 							return rawget(_, n)
 						else 
@@ -124,7 +127,7 @@ static string	BASE_ITEM_BINDING()
 			{
 				static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 				{
-					assert(__traits(getMember, this, member) !is null);
+					assert(__traits(getMember, this, member) !is null, format("[%s].%s is null", id, member));
 					__traits(getMember, this, member).executeBinding();
 				}
 			}
@@ -137,37 +140,41 @@ static string	BASE_ITEM_BINDING()
 			override string	displayDependents()
 			{
 				string	result;
+				result ~= format("native properties:\n");
 				foreach (member; __traits(allMembers, typeof(this)))
 				{
 					static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 					{
 						assert(__traits(getMember, this, member) !is null);
-						result ~= format("%s's dependents:\n", __traits(getMember, this, member).propertyName);
-						result ~= shiftRight(__traits(getMember, this, member).displayDependents(), "\t", 1);
+						result ~= shiftRight(format("%s's dependents:\n", __traits(getMember, this, member).propertyName), "\t", 1);
+						result ~= shiftRight(__traits(getMember, this, member).displayDependents(), "\t", 2);
 					}
 				}
+				result ~= format("virtual properties:\n");
 				foreach (key, virtualProperty; virtualProperties)
 				{
-					result ~= format("%s\n", key);
-					result ~= shiftRight(virtualProperty.displayDependents(), "\t", 1);
+					result ~= shiftRight(format("%s's dependents:\n", key), "\t", 1);
+					result ~= shiftRight(virtualProperty.displayDependents(), "\t", 2);
 				}
 				return result;
 			}
 			override string	displayDependencies()
 			{
 				string	result;
+				result ~= format("native properties:\n");
 				foreach (member; __traits(allMembers, typeof(this)))
 				{
 					static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
 					{
 						assert(__traits(getMember, this, member) !is null);
-						result ~= format("%s's dependencies:\n", __traits(getMember, this, member).propertyName);
+						result ~= shiftRight(format("%s's dependencies:\n", __traits(getMember, this, member).propertyName), "\t", 1);
 						result ~= shiftRight(__traits(getMember, this, member).displayDependencies(), "\t", 1);
 					}
 				}
+				result ~= format("virtual properties:\n");
 				foreach (key, virtualProperty; virtualProperties)
 				{
-					result ~= format("%s\n", key);
+					result ~= shiftRight(format("%s's dependencies:\n", key), "\t", 1);
 					result ~= shiftRight(virtualProperty.displayDependencies(), "\t", 1);
 				}
 				return result;
@@ -175,6 +182,142 @@ static string	BASE_ITEM_BINDING()
 		}
 
 		override void	valueFromLua(lua_State* L)
+		{
+			if (lua_type(L, -2) == LUA_TSTRING)
+			{
+				string	key = to!(string)(lua_tostring(L, -2));
+
+				bool	found = false;
+				foreach (member; __traits(allMembers, typeof(this)))
+				{
+					static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
+					{
+						if (__traits(getMember, this, member) is null)
+							throw new Exception(format("property \"%s\" is null, you must instanciate it", getPropertyNameFromPropertyDeclaration(member)));
+
+						if (key == getPropertyNameFromPropertyDeclaration(member))
+						{
+							found = true;
+							__traits(getMember, this, member).bindingFromLua(L, -1);
+							break;
+						}
+						else if (key == getSignalNameFromPropertyName(getPropertyNameFromPropertyDeclaration(member)))
+						{
+							found = true;
+
+							if (lua_isfunction(L, -1))
+							{
+								// Set _ENV upvalue
+								const char*	upvalue = lua_getupvalue(L, -1, 1);
+								if (upvalue != null)
+								{
+									lua_pop(L, 1);
+									if (strcmp(upvalue, "_ENV") == 0)
+									{					
+										lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
+										lua_upvaluejoin(L, -2, 1, -1, 1);
+										lua_pop(L, 1);
+									}
+								}
+
+								__traits(getMember, this, member).slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
+								lua_pushnil(L); // To compensate the value poped by luaL_ref
+							}
+							else
+								throw new Exception(format("attribute \"%s\" is a %s, a function was expected", key, getLuaTypeName(L, -1)));
+							break;
+						}
+					}
+				}
+
+				if (found == false)
+				{
+					auto	propertyName = getPropertyNameFromSignalName(key);
+					if (propertyName != "")
+					{
+						found = true;
+
+						if (lua_isfunction(L, -1))
+						{
+							dquick.script.virtualPropertyBinding.VirtualPropertyBinding virtualProperty;
+							auto virtualPropertyPtr = (propertyName in this.virtualProperties);
+							if (!virtualPropertyPtr)
+							{
+								virtualProperty = new dquick.script.virtualPropertyBinding.VirtualPropertyBinding(this, propertyName);
+								this.virtualProperties[propertyName] = virtualProperty;
+							}
+							else
+							{
+								virtualProperty = *virtualPropertyPtr;
+							}
+							// Set _ENV upvalue
+							const char*	upvalue = lua_getupvalue(L, -1, 1);
+							if (upvalue != null)
+							{
+								lua_pop(L, 1);
+								if (strcmp(upvalue, "_ENV") == 0)
+								{					
+									lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
+									lua_upvaluejoin(L, -2, 1, -1, 1);
+									lua_pop(L, 1);
+								}
+							}
+
+							virtualProperty.slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
+							lua_pushnil(L); // To compensate the value poped by luaL_ref
+						}
+						else
+							throw new Exception(format("attribute \"%s\" is a %s, a function was expected", key, getLuaTypeName(L, -1)));
+					}
+					else
+					{
+						dquick.script.virtualPropertyBinding.VirtualPropertyBinding virtualProperty;
+						auto virtualPropertyPtr = (key in this.virtualProperties);
+						if (!virtualPropertyPtr)
+						{
+							virtualProperty = new dquick.script.virtualPropertyBinding.VirtualPropertyBinding(this, key);
+							this.virtualProperties[key] = virtualProperty;
+						}
+						else
+						{
+							virtualProperty = *virtualPropertyPtr;
+						}
+						virtualProperty.bindingFromLua(L, -1);
+					}
+				}
+			}
+			else if (lua_type(L, -2) == LUA_TNUMBER)
+			{
+				if (lua_isuserdata(L, -1) == false)
+					throw new Exception(format("attribute \"%d\" is a %s, an item was expected", lua_tointeger(L, -2), getLuaTypeName(L, -1)));
+
+				dquick.script.iItemBinding.IItemBinding	child;
+				dquick.script.utils.valueFromLua!(dquick.script.iItemBinding.IItemBinding)(L, -1, child);
+				if (child is null)
+					throw new Exception(format("attribute \"%d\" is not an item", lua_tointeger(L, -2)));
+
+				static if (__traits(hasMember, this, "addChild") == true)
+				{
+					foreach (overload; __traits(getOverloads, this, "addChild")) 
+					{
+						alias ParameterTypeTuple!(overload) MyParameterTypeTuple;
+						static if (MyParameterTypeTuple.length == 1)
+						{
+							MyParameterTypeTuple[0]	castedItemBinding = cast(MyParameterTypeTuple[0])(child);
+							if (castedItemBinding !is null)
+							{
+								__traits(getMember, this, "addChild")(castedItemBinding);
+								goto AfterError;
+							}
+						}
+					}
+				}
+				throw new Exception(format("can't add item at key \"%d\" as child without an appropriate addChild method", lua_tointeger(L, -2)));
+				AfterError: {}
+			}
+		}
+
+		override void	valuesFromLuaTable(lua_State* L)
 		{
 			if (!lua_istable(L, -1))
 				throw new Exception("the lua value is not a table\n");
@@ -186,131 +329,7 @@ static string	BASE_ITEM_BINDING()
 			lua_pushnil(L);  /* first key */
 			while (lua_next(L, -2) != 0) {
 				/* uses 'key' (at index -2) and 'value' (at index -1) */
-
-				if (lua_type(L, -2) == LUA_TSTRING)
-				{
-					string	key = to!(string)(lua_tostring(L, -2));
-
-					bool	found = false;
-					foreach (member; __traits(allMembers, typeof(this)))
-					{
-						static if (is(typeof(__traits(getMember, this, member)) : dquick.script.propertyBinding.PropertyBinding))
-						{
-							if (__traits(getMember, this, member) is null)
-								throw new Exception(format("property \"%s\" is null, you must instanciate it", getPropertyNameFromPropertyDeclaration(member)));
-
-							if (key == getPropertyNameFromPropertyDeclaration(member))
-							{
-								found = true;
-								__traits(getMember, this, member).bindingFromLua(L, -1);
-								break;
-							}
-							else if (key == getSignalNameFromPropertyName(getPropertyNameFromPropertyDeclaration(member)))
-							{
-								found = true;
-
-								if (lua_isfunction(L, -1))
-								{
-									// Set _ENV upvalue
-									if (lua_getupvalue(L, -1, 1) != null)
-									{
-										lua_pop(L, 1);
-										lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
-										lua_upvaluejoin(L, -2, 1, -1, 1);
-										lua_pop(L, 1);
-									}
-
-									__traits(getMember, this, member).slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
-									lua_pushnil(L); // To compensate the value poped by luaL_ref
-								}
-								else
-									throw new Exception(format("attribute \"%s\" is a %s, a function was expected", key, getLuaTypeName(L, -1)));
-								break;
-							}
-						}
-					}
-
-					if (found == false)
-					{
-						auto	propertyName = getPropertyNameFromSignalName(key);
-						if (propertyName != "")
-						{
-							found = true;
-
-							if (lua_isfunction(L, -1))
-							{
-								dquick.script.virtualPropertyBinding.VirtualPropertyBinding virtualProperty;
-								auto virtualPropertyPtr = (propertyName in this.virtualProperties);
-								if (!virtualPropertyPtr)
-								{
-									virtualProperty = new dquick.script.virtualPropertyBinding.VirtualPropertyBinding(this, propertyName);
-									this.virtualProperties[propertyName] = virtualProperty;
-								}
-								else
-								{
-									virtualProperty = *virtualPropertyPtr;
-								}
-								// Set _ENV upvalue
-								if (lua_getupvalue(L, -1, 1) != null)
-								{
-									lua_pop(L, 1);
-									lua_rawgeti(L, LUA_REGISTRYINDEX, itemBindingLuaEnvDummyClosureReference);
-									lua_upvaluejoin(L, -2, 1, -1, 1);
-									lua_pop(L, 1);
-								}
-
-								virtualProperty.slotLuaReference = luaL_ref(L, LUA_REGISTRYINDEX);
-								lua_pushnil(L); // To compensate the value poped by luaL_ref
-							}
-							else
-								throw new Exception(format("attribute \"%s\" is a %s, a function was expected", key, getLuaTypeName(L, -1)));
-						}
-						else
-						{
-							dquick.script.virtualPropertyBinding.VirtualPropertyBinding virtualProperty;
-							auto virtualPropertyPtr = (key in this.virtualProperties);
-							if (!virtualPropertyPtr)
-							{
-								virtualProperty = new dquick.script.virtualPropertyBinding.VirtualPropertyBinding(this, key);
-								this.virtualProperties[key] = virtualProperty;
-							}
-							else
-							{
-								virtualProperty = *virtualPropertyPtr;
-							}
-							virtualProperty.bindingFromLua(L, -1);
-						}
-					}
-				}
-				else if (lua_type(L, -2) == LUA_TNUMBER)
-				{
-					if (lua_isuserdata(L, -1) == false)
-						throw new Exception(format("attribute \"%d\" is a %s, an item was expected", lua_tointeger(L, -2), getLuaTypeName(L, -1)));
-
-					dquick.script.iItemBinding.IItemBinding	child;
-					dquick.script.utils.valueFromLua!(dquick.script.iItemBinding.IItemBinding)(L, -1, child);
-					if (child is null)
-						throw new Exception(format("attribute \"%d\" is not an item", lua_tointeger(L, -2)));
-
-					static if (__traits(hasMember, this, "addChild") == true)
-					{
-						foreach (overload; __traits(getOverloads, this, "addChild")) 
-						{
-							alias ParameterTypeTuple!(overload) MyParameterTypeTuple;
-							static if (MyParameterTypeTuple.length == 1)
-							{
-								MyParameterTypeTuple[0]	castedItemBinding = cast(MyParameterTypeTuple[0])(child);
-								if (castedItemBinding !is null)
-								{
-									__traits(getMember, this, "addChild")(castedItemBinding);
-									goto AfterError;
-								}
-							}
-						}
-					}
-					throw new Exception(format("can't add item at key \"%d\" as child without an appropriate addChild method", lua_tointeger(L, -2)));
-					AfterError: {}
-				}
+				valueFromLua(L);
 
 				/* removes 'value'; keeps 'key' for next iteration */
 				lua_pop(L, 1);

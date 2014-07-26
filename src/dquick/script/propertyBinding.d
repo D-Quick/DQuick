@@ -5,6 +5,7 @@ import std.file, std.stdio;
 import std.conv;
 import std.string;
 import std.array;
+import std.c.string;
 
 import derelict.lua.lua;
 
@@ -55,14 +56,14 @@ class PropertyBinding
 	{
 		string	result;
 		foreach (dependent; dependents)
-			result ~= format("%s.%s\n", dependent.itemBinding.id, dependent.propertyName);
+			result ~= format("\t%s.%s\n", dependent.itemBinding.id, dependent.propertyName);
 		return result;
 	}
 	string	displayDependencies()
 	{
 		string	result;
 		foreach (dependencie; dependencies)
-			result ~= format("%s.%s\n", dependencie.itemBinding.id, dependencie.propertyName);
+			result ~= format("\t%s.%s\n", dependencie.itemBinding.id, dependencie.propertyName);
 		return result;
 	}
 
@@ -116,7 +117,7 @@ class PropertyBinding
 
 			dependencies.clear();
 
-			{
+			{ // This scope is important for the scope(exit) and scope(failure)
 				itemBinding.dmlEngine.currentlyExecutedBindingStack ~= this;
 				scope(exit) itemBinding.dmlEngine.currentlyExecutedBindingStack.length--;
 				scope(failure) dependencies.clear();
@@ -126,12 +127,7 @@ class PropertyBinding
 
 				int	top = lua_gettop(itemBinding.dmlEngine.luaState);
 				lua_rawgeti(itemBinding.dmlEngine.luaState, LUA_REGISTRYINDEX, luaReference);
-				if (lua_pcall(itemBinding.dmlEngine.luaState, 0, LUA_MULTRET, 0) != LUA_OK)
-				{
-					string error = to!(string)(lua_tostring(itemBinding.dmlEngine.luaState, -1));
-					lua_pop(itemBinding.dmlEngine.luaState, 1);
-					throw new Exception(error);
-				}
+				itemBinding.dmlEngine.luaPCall(0);
 
 				static if (dquick.script.dmlEngine.DMLEngine.showDebug)
 				{
@@ -150,9 +146,11 @@ class PropertyBinding
 			dirty = false;
 
 			// Put this so that onChanged can detect it's a value change from binding or from D
-			itemBinding.dmlEngine.propertyBindingBeeingSet = this;
-			valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
-			itemBinding.dmlEngine.propertyBindingBeeingSet = null;
+			{ // This scope is important for the scope(exit)
+				itemBinding.dmlEngine.propertyBindingBeeingSet ~= this;
+				scope(exit) itemBinding.dmlEngine.propertyBindingBeeingSet.length--;
+				valueFromLua(itemBinding.dmlEngine.luaState, -1, true);
+			}
 		}
 	}
 
@@ -164,7 +162,7 @@ class PropertyBinding
 		if (itemBinding.creating == false) // No property binding or slot call while the item is in creation
 		{
 			// Detect assignment from D that compete with his binding
-			if (itemBinding.dmlEngine.propertyBindingBeeingSet !is this && luaReference != -1)
+			if ((itemBinding.dmlEngine.propertyBindingBeeingSet.length == 0 || itemBinding.dmlEngine.propertyBindingBeeingSet[$ - 1] !is this) && luaReference != -1)
 			{
 				dirty = true;
 				executeBinding();
@@ -175,7 +173,10 @@ class PropertyBinding
 				writefln("%s%s.%s.onChanged {", replicate("|\t", itemBinding.dmlEngine.lvl++), itemBinding.id, propertyName);
 
 			if (slotLuaReference != -1)
-				itemBinding.dmlEngine.execute(slotLuaReference);
+			{
+				lua_rawgeti(itemBinding.dmlEngine.luaState, LUA_REGISTRYINDEX, slotLuaReference);
+				itemBinding.dmlEngine.luaPCall(0);
+			}
 
 			auto dependentsCopy = dependents.dup;
 			foreach (dependent; dependentsCopy)
@@ -208,6 +209,14 @@ class PropertyBinding
 		if (itemBinding.dmlEngine.currentlyExecutedBindingStack.length > 0)
 		{
 			assert(itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1] !is this);
+			static if (dquick.script.dmlEngine.DMLEngine.showDebug)
+			{
+				writefln("[%s].%s became a dependency of [%s].%s",
+						 itemBinding.id,
+						 propertyName,
+						 itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1].itemBinding.id,
+						 itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1].propertyName);
+			}
 			itemBinding.dmlEngine.currentlyExecutedBindingStack[itemBinding.dmlEngine.currentlyExecutedBindingStack.length - 1].dependencies ~= this;
 		}
 	}
@@ -219,21 +228,32 @@ class PropertyBinding
 			lua_pushvalue(L, index);// To compensate the value poped by luaL_ref
 
 			// Set _ENV upvalue
-			if (lua_getupvalue(L, -1, 1) != null)
+			const char*	upvalue = lua_getupvalue(L, -1, 1);
+			if (upvalue != null)
 			{
 				lua_pop(L, 1);
-				lua_rawgeti(L, LUA_REGISTRYINDEX, itemBinding.itemBindingLuaEnvDummyClosureReference);
-				lua_upvaluejoin(L, -2, 1, -1, 1);
-				lua_pop(L, 1);
+				if (strcmp(upvalue, "_ENV") == 0)
+				{					
+					lua_rawgeti(L, LUA_REGISTRYINDEX, itemBinding.itemBindingLuaEnvDummyClosureReference);
+					lua_upvaluejoin(L, -2, 1, -1, 1);
+					lua_pop(L, 1);
+				}
 			}
 
+			int oldLuaReference = luaReference;
 			luaReference = luaL_ref(L, LUA_REGISTRYINDEX);
+			if (oldLuaReference != -1) // Bug in lua
+				luaL_unref(L, LUA_REGISTRYINDEX, oldLuaReference);
 			dirty = true;
 			executeBinding();
 		}
 		else // Binding is just a value
 		{
-			luaReference = -1;
+			if (luaReference != -1)
+			{
+				luaL_unref(L, LUA_REGISTRYINDEX, luaReference);
+				luaReference = -1;
+			}
 			valueFromLua(L, index);
 		}
 	}
