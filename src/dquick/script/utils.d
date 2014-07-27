@@ -212,7 +212,7 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 		if (lua_istable(L, index))
 		{
 			static if (isDynamicArray!T)
-				value.clear();
+				value.length = 0;
 
 			int	count = 0;
 			/* table is in the stack at index 't' */

@@ -96,7 +96,7 @@ public:
 		mAtlases.length = 0;
 		foreach(Font font; mFonts)
 			font.release();
-		mFonts.clear();
+		mFonts = null;
 	}
 
 private:

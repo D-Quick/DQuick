@@ -115,7 +115,7 @@ private:
 		y = mSkyLine[skylineNodeIndex].y;
 		while (widthLeft > 0)
 		{
-			y = max(y, mSkyLine[i].y);
+			y = std.algorithm.max(y, mSkyLine[i].y);
 			if (y + height > mSize.y)
 				return false;
 			widthLeft -= mSkyLine[i].width;

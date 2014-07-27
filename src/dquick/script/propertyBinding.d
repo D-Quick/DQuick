@@ -115,12 +115,12 @@ class PropertyBinding
 			foreach (dependency; dependencies)
 				dependency.dependents[this] = null;
 
-			dependencies.clear();
+			dependencies.length = 0;
 
 			{ // This scope is important for the scope(exit) and scope(failure)
 				itemBinding.dmlEngine.currentlyExecutedBindingStack ~= this;
 				scope(exit) itemBinding.dmlEngine.currentlyExecutedBindingStack.length--;
-				scope(failure) dependencies.clear();
+				scope(failure) dependencies.length = 0;
 
 				//writefln("%sinitializationPhase = %d executeBinding %s", repeat("|\t", lvl), initializationPhase, item.id);
 				//writefln("top = %d", lua_gettop(luaState));
