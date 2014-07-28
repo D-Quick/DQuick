@@ -155,8 +155,11 @@ public:
 	override
 	void	release()
 	{
-		mDebugMesh.destruct();
-		mDebugImplicitMesh.destruct();
+		debug
+		{
+			mDebugMesh.destruct();
+			mDebugImplicitMesh.destruct();
+		}
 		super.release();
 	}
 
@@ -306,22 +309,25 @@ protected:
 		}
 	}
 
-	GLfloat[]	debugMeshGeometryArray()
+	debug
 	{
-		return cast(GLfloat[])[
-			0.0f,		0.0f,		0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-			mSize.x,	0.0f,		0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-			mSize.x,	mSize.y,	0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
-			0.0f,		mSize.y,	0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w];
-	}
+		GLfloat[]	debugMeshGeometryArray()
+		{
+			return cast(GLfloat[])[
+				0.0f,		0.0f,		0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+				mSize.x,	0.0f,		0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+				mSize.x,	mSize.y,	0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
+				0.0f,		mSize.y,	0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w];
+		}
 
-	GLfloat[]	debugImplicitMeshGeometryArray()
-	{
-		return cast(GLfloat[])[
-			0.0f,			0.0f,			0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-			implicitWidth,	0.0f,			0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-			implicitWidth,	implicitHeight,	0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
-			0.0f,			implicitHeight,	0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w];
+		GLfloat[]	debugImplicitMeshGeometryArray()
+		{
+			return cast(GLfloat[])[
+				0.0f,			0.0f,			0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+				implicitWidth,	0.0f,			0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+				implicitWidth,	implicitHeight,	0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
+				0.0f,			implicitHeight,	0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w];
+		}
 	}
 
 	bool			mVisible = true;
