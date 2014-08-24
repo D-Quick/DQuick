@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{EA7A7198-D991-4B9B-AA9E-0FF63420BE4E}</ProjectGuid>
     <UseDefaultCompiler>True</UseDefaultCompiler>
@@ -44,6 +44,16 @@
     <Target>Executable</Target>
     <OutputName>../../../data/MineSweeper</OutputName>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
+    <OutputPath>bin\Unittest</OutputPath>
+    <UnittestMode>true</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
+    <Externalconsole>true</Externalconsole>
+    <Target>Executable</Target>
+    <OutputName>../../../data/dquick-sample</OutputName>
+    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\src\samples\Minesweeper\main.d">
