@@ -167,7 +167,7 @@ public:
 	}
 
 private:
-	static const GLenum primitiveTypeToGLenum(PrimitiveType type)
+	static pure GLenum primitiveTypeToGLenum(PrimitiveType type)
 	{
 		final switch(type)
 		{

@@ -82,7 +82,7 @@ public:
 	size_t	length() {return mArray.length;}
 
 private:
-	static const GLenum typeToGLenum(VBOType type)
+	static pure GLenum typeToGLenum(VBOType type)
 	{
 		final switch(type)
 		{
@@ -93,7 +93,7 @@ private:
 		}
 	}
 
-	static const GLenum modeToGLenum(VBOMode type)
+	static pure GLenum modeToGLenum(VBOMode type)
 	{
 		final switch(type)
 		{

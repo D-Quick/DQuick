@@ -399,7 +399,7 @@ private:
 		catch (Exception e)
 		{
 			writeln(e.toString());
-			clear(mMesh);
+			mMesh.destroy();
 			mMesh = null;
 		}
 	}
