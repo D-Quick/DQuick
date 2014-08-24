@@ -13,7 +13,7 @@ import std.traits;
 import std.typetuple;
 import std.c.string;
 
-version(unittest)
+/+version(unittest)
 {
 	import dquick.item.declarativeItem;
 	import std.signals;
@@ -214,7 +214,7 @@ version(unittest)
 	}
 }
 
-/+unittest
+unittest
 {
 	DMLEngine	dmlEngine = new DMLEngine;
 	dmlEngine.create();
