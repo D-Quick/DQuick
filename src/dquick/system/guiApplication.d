@@ -9,6 +9,8 @@ import derelict.lua.lua;
 
 import std.stdio;
 
+import dquick.buildSettings;
+
 interface IGuiApplication
 {
 	static IGuiApplication	instance();
@@ -40,7 +42,7 @@ protected:
 	void	terminateExecution()
 	{
 		Scheduler.terminateAll();
-		dquick.renderer3D.openGL.renderer.resourceManager.releaseAllResources();
+		Renderer.resourceManager.releaseAllResources();
 		dquick.media.image.resourceManager.releaseAllResources();
 		dquick.media.font.fontManager.clear();
 	}
@@ -52,14 +54,19 @@ private:
 	bool	mInitialized = false;
 }
 
-version (Windows)
+static if (windowSystem == WindowSystem.Native)
 {
-	public import dquick.system.win32.guiApplicationWin32;
+	version (Windows)
+	{
+		public import dquick.system.win32.guiApplicationWin32;
+	}
+	version (Posix)
+	{
+		public import dquick.system.sdl.guiApplicationSDL;
+	}
 }
-version (Posix)
-{
+else
 	public import dquick.system.sdl.guiApplicationSDL;
-}
 
 static this()
 {

@@ -4,7 +4,10 @@ module dquick.system.win32.openglContextWin32;
 // Find a way to be restricted to openGL 2 (with upper opengl function declared)
 // Link to delerict git repository direcly to be able to get updates
 
+import dquick.buildSettings;
+
 version (Windows)
+static if (renderer == RendererMode.OpenGL)
 {
 	import std.c.windows.windows;
 
@@ -26,7 +29,7 @@ version (Windows)
 
 	import core.runtime;
 
-	struct OpenGLContext
+	struct RendererContext
 	{
 	public:
 		~this()

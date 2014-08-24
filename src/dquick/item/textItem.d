@@ -3,10 +3,7 @@ module dquick.item.textItem;
 import dquick.item.graphicItem;
 import dquick.media.font;
 import dquick.media.image;
-import dquick.renderer3D.openGL.mesh;
-import dquick.renderer3D.openGL.texture;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.shaderProgram;
+import dquick.renderer3D.all;
 import dquick.maths.vector2s32;
 import dquick.maths.color;
 
@@ -48,8 +45,8 @@ public:
 
 		options ~= Variant(import("rectangle.vert"));
 		options ~= Variant(import("rectangle.frag"));
-		mShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("rectangle", options);
-		mShaderProgram.program = mShader.getProgram();
+		mShader = Renderer.resourceManager.getResource!Shader("rectangle", options);
+		mShaderProgram = cast(ShaderProgram)mShader.getProgram();
 		debugMeshColor(Color(255 / 255, 255 / 255, 0 / 255, 1.0f));
 		debugImplicitMeshColor(Color(255 / 255, 0 / 255, 0 / 255, 1.0f));
 	}
@@ -120,7 +117,7 @@ public:
 		startPaint(transformationUpdated);
 		if (mNeedRebuild)
 			rebuildMesh();
-		if (mMesh.indexes)
+		if (mMesh && mMesh.indexes)
 			mMesh.draw();
 		paintChildren();
 		endPaint();
@@ -160,6 +157,7 @@ public:
 		void	release()
 		{
 			mMesh.destruct();
+			mMesh = null;
 		}
 	}
 
@@ -178,7 +176,11 @@ private:
 	{
 		mNeedRebuild = false;
 
-		mMesh.destruct();
+		if (mMesh)
+		{
+			mMesh.destruct();
+			mMesh = null;
+		}
 
 		if (!mText.length)
 		{
@@ -348,12 +350,13 @@ private:
 				implicitSize.y = lines[$ - 1].verticalCursor + lines[$ - 1].maxHeightUnderOrigin;
 
 			// Building the Mesh
+			mMesh = new Mesh;
 			mMesh.construct();
 			mMesh.setShader(mShader);
 			mMesh.setShaderProgram(mShaderProgram);
 
-			GLuint[]	indexes;
-			GLfloat[]	geometry;
+			uint[]	indexes;
+			float[]	geometry;
 
 			indexes.length = 6 * nbGlyphesToRender;
 			geometry.length = 4 * (3 + 4 + 2) * nbGlyphesToRender;
@@ -371,8 +374,8 @@ private:
 				}
 			}
 
-			mMesh.indexes.setArray(indexes, cast(GLenum)GL_STATIC_DRAW);
-			mMesh.geometry.setArray(geometry, cast(GLenum)GL_STATIC_DRAW);
+			mMesh.indexes.setArray(indexes, VBOMode.Static);
+			mMesh.geometry.setArray(geometry, VBOMode.Static);
 
 			// Update texture at the last moment
 			if (mTextures.length < 0 + 1)	// Check if the textures array already contains the current atlas
@@ -396,11 +399,12 @@ private:
 		catch (Exception e)
 		{
 			writeln(e.toString());
-			mMesh.destruct();
+			mMesh.destroy();
+			mMesh = null;
 		}
 	}
 
-	void	addGlyphToMesh(ref GLuint[] indexes, ref GLfloat[] geometry, Vector2s32 origin, Glyph glyph, size_t glyphIndex, Vector2s32 atlasSize)
+	void	addGlyphToMesh(ref uint[] indexes, ref float[] geometry, Vector2s32 origin, Glyph glyph, size_t glyphIndex, Vector2s32 atlasSize)
 	{
 		float	x, y, width, height;
 		float	tX, tY, tWidth, tHeight;

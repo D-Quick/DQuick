@@ -6,10 +6,7 @@ public import dquick.maths.vector4f32;
 public import dquick.maths.transformation;
 public import dquick.maths.color;
 
-public import dquick.renderer3D.openGL.renderer;
-import dquick.renderer3D.openGL.mesh;
-import dquick.renderer3D.openGL.shader;
-import dquick.renderer3D.openGL.shaderProgram;
+import dquick.renderer3D.all;
 
 public import std.signals;
 import std.stdio;
@@ -158,7 +155,9 @@ public:
 		debug
 		{
 			mDebugMesh.destruct();
+			mDebugMesh = null;
 			mDebugImplicitMesh.destruct();
+			mDebugImplicitMesh = null;
 		}
 		super.release();
 	}
@@ -229,14 +228,12 @@ protected:
 			Vector4f32	pos = Vector4f32(x, y, 0.0f, 0.0f);
 			Vector4f32	size = Vector4f32(width, height, 0.0f, 0.0f);
 
-			glEnable(GL_SCISSOR_TEST);
-
 			pos = mMatrix * pos;
 			size = mMatrix * size;
 
 			float	invertedY = Renderer.viewportSize().y - pos.y - size.y;
 
-			glScissor(cast(int)round(pos.x), cast(int)round(invertedY), cast(int)round(size.x), cast(int)round(size.y));
+			Renderer.startScissor(cast(int)round(pos.x), cast(int)round(invertedY), cast(int)round(size.x), cast(int)round(size.y));
 		}
 
 		debug
@@ -254,7 +251,7 @@ protected:
 	{
 		mTransformationUpdated = false;
 		if (mClip)
-			glDisable(GL_SCISSOR_TEST);
+			Renderer.endScissor();
 	}
 
 	bool	isIn(Vector2f32 point)
@@ -268,32 +265,34 @@ protected:
 	{
 		void	createDebugMeshes()	// Safe to call it if mesh is already created
 		{
-			if (mDebugMesh.indexes)
+			if (mDebugMesh)
 				return;
 
 			Variant[] options;
 			options ~= Variant(import("color.vert"));
 			options ~= Variant(import("color.frag"));
-			mDebugShader = dquick.renderer3D.openGL.renderer.resourceManager.getResource!Shader("color", options);
-			mDebugShaderProgram.program = mDebugShader.getProgram();
+			mDebugShader = Renderer.resourceManager.getResource!Shader("color", options);
+			mDebugShaderProgram = cast(ShaderProgram)mDebugShader.getProgram();
 
 			// Size
+			mDebugMesh = new Mesh;
 			mDebugMesh.construct();
 			mDebugMesh.setShader(mDebugShader);
 			mDebugMesh.setShaderProgram(mDebugShaderProgram);
-			mDebugMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
+			mDebugMesh.setPrimitiveType(PrimitiveType.LineLoop);
 
-			mDebugMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3], cast(GLenum)GL_STATIC_DRAW);
-			mDebugMesh.geometry.setArray(debugMeshGeometryArray(), cast(GLenum)GL_DYNAMIC_DRAW);
+			mDebugMesh.indexes.setArray(cast(uint[])[0, 1, 2, 3], VBOMode.Static);
+			mDebugMesh.geometry.setArray(debugMeshGeometryArray(), VBOMode.Dynamic);
 
 			// ImplicitSize
+			mDebugImplicitMesh = new Mesh;
 			mDebugImplicitMesh.construct();
 			mDebugImplicitMesh.setShader(mDebugShader);
 			mDebugImplicitMesh.setShaderProgram(mDebugShaderProgram);
-			mDebugImplicitMesh.primitiveType = Mesh.PrimitiveType.LineLoop;
+			mDebugImplicitMesh.setPrimitiveType(PrimitiveType.LineLoop);
 
-			mDebugImplicitMesh.indexes.setArray(cast(GLuint[])[0, 1, 2, 3], cast(GLenum)GL_STATIC_DRAW);
-			mDebugImplicitMesh.geometry.setArray(debugImplicitMeshGeometryArray(), cast(GLenum)GL_DYNAMIC_DRAW);
+			mDebugImplicitMesh.indexes.setArray(cast(uint[])[0, 1, 2, 3], VBOMode.Static);
+			mDebugImplicitMesh.geometry.setArray(debugImplicitMeshGeometryArray(), VBOMode.Dynamic);
 
 			mRebuildDebugMeshes = false;
 		}
@@ -311,18 +310,18 @@ protected:
 
 	debug
 	{
-		GLfloat[]	debugMeshGeometryArray()
+		float[]	debugMeshGeometryArray()
 		{
-			return cast(GLfloat[])[
+			return [
 				0.0f,		0.0f,		0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
 				mSize.x,	0.0f,		0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
 				mSize.x,	mSize.y,	0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w,
 				0.0f,		mSize.y,	0.0f,		mDebugMeshColor.x, mDebugMeshColor.y, mDebugMeshColor.z, mDebugMeshColor.w];
 		}
 
-		GLfloat[]	debugImplicitMeshGeometryArray()
+		float[]	debugImplicitMeshGeometryArray()
 		{
-			return cast(GLfloat[])[
+			return [
 				0.0f,			0.0f,			0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
 				implicitWidth,	0.0f,			0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
 				implicitWidth,	implicitHeight,	0.0f,		mDebugImplicitMeshColor.x, mDebugImplicitMeshColor.y, mDebugImplicitMeshColor.z, mDebugImplicitMeshColor.w,
