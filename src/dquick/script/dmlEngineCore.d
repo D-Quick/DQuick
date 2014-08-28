@@ -742,6 +742,8 @@ extern(C)
 			else
 				uint	key;
 			dquick.script.utils.valueFromLua!(typeof(key))(L, 2, key);
+			static if (isAssociativeArray!T == false)
+				key--; // Lua arrays starts at 1
 
 			static if (isAssociativeArray!T)
 			{
@@ -811,6 +813,8 @@ extern(C)
 			else
 				uint	key;
 			dquick.script.utils.valueFromLua!(typeof(key))(L, 2, key);
+			static if (isAssociativeArray!T == false)
+				key--; // Lua arrays starts at 1
 
 			static if (isAssociativeArray!T == false)
 			{

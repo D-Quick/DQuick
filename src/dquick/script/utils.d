@@ -220,6 +220,9 @@ void	valueFromLua(T)(lua_State* L, int index, ref T value)
 			while (lua_next(L, -2) != 0) {
 				/* uses 'key' (at index -2) and 'value' (at index -1) */
 
+				if (lua_isnumber(L, -2) == false)
+					throw new Exception(format("Lua value at index %d is a %s that contains a key that is not a number and cannot fit in a D array", index, getLuaTypeName(L, -3)));
+
 				static if (isDynamicArray!T)
 					value.length++;
 				else if (isStaticArray!T)

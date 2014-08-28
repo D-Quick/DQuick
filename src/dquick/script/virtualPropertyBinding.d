@@ -36,6 +36,7 @@ class VirtualPropertyBinding : PropertyBinding
 			if (popFromStack == false)
 				lua_pushvalue(L, -1); // Composensate luaL_ref's pop
 			valueRef = luaL_ref(L, LUA_REGISTRYINDEX);
+			assert(valueRef != -1, format("Can't create a reference to the lua value assigned to property %s.%s", itemBinding.id, propertyName));
 			onChanged();
 		}
 	}
@@ -43,7 +44,7 @@ class VirtualPropertyBinding : PropertyBinding
 	override void	valueToLua(lua_State* L)
 	{
 		super.valueToLua(L);
-		assert(valueRef != -1);
+		assert(valueRef != -1, format("Can't dereference the lua value assigned to property %s.%s", itemBinding.id, propertyName));
 		lua_rawgeti(L, LUA_REGISTRYINDEX, valueRef);
 	}
 }
