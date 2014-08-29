@@ -771,7 +771,7 @@ extern(C)
 			}
 			else
 			{
-				static if (is(typeof(array[key]) : dquick.item.declarativeItem.DeclarativeItem))
+				static if (is(typeof(array[key]) : Object) || __traits(isAbstractClass, typeof(array[key])) || __traits(isFinalClass, typeof(array[key])))
 				{
 					DMLEngine	dmlEngine2 = cast(DMLEngine)dmlEngine;
 					assert(dmlEngine2);

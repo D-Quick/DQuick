@@ -278,6 +278,22 @@ version(unittest)
 		}
 		mixin Signal!(int delegate(int)) onDelegatePropertyChanged;
 		int delegate(int) mDelegateProperty;
+
+		// delegateItemProperty
+		void	delegateItemProperty(Item delegate(Item) value)
+		{
+			if (mDelegateItemProperty != value)
+			{
+				mDelegateItemProperty = value;
+				onDelegateItemPropertyChanged.emit(value);
+			}
+		}
+		Item delegate(Item)		delegateItemProperty()
+		{
+			return mDelegateItemProperty;
+		}
+		mixin Signal!(Item delegate(Item)) onDelegateItemPropertyChanged;
+		Item delegate(Item) mDelegateItemProperty;
 	}
 
 	// testSumFunctionBinding
@@ -1852,6 +1868,31 @@ unittest
 		dmlEngine.execute(lua, "Delegate");
 		int	delegate(int)	dg = dgItem.delegateProperty;
 		assert(dg(300) == 600);
+	}
+
+	// Delegate with item parameter and return
+	{
+		Item	dgItem12 = new Item;
+		dmlEngine.addObject(dgItem12, "dgItem12");
+		Item	dgItem13 = new Item;
+		dgItem13.nativeProperty = 10;
+		string lua = q"(
+			dgItem12.delegateItemProperty = function(param)
+				if param.nativeProperty == 10 then
+					return 	Item {
+						id = "dgItem14",
+						nativeProperty = 20,
+					}
+				else
+					return nil
+				end
+			end
+		)";
+		dmlEngine.execute(lua, "Delegate with item parameter and return");
+		Item	delegate(Item)	dg = dgItem12.delegateItemProperty;
+		Item	dgItem14 = dg(dgItem13);
+		assert(dgItem14);
+		assert(dgItem14.nativeProperty == 20);
 	}
 
 	// Delegate to lua

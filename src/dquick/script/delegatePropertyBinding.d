@@ -13,6 +13,7 @@ import dquick.script.iItemBinding;
 import dquick.script.itemBinding;
 import dquick.script.utils;
 import dquick.script.nativePropertyBinding;
+import dquick.script.dmlEngine;
 
 class DelegatePropertyBinding(ValueType, ItemType, string PropertyName) : NativePropertyBinding!(ValueType, ItemType, PropertyName)
 {
@@ -46,7 +47,9 @@ class DelegatePropertyBinding(ValueType, ItemType, string PropertyName) : Native
 		{
 			super.bindingFromLua(L, index);
 
-			lua_State* luaState = itemBinding.dmlEngine.luaState;
+			DMLEngineCore	dmlEngineCore = itemBinding.dmlEngine;
+			DMLEngine		dmlEngine = cast(DMLEngine)dmlEngineCore;
+			lua_State* luaState = dmlEngineCore.luaState;
 			// Get delegate type (first param of it's setter)
 			alias ParameterTypeTuple!(__traits(getMember, item, PropertyName))[0]	dgType;
 			alias ParameterTypeTuple!dgType	delegateParamsTypes;
@@ -55,7 +58,26 @@ class DelegatePropertyBinding(ValueType, ItemType, string PropertyName) : Native
 				int	top = lua_gettop(itemBinding.dmlEngine.luaState);
 				lua_rawgeti(luaState, LUA_REGISTRYINDEX, luaReference);
 				foreach (param; params)
-					dquick.script.utils.valueToLua(luaState, param);
+				{
+					static if (is(typeof(param) : dquick.script.iItemBinding.IItemBinding))
+					{
+						dmlEngineCore.addObjectBinding(param);
+						dquick.script.utils.valueToLua(luaState, param);
+					}
+					else
+					{
+						static if (is(typeof(param) : Object) || __traits(isAbstractClass, typeof(param)) || __traits(isFinalClass, typeof(param)))
+						{
+							assert(dmlEngine, "No DMLEngine");
+							dquick.script.itemBinding.ItemBinding!(typeof(param)) itemBinding = dmlEngine.registerItem!(typeof(param))(param);
+							dquick.script.utils.valueToLua(luaState, itemBinding);
+						}
+						else
+						{
+							dquick.script.utils.valueToLua(luaState, param);
+						}
+					}
+				}
 				itemBinding.dmlEngine.luaPCall(params.length);
 
 				if (lua_gettop(luaState) - top != 1)
@@ -67,7 +89,26 @@ class DelegatePropertyBinding(ValueType, ItemType, string PropertyName) : Native
 				else
 				{
 					returnType returnVal;
-					dquick.script.utils.valueFromLua!(returnType)(luaState, -1, returnVal);
+
+					static if (is(returnType : dquick.script.iItemBinding.IItemBinding))
+					{
+						dquick.script.utils.valueFromLua!(returnType)(luaState, -1, returnVal);
+					}
+					else
+					{
+						static if (is(returnType : Object) || __traits(isAbstractClass, returnType) || __traits(isFinalClass, returnType))
+						{
+							assert(dmlEngine, "No DMLEngine");
+							dquick.script.itemBinding.ItemBinding!(returnType) itemBinding;
+							dquick.script.utils.valueFromLua(luaState, -1, itemBinding);
+							returnVal = itemBinding.item;
+						}
+						else
+						{
+							dquick.script.utils.valueFromLua!(returnType)(luaState, -1, returnVal);
+						}
+					}
+
 					lua_pop(itemBinding.dmlEngine.luaState, 1); // Pop the result
 					return returnVal;
 				}

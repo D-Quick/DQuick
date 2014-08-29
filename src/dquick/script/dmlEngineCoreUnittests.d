@@ -436,6 +436,7 @@ version(unittest)
 			nativePropertyDoubleMapProperty = new typeof(nativePropertyDoubleMapProperty)(this, this);
 			nativeObjectPropertyArrayProperty = new typeof(nativeObjectPropertyArrayProperty)(this, this);
 			delegatePropertyProperty = new typeof(delegatePropertyProperty)(this, this);
+			delegateItemPropertyProperty = new typeof(delegateItemPropertyProperty)(this, this);
 		}
 
 		// id
@@ -629,6 +630,23 @@ version(unittest)
 		}
 		mixin Signal!(int delegate(int)) onDelegatePropertyChanged;
 		int delegate(int) mDelegateProperty;
+
+		// delegateItemProperty
+		dquick.script.delegatePropertyBinding.DelegatePropertyBinding!(Item delegate(Item), Item, "delegateItemProperty")	delegateItemPropertyProperty;
+		void	delegateItemProperty(Item delegate(Item) value)
+		{
+			if (mDelegateItemProperty != value)
+			{
+				mDelegateItemProperty = value;
+				onDelegateItemPropertyChanged.emit(value);
+			}
+		}
+		Item delegate(Item)		delegateItemProperty()
+		{
+			return mDelegateItemProperty;
+		}
+		mixin Signal!(Item delegate(Item)) onDelegateItemPropertyChanged;
+		Item delegate(Item) mDelegateItemProperty;
 	}
 
 	// testSumFunctionBinding
@@ -2217,6 +2235,21 @@ unittest
 		dmlEngine.execute(lua, "Delegate");
 		int	delegate(int)	dg = dgItem.delegateProperty;
 		assert(dg(300) == 600);
+	}
+
+	// Delegate with item parameter and return
+	{
+		Item	dgItem12 = new Item;
+		dmlEngine.addObjectBinding(dgItem12, "dgItem12");
+		Item	dgItem13 = new Item;
+		string lua = q"(
+			dgItem12.delegateItemProperty = function(param)
+				return param
+			end
+		)";
+		dmlEngine.execute(lua, "Delegate with item parameter and return");
+		Item	delegate(Item)	dg = dgItem12.delegateItemProperty;
+		assert(dg(dgItem13) is dgItem13);
 	}
 
 	// Delegate to lua
