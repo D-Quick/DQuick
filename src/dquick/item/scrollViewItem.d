@@ -3,6 +3,7 @@ module dquick.item.scrollViewItem;
 import dquick.item.declarativeItem;
 import dquick.item.mouseAreaItem;
 import dquick.item.graphicItem;
+import dquick.script.itemBinding;
 
 import dquick.maths.vector2f32;
 
@@ -13,6 +14,7 @@ import std.stdio;
 
 class ScrollViewItem : MouseAreaItem
 {
+	mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 public:
 	this(DeclarativeItem parent = null)
 	{
@@ -55,19 +57,19 @@ public:
 			}
 		}
 
-		@property void	width(float width)
+		void	width(float width)
 		{
 			MouseAreaItem.width(width);
 			fixChildPosition(0.0f);
 		}
-		@property float	width() {return MouseAreaItem.width();}
+		float	width() {return MouseAreaItem.width();}
 
-		@property void	height(float height)
+		void	height(float height)
 		{
 			MouseAreaItem.height(height);
 			fixChildPosition(0.0f);
 		}
-		@property float	height() {return MouseAreaItem.height();}
+		float	height() {return MouseAreaItem.height();}
 	}
 
 protected:

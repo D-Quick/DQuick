@@ -1,9 +1,10 @@
 module dquick.item.declarativeItem;
 
 public import dquick.events.mouseEvent;
-
 public import dquick.maths.matrix4x4;
+import dquick.script.itemBinding;
 
+public import std.signals;
 import std.stdio;
 
 // TODO take a look to http://doc.qt.digia.com/qt-maemo/qml-item.html
@@ -11,13 +12,20 @@ import std.stdio;
 
 // http://qt-project.org/doc/qt-4.8/qgraphicsitem.html#sorting
 
-class DeclarativeItem
+class DeclarativeItem : dquick.script.iItemBinding.IItemBinding
 {
-public:
-	@property void		id(string id) {mId = id;}
-	@property string	id() {return mId;}
+	mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 
-	@property void		parent(DeclarativeItem parent)
+	mixin Signal!(bool) _fakeSignal; // Fake signal to bypass bug https://issues.dlang.org/show_bug.cgi?id=8031
+public:
+	// id
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(string, DeclarativeItem, "id")	idProperty;
+	void		id(string id) {mId = id;}
+	string	id() {return mId;}
+
+	// parent
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(DeclarativeItem, DeclarativeItem, "parent")	parentProperty;
+	void		parent(DeclarativeItem parent)
 	{
 		// detach item from its previous parent
 		if (mParent !is null)
@@ -25,10 +33,14 @@ public:
 		if (parent !is null)
 			parent.addChild(this);
 	}
-	@property DeclarativeItem	parent() {return mParent;}
+	DeclarativeItem	parent() {return mParent;}
 	
 	this(DeclarativeItem parent = null)
 	{
+		idProperty = new typeof(idProperty)(this, this);
+		parentProperty = new typeof(parentProperty)(this, this);
+		childrenProperty = new typeof(childrenProperty)(this, this);
+
 		if (parent !is null)
 			parent.addChild(this);
 	}
@@ -41,6 +53,8 @@ public:
 		
 		mChildren ~= item;
 		item.mParent = this;
+
+		onChildrenChanged.emit(mChildren);
 	}
 	
 	void	removeChild(DeclarativeItem item)
@@ -55,12 +69,17 @@ public:
 			else
 				++i;
 		}
+
+		onChildrenChanged.emit(mChildren);
 	}
 
+	// children
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(DeclarativeItem[], DeclarativeItem, "children")	childrenProperty;
 	DeclarativeItem[]	children()
 	{
 		return mChildren;
 	}
+	mixin Signal!(DeclarativeItem[]) onChildrenChanged;
 
 	void	paint(bool transformationUpdated)
 	{

@@ -6,10 +6,73 @@ version(unittest)
 	import dquick.script.itemBinding;
 	import std.algorithm;
 	import std.stdio;
-	import dquick.item.declarativeItem;
 	import std.signals;
 	import dquick.script.utils;
 	import derelict.lua.lua;
+
+	class DeclarativeItem : dquick.script.iItemBinding.IItemBinding
+	{
+		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
+	public:
+		// id
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, DeclarativeItem, "id")	idProperty;
+		void			id(string id) {mId = id;}
+		string			id() {return mId;}
+		private string	mId;
+
+		// parent
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(DeclarativeItem, DeclarativeItem, "parent")	parentProperty;
+		void		parent(DeclarativeItem parent)
+		{
+			// detach item from its previous parent
+			if (mParent !is null)
+				mParent.removeChild(this);
+			if (parent !is null)
+				parent.addChild(this);
+		}
+		DeclarativeItem	parent() {return mParent;}
+		private DeclarativeItem		mParent;
+
+		this()
+		{
+			idProperty = new typeof(idProperty)(this, this);
+			parentProperty = new typeof(parentProperty)(this, this);
+			childrenProperty = new typeof(childrenProperty)(this, this);
+		}
+
+		void	addChild(DeclarativeItem item)
+		{
+			// detach item from its previous parent
+			if (item.parent !is null)
+				item.parent.removeChild(item);
+
+			mChildren ~= item;
+			item.mParent = this;
+		}
+
+		void	removeChild(DeclarativeItem item)
+		{
+			for (uint i = 0; i < mChildren.length; )
+			{
+				if (mChildren[i] is item)
+				{
+					mChildren[i].mParent = null;
+					mChildren = mChildren[0..i] ~ mChildren[i+1..$];
+				}
+				else
+					++i;
+			}
+		}
+
+		// children
+		dquick.script.nativePropertyBinding.NativePropertyBinding!(DeclarativeItem[], DeclarativeItem, "children")	childrenProperty;
+		DeclarativeItem[]	children()
+		{
+			return mChildren;
+		}
+		private DeclarativeItem[]	mChildren;
+	}
 
 	class ListView1ModelItem : dquick.script.iItemBinding.IItemBinding
 	{
@@ -50,7 +113,7 @@ version(unittest)
 		mixin Signal!(string) onNameChanged;
 		string mName;
 	}
-	class ListView1Component : DeclarativeItem, dquick.script.iItemBinding.IItemBinding
+	class ListView1Component : DeclarativeItem
 	{
 		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 
@@ -59,11 +122,6 @@ version(unittest)
 			idProperty = new typeof(idProperty)(this, this);
 			nameProperty = new typeof(nameProperty)(this, this);
 		}
-
-		// ID
-		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1Component, "id")	idProperty;
-		override string	id() { return DeclarativeItem.id(); }
-		override void	id(string value) { return DeclarativeItem.id(value); }
 
 		// Name
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1Component, "name")	nameProperty;
@@ -82,7 +140,7 @@ version(unittest)
 		mixin Signal!(string) onNameChanged;
 		string mName;
 	}
-	class ListView1 : dquick.item.declarativeItem.DeclarativeItem, dquick.script.iItemBinding.IItemBinding
+	class ListView1 : DeclarativeItem
 	{
 		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 
@@ -93,11 +151,6 @@ version(unittest)
 			itemDelegateProperty = new typeof(itemDelegateProperty)(this, this);
 			currentIndexProperty = new typeof(currentIndexProperty)(this, this);
 		}
-
-		// ID
-		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ListView1, "id")	idProperty;
-		override string	id() { return DeclarativeItem.id(); }
-		override void	id(string value) { return DeclarativeItem.id(value); }
 
 		// Model
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(LuaValue, ListView1, "model")	modelProperty;
@@ -381,7 +434,7 @@ version(unittest)
 	{
 		int		nativeProperty();
 	}
-	class SubItem : DeclarativeItem, dquick.script.iItemBinding.IItemBinding
+	class SubItem : DeclarativeItem
 	{
 		mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 
@@ -396,11 +449,6 @@ version(unittest)
 			this();
 			this.nativeProperty = nativeProperty;
 		}
-
-		// id
-		dquick.script.nativePropertyBinding.NativePropertyBinding!(string, SubItem, "id")	idProperty;
-		override string	id() { return DeclarativeItem.id(); }
-		override void	id(string value) { return DeclarativeItem.id(value); }
 
 		// nativeProperty
 		dquick.script.nativePropertyBinding.NativePropertyBinding!(int, SubItem, "nativeProperty")	nativePropertyProperty;
@@ -2647,6 +2695,8 @@ unittest
 			}
 		)";
 		dmlEngine.execute(lua, "");
+		assert(dmlEngine.rootItemBinding!ListView1() !is null);
+		assert(dmlEngine.rootItemBinding!ListView1().id == "listView104");
 		ListView1	listView104 = dmlEngine.getLuaGlobal!ListView1("listView104");
 		assert(listView104);
 		assert(listView104.children.length == 3);
@@ -2660,6 +2710,7 @@ unittest
 			listViewModel104.luaArray[3].virtualName = "item142_2";
 		)";
 		dmlEngine.execute(lua, "");
+		assert(dmlEngine.rootItemBinding!ListView1() is null);
 		assert(listView104.children.length == 3);
 		assert((cast(ListView1Component)(listView104.children[0])).name == "item140_2View");
 		assert((cast(ListView1Component)(listView104.children[1])).name == "item141_2View");

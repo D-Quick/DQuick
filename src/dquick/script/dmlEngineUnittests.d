@@ -8,7 +8,59 @@ version(unittest)
 	import dquick.script.dmlEngineCoreUnittests;
 	import std.algorithm;
 
-	class ListView1ModelItem : DeclarativeItem
+	class DeclarativeItem
+	{
+	public:
+		// id
+		void			id(string id) {mId = id;}
+		string			id() {return mId;}
+		private string	mId;
+
+		// parent
+		void		parent(DeclarativeItem parent)
+		{
+			// detach item from its previous parent
+			if (mParent !is null)
+				mParent.removeChild(this);
+			if (parent !is null)
+				parent.addChild(this);
+		}
+		DeclarativeItem	parent() {return mParent;}
+		private DeclarativeItem		mParent;
+
+		void	addChild(DeclarativeItem item)
+		{
+			// detach item from its previous parent
+			if (item.parent !is null)
+				item.parent.removeChild(item);
+
+			mChildren ~= item;
+			item.mParent = this;
+		}
+
+		void	removeChild(DeclarativeItem item)
+		{
+			for (uint i = 0; i < mChildren.length; )
+			{
+				if (mChildren[i] is item)
+				{
+					mChildren[i].mParent = null;
+					mChildren = mChildren[0..i] ~ mChildren[i+1..$];
+				}
+				else
+					++i;
+			}
+		}
+
+		// children
+		DeclarativeItem[]	children()
+		{
+			return mChildren;
+		}
+		private DeclarativeItem[]	mChildren;
+	}
+
+	class ListView1ModelItem
 	{
 		this()
 		{
@@ -19,6 +71,11 @@ version(unittest)
 			this();
 			this.name = name;
 		}
+
+		// id
+		void			id(string id) {mId = id;}
+		string			id() {return mId;}
+		private string	mId;
 
 		// Name
 		void	name(string value)
@@ -2256,6 +2313,8 @@ unittest
 			}
 		)";
 		dmlEngine.execute(lua, "");
+		assert(dmlEngine.rootItem!ListView1() !is null);
+		assert(dmlEngine.rootItem!ListView1().id == "listView104");
 		ListView1	listView104 = dmlEngine.getLuaGlobal!ListView1("listView104");
 		assert(listView104);
 		assert(listView104.children.length == 3);
@@ -2273,5 +2332,6 @@ unittest
 		assert((cast(ListView1Component)(listView104.children[0])).name == "item140_2View");
 		assert((cast(ListView1Component)(listView104.children[1])).name == "item141_2View");
 		assert((cast(ListView1Component)(listView104.children[2])).name == "item142_2View");
+		assert(dmlEngine.rootItem!ListView1() is null);
 	}
 }

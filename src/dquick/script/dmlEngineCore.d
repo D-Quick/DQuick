@@ -6,6 +6,7 @@ import dquick.script.propertyBinding;
 import dquick.script.utils;
 import dquick.script.itemBinding;
 import dquick.script.dmlEngine;
+import dquick.script.iItemBinding;
 
 import std.conv;
 import std.file, std.stdio;
@@ -131,7 +132,6 @@ public:
 				mItems ~= object;
 				object.dmlEngine = this;
 			}
-			mLastItemBindingCreated = object;
 		}
 
 		if (id != "")
@@ -196,7 +196,7 @@ public:
 		static if (showDebug)
 			writeln("execute: CREATE ==================================================================================================");
 
-		luaPCall(0);
+		mRootItemBinding = luaPCall(0);
 
 		luaL_unref(luaState, LUA_REGISTRYINDEX, mEnvStack[mEnvStack.length - 1]);
 		mEnvStack.length--;
@@ -210,7 +210,7 @@ public:
 
 	T	rootItemBinding(T)()
 	{
-		return cast(T)(mLastItemBindingCreated);
+		return cast(T)(mRootItemBinding);
 	}
 
 	T	getLuaGlobal(T)(string name)
@@ -276,7 +276,7 @@ public:
 
 	lua_State*	luaState() { return mLuaState; }
 protected:
-	package void	luaPCall(int paramCount)
+	package dquick.script.iItemBinding.IItemBinding		luaPCall(int paramCount)
 	{
 		assert(isCreated());
 
@@ -289,11 +289,16 @@ protected:
 			lua_pop(luaState, 1);
 			throw new Exception(error);
 		}
+
+		auto lastItemBindingCreated = mLastItemBindingCreated;
+		mLastItemBindingCreated = null;
+		return lastItemBindingCreated;
 	}
 
 	dquick.script.iItemBinding.IItemBinding[]		mItems;
 	int												mInitializedItemCount;
 	dquick.script.iItemBinding.IItemBinding			mLastItemBindingCreated;
+	dquick.script.iItemBinding.IItemBinding			mRootItemBinding;
 	
 	package lua_State*	mLuaState;
 	package dquick.script.propertyBinding.PropertyBinding[]		currentlyExecutedBindingStack;
@@ -341,9 +346,10 @@ extern(C)
 
 			T	itemBinding = new T();
 			dmlEngine.addObjectBinding!T(itemBinding);
+			dmlEngine.mLastItemBindingCreated = itemBinding;
 
 			lua_remove(L, 1);
-			itemBinding.valuesFromLuaTable(L);
+			(cast(IItemBinding)(itemBinding)).valuesFromLuaTable(L);
 
 			dquick.script.utils.valueToLua!T(L, itemBinding);
 

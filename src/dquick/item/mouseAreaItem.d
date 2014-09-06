@@ -1,10 +1,10 @@
 module dquick.item.mouseAreaItem;
 
 import dquick.item.graphicItem;
-
 import dquick.maths.vector2s32;
 import dquick.maths.vector3f32;
 import dquick.maths.vector4f32;
+import dquick.script.itemBinding;
 
 import std.string;
 import std.signals;
@@ -14,47 +14,80 @@ import std.stdio;
 
 class MouseAreaItem : GraphicItem
 {
+	mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 public:
 	alias MouseEvent.Buttons	Buttons;
 	
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
+		containsMouseProperty = new typeof(containsMouseProperty)(this, this);
+		enableProperty = new typeof(enableProperty)(this, this);
+		mouseXProperty = new typeof(mouseXProperty)(this, this);
+		mouseYProperty = new typeof(mouseYProperty)(this, this);
+		windowMouseXProperty = new typeof(windowMouseXProperty)(this, this);
+		windowMouseYProperty = new typeof(windowMouseYProperty)(this, this);
+		pressedProperty = new typeof(pressedProperty)(this, this);
+		pressedButtonsProperty = new typeof(pressedButtonsProperty)(this, this);
+		preventStealingProperty = new typeof(preventStealingProperty)(this, this);
+		propagateComposedEventsProperty = new typeof(propagateComposedEventsProperty)(this, this);
 		debug
 		{
 			debugMeshColor(Color(0 / 255, 128 / 255, 255 / 255, 1.0f));
 		}
 	}
 
-	@property bool			containsMouse() {return mContainsMouse;}
+	// containsMouse
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(bool, MouseAreaItem, "containsMouse")	containsMouseProperty;
+	bool					containsMouse() {return mContainsMouse;}
 	mixin Signal!(bool)		onContainsMouseChanged;
 
-	@property void			enable(bool flag) {mEnable = flag; onEnableChanged.emit(mEnable);}
-	@property bool			enable() {return mEnable;}
+	// enable
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(bool, MouseAreaItem, "enable")	enableProperty;
+	void					enable(bool flag) {mEnable = flag; onEnableChanged.emit(mEnable);}
+	bool					enable() {return mEnable;}
 	mixin Signal!(bool)		onEnableChanged;
 
-	@property float			mouseX() {return mMousePosition.x;}
+	// mouseX
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, MouseAreaItem, "mouseX")	mouseXProperty;
+	float					mouseX() {return mMousePosition.x;}
 	mixin Signal!(float)	onMouseXChanged;
-	@property float			mouseY() {return mMousePosition.y;}
+
+	// mouseY
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, MouseAreaItem, "mouseY")	mouseYProperty;
+	float					mouseY() {return mMousePosition.y;}
 	mixin Signal!(float)	onMouseYChanged;
 
-	@property float			windowMouseX() {return mWindowMousePosition.x;}
+	// windowMouseX
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, MouseAreaItem, "windowMouseX")	windowMouseXProperty;
+	float					windowMouseX() {return mWindowMousePosition.x;}
 	mixin Signal!(float)	onWindowMouseXChanged;
-	@property float			windowMouseY() {return mWindowMousePosition.y;}
+
+	// windowMouseY
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, MouseAreaItem, "windowMouseY")	windowMouseYProperty;
+	float					windowMouseY() {return mWindowMousePosition.y;}
 	mixin Signal!(float)	onWindowMouseYChanged;
 
-	@property bool			pressed() {return computePressedStatus();}	// Convience method that return true if Left button is pressed
+	// pressed
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(bool, MouseAreaItem, "pressed")	pressedProperty;
+	bool					pressed() {return computePressedStatus();}	// Convience method that return true if Left button is pressed
 	mixin Signal!(bool)		onPressedChanged;
 
-	@property Buttons		pressedButtons() {return mPressedButtons;}
+	// pressedButtons
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(Buttons, MouseAreaItem, "pressedButtons")	pressedButtonsProperty;
+	Buttons					pressedButtons() {return mPressedButtons;}
 	mixin Signal!(Buttons)	onPressedButtonsChanged;
 
-	@property void			preventStealing(bool flag) {mPreventStealing = flag; onPreventStealingChanged.emit(mPreventStealing);}
-	@property bool			preventStealing() {return mPreventStealing;}
+	// preventStealing
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(bool, MouseAreaItem, "preventStealing")	preventStealingProperty;
+	void					preventStealing(bool flag) {mPreventStealing = flag; onPreventStealingChanged.emit(mPreventStealing);}
+	bool					preventStealing() {return mPreventStealing;}
 	mixin Signal!(bool)		onPreventStealingChanged;
 
-	@property void			propagateComposedEvents(bool flag) {mPropagateComposedEvents = flag; onPropagateComposedEventsChanged.emit(mPropagateComposedEvents);}
-	@property bool			propagateComposedEvents() {return mPropagateComposedEvents;}
+	// propagateComposedEvents
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(bool, MouseAreaItem, "propagateComposedEvents")	propagateComposedEventsProperty;
+	void					propagateComposedEvents(bool flag) {mPropagateComposedEvents = flag; onPropagateComposedEventsChanged.emit(mPropagateComposedEvents);}
+	bool					propagateComposedEvents() {return mPropagateComposedEvents;}
 	mixin Signal!(bool)		onPropagateComposedEventsChanged;
 
 	override

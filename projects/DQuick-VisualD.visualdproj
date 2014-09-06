@@ -1230,10 +1230,13 @@
    </Folder>
    <Folder name="item">
     <File path="..\src\dquick\item\borderImageItem.d" />
+    <File path="..\src\dquick\item\columnRepeaterItem.d" />
     <File path="..\src\dquick\item\declarativeItem.d" />
     <File path="..\src\dquick\item\graphicItem.d" />
+    <File path="..\src\dquick\item\gridRepeaterItem.d" />
     <File path="..\src\dquick\item\imageItem.d" />
     <File path="..\src\dquick\item\mouseAreaItem.d" />
+    <File path="..\src\dquick\item\rowRepeaterItem.d" />
     <File path="..\src\dquick\item\scrollViewItem.d" />
     <File path="..\src\dquick\item\textItem.d" />
     <File path="..\src\dquick\item\windowItem.d" />

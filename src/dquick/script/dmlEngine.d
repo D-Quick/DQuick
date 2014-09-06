@@ -12,20 +12,22 @@ import std.algorithm;
 import std.traits;
 import std.typetuple;
 import std.c.string;
-import dquick.item.declarativeItem;
 
 class DMLEngine : dquick.script.dmlEngineCore.DMLEngineCore
 {
 public:
 	void	addItemType(type, string luaName)()
 	{
-		addObjectBindingType!(dquick.script.itemBinding.ItemBinding!(type), luaName)();
+		static if ((is(type : Object) || __traits(isAbstractClass, type) || __traits(isFinalClass, type)) && is(type : dquick.script.iItemBinding.IItemBinding) == false)
+			addObjectBindingType!(dquick.script.itemBinding.ItemBinding!(type), luaName)();
+		else
+			addObjectBindingType!(type, luaName)();
 	}
 
 	void	addObject(T)(T object, string luaName)
 	{
 		addItemType!(T, "__dquick_reserved1");
-		static if (is(T : DeclarativeItem))
+		static if (is(T : dquick.script.iItemBinding.IItemBinding))
 			object.id = luaName;
 
 		dquick.script.itemBinding.ItemBinding!T	itemBinding = registerItem!T(object);
@@ -34,17 +36,25 @@ public:
 
 	T	rootItem(T)()
 	{
-		dquick.script.itemBinding.ItemBindingBase!T	result = rootItemBinding!(dquick.script.itemBinding.ItemBindingBase!T)();
-		if (result !is null)
-			return cast(T)result.itemObject;
-		return null;
+		static if ((is(T : Object) || __traits(isAbstractClass, T) || __traits(isFinalClass, T)) && is(T : dquick.script.iItemBinding.IItemBinding) == false)
+		{
+			dquick.script.itemBinding.ItemBindingBase!T	result = rootItemBinding!(dquick.script.itemBinding.ItemBindingBase!T)();
+			if (result !is null)
+				return cast(T)result.itemObject;
+			else 
+				return null;
+		}
+		else
+		{
+			return rootItemBinding!(T)();
+		}
 	}
 
 	T	getLuaGlobal(T)(string name)
 	{
 		lua_getglobal(luaState, name.toStringz());
 		T	value;
-		static if (is(T : dquick.item.declarativeItem.DeclarativeItem) && is(T : dquick.script.iItemBinding.IItemBinding) == false)
+		static if ((is(T : Object) || __traits(isAbstractClass, T) || __traits(isFinalClass, T)) && is(T : dquick.script.iItemBinding.IItemBinding) == false)
 		{
 			dquick.script.itemBinding.ItemBindingBase!T	itemBinding;
 			dquick.script.utils.valueFromLua!(dquick.script.itemBinding.ItemBindingBase!(T))(luaState, -1, itemBinding);
@@ -63,7 +73,7 @@ public:
 
 	void	setLuaGlobal(T)(string name, T value)
 	{
-		static if (is(T : dquick.item.declarativeItem.DeclarativeItem))
+		static if ((is(T : Object) || __traits(isAbstractClass, T) || __traits(isFinalClass, T)) && is(T : dquick.script.iItemBinding.IItemBinding) == false)
 		{
 			dquick.script.itemBinding.ItemBinding!T itemBinding = registerItem!(T)(value);
 			dquick.script.utils.valueToLua!(dquick.script.itemBinding.ItemBinding!T)(luaState, itemBinding);
@@ -94,6 +104,14 @@ public:
 	}
 private:
 
+	dquick.script.iItemBinding.IItemBinding	getIItemBindingFromItem(T)(T item)
+	{
+		auto	refCountPtr = item in mItemsToItemBindings;
+		if (refCountPtr !is null)
+			return refCountPtr.iItemBinding;
+		return null;
+	}
+
 	dquick.script.itemBinding.ItemBinding!T	registerItem(T)(T item)
 	{
 		auto	refCountPtr = item in mItemsToItemBindings;
@@ -103,11 +121,13 @@ private:
 			return cast(dquick.script.itemBinding.ItemBinding!T)refCountPtr.iItemBinding;
 		}
 
+		// item binding doesn't already exists (item come from outside dmlEngine)
 		dquick.script.itemBinding.ItemBinding!T	itemBinding = new dquick.script.itemBinding.ItemBinding!T(item);
-		registerItem!T(item, itemBinding);
 		addObjectBinding!(dquick.script.itemBinding.ItemBinding!T)(itemBinding, "");
 		return itemBinding;
 	}
+
+	// registerItem when a new item
 	dquick.script.itemBinding.ItemBinding!T	registerItem(T)(T item, dquick.script.itemBinding.ItemBinding!T itemBinding)
 	{
 		assert((item in mItemsToItemBindings) is null);

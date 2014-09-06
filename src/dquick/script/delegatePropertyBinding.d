@@ -99,9 +99,12 @@ class DelegatePropertyBinding(ValueType, ItemType, string PropertyName) : Native
 						static if (is(returnType : Object) || __traits(isAbstractClass, returnType) || __traits(isFinalClass, returnType))
 						{
 							assert(dmlEngine, "No DMLEngine");
-							dquick.script.itemBinding.ItemBinding!(returnType) itemBinding;
-							dquick.script.utils.valueFromLua(luaState, -1, itemBinding);
-							returnVal = itemBinding.item;
+							dquick.script.iItemBinding.IItemBinding	iItemBinding;
+							dquick.script.utils.valueFromLua(luaState, -1, iItemBinding);
+							dquick.script.itemBinding.ItemBindingBase!(returnType) itemBindingBase = cast(dquick.script.itemBinding.ItemBindingBase!(returnType))(iItemBinding);
+							if (itemBindingBase is null)
+								throw new Exception(format("Wrong type, expected %s", typeid(returnType)));
+							returnVal = cast(returnType)(itemBindingBase.itemObject);
 						}
 						else
 						{

@@ -1,15 +1,15 @@
 module dquick.item.imageItem;
 
 import dquick.item.graphicItem;
-
 import dquick.renderer2D.openGL.rectangle;
-
+import dquick.script.itemBinding;
 import dquick.media.image;
 
 import std.stdio;
 
 class ImageItem : GraphicItem
 {
+	mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 public:
 	enum	FillMode
 	{
@@ -25,6 +25,10 @@ public:
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
+		sourceProperty = new typeof(sourceProperty)(this, this);
+		paintedWidthProperty = new typeof(paintedWidthProperty)(this, this);
+		paintedHeightProperty = new typeof(paintedHeightProperty)(this, this);
+		fillModeProperty = new typeof(fillModeProperty)(this, this);
 		debug
 		{
 			debugMeshColor(Color(255 / 255, 128 / 255, 0 / 255, 1.0f));
@@ -43,7 +47,9 @@ public:
 		endPaint();
 	}
 
-	@property void	source(string filePath)
+	// source
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(string, ImageItem, "source")	sourceProperty;
+	void	source(string filePath)
 	{
 		Vector2s32	oldImplicitSize = mRectangle.textureSize;
 
@@ -57,17 +63,22 @@ public:
 		if (mRectangle.textureSize.y != oldImplicitSize.y)
 			onImplicitHeightChanged.emit(mRectangle.textureSize.y);
 	}
-
-	@property float	paintedWidth() {return mPaintedSize.x;}
-	mixin Signal!(float)	onPaintedWidthChanged;
-
-	@property float	paintedHeight() {return mPaintedSize.y;}
-	mixin Signal!(float)	onPaintedHeightChanged;
-
-	@property string		source() {return mSource;}
+	string		source() {return mSource;}
 	mixin Signal!(string)	onSourceChanged;
 
-	@property void	fillMode(FillMode mode)
+	// paintedWidth
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, ImageItem, "paintedWidth")	paintedWidthProperty;
+	float	paintedWidth() {return mPaintedSize.x;}
+	mixin Signal!(float)	onPaintedWidthChanged;
+
+	// paintedHeight
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, ImageItem, "paintedHeight")	paintedHeightProperty;
+	float	paintedHeight() {return mPaintedSize.y;}
+	mixin Signal!(float)	onPaintedHeightChanged;
+
+	// fillMode
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(FillMode, ImageItem, "fillMode")	fillModeProperty;
+	void	fillMode(FillMode mode)
 	{
 		if (mode == mFillMode)
 			return;
@@ -77,21 +88,21 @@ public:
 		updateSize(mSize);
 	}
 
-	@property FillMode	fillMode() {return mFillMode;}
+	FillMode	fillMode() {return mFillMode;}
 	mixin Signal!(FillMode)	onFillModeChanged;
 
 	override
 	{
-		@property void	width(float width) {GraphicItem.width = width; updateSize(Vector2f32(width, height));}
-		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height) {GraphicItem.height = height; updateSize(Vector2f32(width, height));}
-		@property float	height() {return GraphicItem.height;}
-		@property float	implicitWidth()
+		void	width(float width) {GraphicItem.width = width; updateSize(Vector2f32(width, height));}
+		float	width() {return GraphicItem.width;}
+		void	height(float height) {GraphicItem.height = height; updateSize(Vector2f32(width, height));}
+		float	height() {return GraphicItem.height;}
+		float	implicitWidth()
 		{
 			return mRectangle.textureSize.x;
 		}
 
-		@property float	implicitHeight()
+		float	implicitHeight()
 		{
 			return mRectangle.textureSize.y;
 		}

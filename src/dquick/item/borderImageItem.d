@@ -1,9 +1,9 @@
 module dquick.item.borderImageItem;
 
 import dquick.item.graphicItem;
-
 import dquick.renderer2D.openGL.borderRectangleShader;
 import dquick.renderer2D.openGL.borderRectangleVertices;
+import dquick.script.itemBinding;
 
 import std.stdio;
 
@@ -11,12 +11,20 @@ alias BorderRectangleVertices	BorderRectangle;
 
 class BorderImageItem : GraphicItem
 {
+	mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 public:
 	alias BorderRectangle.TileMode	TileMode;
 	
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
+		sourceProperty = new typeof(sourceProperty)(this, this);
+		sourceWidthProperty = new typeof(sourceWidthProperty)(this, this);
+		sourceHeightProperty = new typeof(sourceHeightProperty)(this, this);
+		borderLeftProperty = new typeof(borderLeftProperty)(this, this);
+		borderRightProperty = new typeof(borderRightProperty)(this, this);
+		borderTopProperty = new typeof(borderTopProperty)(this, this);
+		borderBottomProperty = new typeof(borderBottomProperty)(this, this);
 		debug
 		{
 			debugMeshColor(Color(128 / 255, 0 / 255, 255 / 255, 1.0f));
@@ -34,7 +42,7 @@ public:
 		endPaint();
 	}
 
-	@property void	source(string filePath)
+	void	source(string filePath)
 	{
 		Vector2s32	oldSourceSize = mRectangle.textureSize;
 
@@ -49,16 +57,22 @@ public:
 			onSourceHeightChanged.emit(mRectangle.textureSize.y);
 	}
 
-	@property string	source() {return mSource;}
+	// source
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(string, BorderImageItem, "source")	sourceProperty;
+	string	source() {return mSource;}
 	mixin Signal!(string) onSourceChanged;
 
-	@property float	sourceWidth()
+	// sourceWidth
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, BorderImageItem, "sourceWidth")	sourceWidthProperty;
+	float	sourceWidth()
 	{
 		return mRectangle.textureSize.x;
 	}
 	mixin Signal!(float)	onSourceWidthChanged;
 
-	@property float	sourceHeight()
+	// sourceHeight
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, BorderImageItem, "sourceHeight")	sourceHeightProperty;
+	float	sourceHeight()
 	{
 		return mRectangle.textureSize.y;
 	}
@@ -66,10 +80,10 @@ public:
 
 	override
 	{
-		@property void	width(float width) {mRectangle.width = width; GraphicItem.width = width;}
-		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height) {mRectangle.height = height; GraphicItem.height = height;}
-		@property float	height() {return GraphicItem.height;}
+		void	width(float width) {mRectangle.width = width; GraphicItem.width = width;}
+		float	width() {return GraphicItem.width;}
+		void	height(float height) {mRectangle.height = height; GraphicItem.height = height;}
+		float	height() {return GraphicItem.height;}
 
 		void	release()
 		{
@@ -77,25 +91,37 @@ public:
 		}
 	}
 
-	@property void	borderLeft(int value) {mRectangle.borderLeft(value); onBorderLeftChanged.emit(value);}
-	@property int	borderLeft() {return mRectangle.borderLeft();}
+	// borderLeft
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(int, BorderImageItem, "borderLeft")	borderLeftProperty;
+	void	borderLeft(int value) {mRectangle.borderLeft(value); onBorderLeftChanged.emit(value);}
+	int	borderLeft() {return mRectangle.borderLeft();}
 	mixin Signal!(int) onBorderLeftChanged;
 
-	@property void	borderRight(int value) {mRectangle.borderRight(value); onBorderRightChanged.emit(value);}
-	@property int	borderRight() {return mRectangle.borderRight();}
+	// borderRight
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(int, BorderImageItem, "borderRight")	borderRightProperty;
+	void	borderRight(int value) {mRectangle.borderRight(value); onBorderRightChanged.emit(value);}
+	int	borderRight() {return mRectangle.borderRight();}
 	mixin Signal!(int) onBorderRightChanged;
 
-	@property void	borderTop(int value) {mRectangle.borderTop(value); onBorderTopChanged.emit(value);}
-	@property int	borderTop() {return mRectangle.borderTop();}
+	// borderTop
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(int, BorderImageItem, "borderTop")	borderTopProperty;
+	void	borderTop(int value) {mRectangle.borderTop(value); onBorderTopChanged.emit(value);}
+	int	borderTop() {return mRectangle.borderTop();}
 	mixin Signal!(int) onBorderTopChanged;
 
-	@property void	borderBottom(int value) {mRectangle.borderBottom(value); onBorderBottomChanged.emit(value);}
-	@property int	borderBottom() {return mRectangle.borderBottom();}
+	// borderBottom
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(int, BorderImageItem, "borderBottom")	borderBottomProperty;
+	void	borderBottom(int value) {mRectangle.borderBottom(value); onBorderBottomChanged.emit(value);}
+	int	borderBottom() {return mRectangle.borderBottom();}
 	mixin Signal!(int) onBorderBottomChanged;
 
 	// TODO
-	@property void	horizontalTileMode(TileMode mode) {mRectangle.horizontalTileMode(mode);}
-	@property void	verticalTileMode(TileMode mode) {mRectangle.verticalTileMode(mode);}
+	// horizontalTileMode
+	void	horizontalTileMode(TileMode mode) {mRectangle.horizontalTileMode(mode);}
+
+	// TODO
+	// verticalTileMode
+	void	verticalTileMode(TileMode mode) {mRectangle.verticalTileMode(mode);}
 
 protected:
 	void	updateSize(Vector2f32 size)

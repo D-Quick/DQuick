@@ -1,57 +1,17 @@
 
 Image {
 	id = "comproot",
-	x = function()
-		local	totalWidth = total * (width + 5)
-		return (grid.width - totalWidth) / 2 + col * (width + 5)
-	end,
-	y = function()
-		return row * (height + 5)
-	end,	
 ---	fillMode = Image.FillMode.PreserveAspectFit,
     width = function()
 		return height * implicitWidth / implicitHeight
 	end,
 	height = function()
-		return (grid.height - total * 5) / total
+		return (grid.height - grid.spacing * (model.columns - 1)) / model.columns
 	end,
 	source = "images/Minesweeper/back.png",
-	flipped = false,
-	onFlippedChanged = function()
-		if flipped == true and nearbyMineCount == 0 then
-			if getTile(row-1, col-1) and getTile(row-1, col-1).hasMine == false then
-				getTile(row-1, col-1).flipped = true
-			end
-			if getTile(row-1, col) and getTile(row-1, col).hasMine == false then
-				getTile(row-1, col).flipped = true
-			end
-			if getTile(row-1, col+1) and getTile(row-1, col+1).hasMine == false then
-				getTile(row-1, col+1).flipped = true
-			end
-			if getTile(row, col-1) and getTile(row, col-1).hasMine == false then
-				getTile(row, col-1).flipped = true
-			end
-			if getTile(row, col+1) and getTile(row, col+1).hasMine == false then
-				getTile(row, col+1).flipped = true
-			end
-			if getTile(row+1, col-1) and getTile(row+1, col-1).hasMine == false then
-				getTile(row+1, col-1).flipped = true
-			end
-			if getTile(row+1, col) and getTile(row+1, col).hasMine == false then
-				getTile(row+1, col).flipped = true
-			end
-			if getTile(row+1, col+1) and getTile(row+1, col+1).hasMine == false then
-				getTile(row+1, col+1).flipped = true
-			end	
-		end
-	end,
-	nearbyMineCount = function()
-		return calculateNearbyCount(row, col)
-	end,
 	containsMouse = function()
 		return mouseArea.containsMouse
 	end,
-	hasMine = false,
 	
 	Text {
 		id = "text",
@@ -63,8 +23,8 @@ Image {
 		end,	
 		y = 0,
 		text = function()
-			if (comproot.flipped or root.status == "lost") and comproot.hasMine == false and comproot.nearbyMineCount > 0 then
-				return comproot.nearbyMineCount
+			if (comproot.model.flipped or root.status == "lost") and comproot.model.hasMine == false and comproot.model.nearbyMineCount > 0 then
+				return comproot.model.nearbyMineCount
 			else
 				return ""
 			end
@@ -90,8 +50,8 @@ Image {
 		height = function()
 			return comproot.height / 1.5
 		end,
-		source = function()
-			if (comproot.flipped or root.status == "lost") and comproot.hasMine == true then
+		source = function()		
+			if (comproot.model.flipped or root.status == "lost") and comproot.model.hasMine == true then
 				return "images/Minesweeper/bomb-color.png"
 			else
 				return ""
@@ -108,7 +68,7 @@ Image {
 			return comproot.height
 		end,
 		source = function()
-			if comproot.flipped or root.status == "lost" then	
+			if comproot.model.flipped or root.status == "lost" then	
 				return ""
 			else
 				return "images/Minesweeper/front.png"
@@ -131,15 +91,15 @@ Image {
 			return comproot.height / 1.5
 		end,
 		source = function()
-			if	comproot.hasMine and
-				(getTile(comproot.row-1, comproot.col-1) == nil or getTile(comproot.row-1, comproot.col-1).hasMine == true or getTile(comproot.row-1, comproot.col-1).flipped) and 
-				(getTile(comproot.row-1, comproot.col) == nil or getTile(comproot.row-1, comproot.col).hasMine == true or getTile(comproot.row-1, comproot.col).flipped) and
-				(getTile(comproot.row-1, comproot.col+1) == nil or getTile(comproot.row-1, comproot.col+1).hasMine == true or getTile(comproot.row-1, comproot.col+1).flipped) and					
-				(getTile(comproot.row, comproot.col-1) == nil or getTile(comproot.row, comproot.col-1).hasMine == true or getTile(comproot.row, comproot.col-1).flipped) and					
-				(getTile(comproot.row, comproot.col+1) == nil or getTile(comproot.row, comproot.col+1).hasMine == true or getTile(comproot.row, comproot.col+1).flipped) and
-				(getTile(comproot.row+1, comproot.col-1) == nil or getTile(comproot.row+1, comproot.col-1).hasMine == true or getTile(comproot.row+1, comproot.col-1).flipped) and 
-				(getTile(comproot.row+1, comproot.col) == nil or getTile(comproot.row+1, comproot.col).hasMine == true or getTile(comproot.row+1, comproot.col).flipped) and
-				(getTile(comproot.row+1, comproot.col+1) == nil or getTile(comproot.row+1, comproot.col+1).hasMine == true or getTile(comproot.row+1, comproot.col+1).flipped) then
+			if	comproot.model.hasMine and
+				(getTileModel(comproot.model.row-1, comproot.model.col-1) == nil or getTileModel(comproot.model.row-1, comproot.model.col-1).hasMine == true or getTileModel(comproot.model.row-1, comproot.model.col-1).flipped) and 
+				(getTileModel(comproot.model.row-1, comproot.model.col) == nil or getTileModel(comproot.model.row-1, comproot.model.col).hasMine == true or getTileModel(comproot.model.row-1, comproot.model.col).flipped) and
+				(getTileModel(comproot.model.row-1, comproot.model.col+1) == nil or getTileModel(comproot.model.row-1, comproot.model.col+1).hasMine == true or getTileModel(comproot.model.row-1, comproot.model.col+1).flipped) and					
+				(getTileModel(comproot.model.row, comproot.model.col-1) == nil or getTileModel(comproot.model.row, comproot.model.col-1).hasMine == true or getTileModel(comproot.model.row, comproot.model.col-1).flipped) and					
+				(getTileModel(comproot.model.row, comproot.model.col+1) == nil or getTileModel(comproot.model.row, comproot.model.col+1).hasMine == true or getTileModel(comproot.model.row, comproot.model.col+1).flipped) and
+				(getTileModel(comproot.model.row+1, comproot.model.col-1) == nil or getTileModel(comproot.model.row+1, comproot.model.col-1).hasMine == true or getTileModel(comproot.model.row+1, comproot.model.col-1).flipped) and 
+				(getTileModel(comproot.model.row+1, comproot.model.col) == nil or getTileModel(comproot.model.row+1, comproot.model.col).hasMine == true or getTileModel(comproot.model.row+1, comproot.model.col).flipped) and
+				(getTileModel(comproot.model.row+1, comproot.model.col+1) == nil or getTileModel(comproot.model.row+1, comproot.model.col+1).hasMine == true or getTileModel(comproot.model.row+1, comproot.model.col+1).flipped) then
 				return "images/Minesweeper/flag-color.png"			
 			else
 				return ""
@@ -157,7 +117,7 @@ Image {
 		end,
 		onPressedChanged = function()
 			if pressed == false then
-				comproot.flipped = true
+				comproot.model.flipped = true
 			end
 		end,
 	}

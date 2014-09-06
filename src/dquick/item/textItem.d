@@ -6,6 +6,7 @@ import dquick.media.image;
 import dquick.renderer3D.all;
 import dquick.maths.vector2s32;
 import dquick.maths.color;
+import dquick.script.itemBinding;
 
 import std.stdio;
 import std.variant;
@@ -26,6 +27,7 @@ import std.uni;
 
 class TextItem : GraphicItem
 {
+	mixin(dquick.script.itemBinding.I_ITEM_BINDING);
 public:
 	alias Font.Style	FontStyle;
 
@@ -40,7 +42,14 @@ public:
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
-		
+
+		textProperty = new typeof(textProperty)(this, this);
+		familyProperty = new typeof(familyProperty)(this, this);
+		fontSizeProperty = new typeof(fontSizeProperty)(this, this);
+		fontStyleProperty = new typeof(fontStyleProperty)(this, this);
+		wrapModeProperty = new typeof(wrapModeProperty)(this, this);
+		kerningProperty = new typeof(kerningProperty)(this, this);
+
 		Variant[] options;
 
 		options ~= Variant(import("rectangle.vert"));
@@ -51,17 +60,21 @@ public:
 		debugImplicitMeshColor(Color(255 / 255, 0 / 255, 0 / 255, 1.0f));
 	}
 
-	@property void	text(string text)
+	// text
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(string, TextItem, "text")	textProperty;
+	void	text(string text)
 	{
 		mText = text;
 		mNeedRebuild = true;
 		onTextChanged.emit(text);
 	}
-	@property string	text() {return mText;}
+	string	text() {return mText;}
 	mixin Signal!(string) onTextChanged;
 
+	// family
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(string, TextItem, "family")	familyProperty;
 	/// Giving an empty string will reset the default font
-	@property void	family(string family)
+	void	family(string family)
  	{
 		if (family.length)
 			mFamily = family;
@@ -70,43 +83,51 @@ public:
  		mNeedRebuild = true;
 		onFamilyChanged.emit(family);
  	}
-	@property string	family() {return mFamily;}
+	string	family() {return mFamily;}
 	mixin Signal!(string) onFamilyChanged;
 	
-	@property void	fontSize(int size)
+	// fontSize
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(int, TextItem, "fontSize")	fontSizeProperty;
+	void	fontSize(int size)
 	{
 		mFamilySize = size;
 		mNeedRebuild = true;
 		onFontSizeChanged.emit(size);
 	}
-	@property int	fontSize() {return mFamilySize;}
+	int	fontSize() {return mFamilySize;}
 	mixin Signal!(int) onFontSizeChanged;
 	
-	@property void	fontStyle(FontStyle family)
+	// fontStyle
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(FontStyle, TextItem, "fontStyle")	fontStyleProperty;
+	void	fontStyle(FontStyle family)
 	{
 		mFamilyStyle = family;
 		mNeedRebuild = true;
 		onFontStyleChanged.emit(family);
 	}
-	@property FontStyle	fontStyle() {return mFamilyStyle;}
+	FontStyle	fontStyle() {return mFamilyStyle;}
 	mixin Signal!(FontStyle) onFontStyleChanged;
 
-	@property void	wrapMode(WrapMode mode)
+	// wrapMode
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(WrapMode, TextItem, "wrapMode")	wrapModeProperty;
+	void	wrapMode(WrapMode mode)
 	{
 		mWrapMode = mode;
 		mNeedRebuild = true;
 		onWrapModeChanged.emit(mode);
 	}
-	@property WrapMode	wrapMode() {return mWrapMode;}
+	WrapMode	wrapMode() {return mWrapMode;}
 	mixin Signal!(WrapMode) onWrapModeChanged;
 
-	@property void	kerning(bool flag)
+	// kerning
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(bool, TextItem, "kerning")	kerningProperty;
+	void	kerning(bool flag)
 	{
 		mKerning = flag;
 		mNeedRebuild = true;
 		onKerningChanged.emit(flag);
 	}
-	@property bool	kerning() {return mKerning;}
+	bool	kerning() {return mKerning;}
 	mixin Signal!(bool) onKerningChanged;
 
 	override
@@ -125,29 +146,29 @@ public:
 
 	override
 	{
-		@property void	width(float width)
+		void	width(float width)
 		{
 			GraphicItem.width = width;
 			if (mWrapMode != WrapMode.NoWrap)
 				mNeedRebuild = true;
 		}
-		@property float	width() {return GraphicItem.width;}
-		@property void	height(float height)
+		float	width() {return GraphicItem.width;}
+		void	height(float height)
 		{
 			GraphicItem.height = height;
 			if (mWrapMode != WrapMode.NoWrap)
 				mNeedRebuild = true;
 		}
-		@property float	height() {return GraphicItem.height;}
+		float	height() {return GraphicItem.height;}
 
-		@property float	implicitWidth()
+		float	implicitWidth()
 		{
 			if (mNeedRebuild)
 				rebuildMesh();
 			return mImplicitSize.x;
 		}
 
-		@property float	implicitHeight()
+		float	implicitHeight()
 		{
 			if (mNeedRebuild)
 				rebuildMesh();

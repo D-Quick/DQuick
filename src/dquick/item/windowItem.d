@@ -22,16 +22,16 @@ class WindowItem : GraphicItem
 		onSizeChanged.emit(newSize);
 	}
 	
-	@property Vector2s32	size() {return mWindow.size;}
+	Vector2s32	size() {return mWindow.size;}
 	mixin Signal!(Vector2s32) onSizeChanged;
 	
-	@property IWindow guiWindow(){return mWindow;}
+	IWindow guiWindow(){return mWindow;}
 
-	@property override void	width(float width) {setSize(Vector2s32(cast(int)width, mWindow.size.y));}
-	@property override float	width() {return mWindow.size.x;}
+	override void	width(float width) {setSize(Vector2s32(cast(int)width, mWindow.size.y));}
+	override float	width() {return mWindow.size.x;}
 
-	@property override void	height(float height) {setSize(Vector2s32(mWindow.size.x, cast(int)height));}
-	@property override float	height() {return mWindow.size.y;}
+	override void	height(float height) {setSize(Vector2s32(mWindow.size.x, cast(int)height));}
+	override float	height() {return mWindow.size.y;}
 
 private:
 	IWindow mWindow;

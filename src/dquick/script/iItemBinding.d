@@ -1,6 +1,5 @@
 module dquick.script.iItemBinding;
 
-import dquick.item.declarativeItem;
 import dquick.script.dmlEngineCore;
 import derelict.lua.lua;
 
@@ -13,6 +12,7 @@ interface IItemBinding {
 		string	displayDependents();
 		string	displayDependencies();
 	}
+	void	createItemBindingLuaEnv();
 	bool	creating();
 	void	valueFromLua(lua_State* L);
 	void	valuesFromLuaTable(lua_State* L);

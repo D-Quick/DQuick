@@ -11,6 +11,7 @@ public import dquick.item.textItem;
 public import dquick.item.borderImageItem;
 public import dquick.item.mouseAreaItem;
 public import dquick.item.scrollViewItem;
+public import dquick.item.gridRepeaterItem;
 public import dquick.maths.vector2s32;
 public import dquick.renderer3D.openGL.renderer;
 public import dquick.events.mouseEvent;
@@ -60,13 +61,16 @@ public:
 	{
 		mScriptContext = new DMLEngine;
 		mScriptContext.create();
-		mScriptContext.addItemType!(DeclarativeItem, "Item")();
-		mScriptContext.addItemType!(GraphicItem, "GraphicItem")();
-		mScriptContext.addItemType!(ImageItem, "Image")();
-		mScriptContext.addItemType!(TextItem, "Text")();
-		mScriptContext.addItemType!(BorderImageItem, "BorderImage")();
-		mScriptContext.addItemType!(MouseAreaItem, "MouseArea")();
-		mScriptContext.addItemType!(ScrollViewItem, "ScrollView")();
+		mScriptContext.addObjectBindingType!(DeclarativeItem, "Item")();
+		mScriptContext.addObjectBindingType!(GraphicItem, "GraphicItem")();
+		mScriptContext.addObjectBindingType!(ImageItem, "Image")();
+		mScriptContext.addObjectBindingType!(TextItem, "Text")();
+		mScriptContext.addObjectBindingType!(BorderImageItem, "BorderImage")();
+		mScriptContext.addObjectBindingType!(MouseAreaItem, "MouseArea")();
+		mScriptContext.addObjectBindingType!(ScrollViewItem, "ScrollView")();
+		mScriptContext.addObjectBindingType!(GridRepeaterItem, "ColumnRepeater")();
+		mScriptContext.addObjectBindingType!(GridRepeaterItem, "RowRepeater")();
+		mScriptContext.addObjectBindingType!(GridRepeaterItem, "GridRepeater")();
 	}
 
 	~this()

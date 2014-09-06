@@ -8,34 +8,51 @@ public import dquick.maths.color;
 
 import dquick.renderer3D.all;
 
-public import std.signals;
 import std.stdio;
 import std.math;
 import std.variant;
+
+import dquick.script.itemBinding;
 
 // TODO Verifier la gestion des matrices, j'ai un doute sur la bonne application/restoration des transformation (Je crains que la matrice de la camera soit ecrasee)
 
 /// Interface for items that can be renderer or have some geometrical properties
 class GraphicItem : DeclarativeItem
 {
+	mixin(dquick.script.itemBinding.I_ITEM_BINDING);
+
 public:
 	this(DeclarativeItem parent = null)
 	{
 		super(parent);
+		visibleProperty = new typeof(visibleProperty)(this, this);
+		xProperty = new typeof(xProperty)(this, this);
+		yProperty = new typeof(yProperty)(this, this);
+		widthProperty = new typeof(widthProperty)(this, this);
+		heightProperty = new typeof(heightProperty)(this, this);
+		implicitWidthProperty = new typeof(implicitWidthProperty)(this, this);
+		implicitHeightProperty = new typeof(implicitHeightProperty)(this, this);
+		clipProperty = new typeof(clipProperty)(this, this);
+		scaleProperty = new typeof(scaleProperty)(this, this);
+		orientationProperty = new typeof(orientationProperty)(this, this);
+
 		mTransformationUpdated = true;	// Override default value of DeclarativeItem
 	}
 
-	@property void	visible(bool visible)
+	// visible
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(bool, GraphicItem, "visible")	visibleProperty;
+	void	visible(bool visible)
 	{
 		if (visible == mVisible)
 			return;
 		mVisible = visible;
 		onVisibleChanged.emit(visible);
 	}
-	@property bool	visible() {return mVisible;}
+	bool	visible() {return mVisible;}
 	mixin Signal!(bool) onVisibleChanged;
 
-	@property void	x(float x)
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, GraphicItem, "x")	xProperty;
+	void	x(float x)
 	{
 		if (x == mTransformation.position.x)
 			return;
@@ -43,10 +60,11 @@ public:
 		mTransformationUpdated = true;
 		onXChanged.emit(x);
 	}
-	@property float	x() {return mTransformation.position.x;}
+	float	x() {return mTransformation.position.x;}
 	mixin Signal!(float) onXChanged;
 
-	@property void	y(float y)
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, GraphicItem, "y")	yProperty;
+	void	y(float y)
 	{
 		if (y == mTransformation.position.y)
 			return;
@@ -54,10 +72,11 @@ public:
 		mTransformationUpdated = true;
 		onYChanged.emit(y);
 	}
-	@property float	y() {return mTransformation.position.y;}
+	float	y() {return mTransformation.position.y;}
 	mixin Signal!(float) onYChanged;
 
-	@property void	width(float width)
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, GraphicItem, "width")	widthProperty;
+	void	width(float width)
 	{
 		if (width == mSize.x)
 			return;
@@ -71,10 +90,11 @@ public:
 			mRebuildDebugMeshes = true;
 		}
 	}
-	@property float	width() {return mSize.x;}
+	float	width() {return mSize.x;}
 	mixin Signal!(float) onWidthChanged;
 
-	@property void	height(float height)
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, GraphicItem, "height")	heightProperty;
+	void	height(float height)
 	{
 		if (height == mSize.y)
 			return;
@@ -88,33 +108,41 @@ public:
 			mRebuildDebugMeshes = true;
 		}
 	}
-	@property float	height() {return mSize.y;}
+	float	height() {return mSize.y;}
 	mixin Signal!(float) onHeightChanged;
 
 	/// Return the natural width of the GraphicItem
 	/// The default implicit width for most items is float.nan, however some items have an inherent implicit width which cannot be overridden, e.g. Image, Text.
-	@property float	implicitWidth() {return float.nan;}
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, GraphicItem, "implicitWidth")	implicitWidthProperty;
+	float	implicitWidthBinding() {return float.nan;}
+	void	implicitWidth(float) {}
+	float	implicitWidth() {return float.nan;}
 	mixin Signal!(float) onImplicitWidthChanged;
 
 	/// Return the natural height of the GraphicItem
 	/// The default implicit height for most items is float.nan, however some items have an inherent implicit height which cannot be overridden, e.g. Image, Text.
-	@property float	implicitHeight() {return float.nan;}
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, GraphicItem, "implicitHeight")	implicitHeightProperty;
+	float	implicitHeightBinding() {return float.nan;}
+	void	implicitHeight(float) {}
+	float	implicitHeight() {return float.nan;}
 	mixin Signal!(float) onImplicitHeightChanged;
 
 	/// Put it to true to clip parts of item that are out of his rectangle (determined by his size)
 	/// It's implemented with a scissor, so don't use it with rotations
-	@property void	clip(bool flag)
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(bool, GraphicItem, "clip")	clipProperty;
+	void	clip(bool flag)
 	{
 		if (flag == mClip)
 			return;
 		mClip = flag;
 		onClipChanged.emit(flag);
 	}
-	@property bool	clip() {return mClip;}
+	bool	clip() {return mClip;}
 	mixin Signal!(bool) onClipChanged;
 
 	/// Change the scale factor, tranformation origin is the center of item
-	@property void	scale(float value)
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, GraphicItem, "scale")	scaleProperty;
+	void	scale(float value)
 	{
 		if (value == mTransformation.scaling.y)
 			return;
@@ -123,11 +151,12 @@ public:
 		mTransformationUpdated = true;
 		onScaleChanged.emit(value);
 	}
-	@property float	scale() {return mTransformation.scaling.x;}
+	float	scale() {return mTransformation.scaling.x;}
 	mixin Signal!(float) onScaleChanged;
 
 	/// Change the orientation angle in degrees clockwise, tranformation origin is the center of item
-	@property void	orientation(float value)
+	dquick.script.nativePropertyBinding.NativePropertyBinding!(float, GraphicItem, "orientation")	orientationProperty;
+	void	orientation(float value)
 	{
 		if (mOrientation == value)
 			return;
@@ -136,7 +165,7 @@ public:
 		mTransformation.orientation = Quaternion.zrotation((value % 360.0) / 180 * std.math.PI);
 		onOrientationChanged.emit(value);
 	}
-	@property float	orientation() {return mOrientation;}
+	float	orientation() {return mOrientation;}
 	mixin Signal!(float) onOrientationChanged;
 
 	override
@@ -163,7 +192,7 @@ public:
 	}
 
 	/// Color will be used to draw the rectangle that represent the GraphicItem's size
-	@property void	debugMeshColor(Color color)
+	void	debugMeshColor(Color color)
 	{
 		debug
 		{
@@ -172,7 +201,7 @@ public:
 			onDebugMeshColorChanged.emit(color);
 		}
 	}
-	@property Color	debugMeshColor()
+	Color	debugMeshColor()
 	{
 		debug
 		{
@@ -186,7 +215,7 @@ public:
 	mixin Signal!(Color) onDebugMeshColorChanged;
 
 	/// Color will be used to draw the rectangle that represent the GraphicItem's implicitSize
-	@property void	debugImplicitMeshColor(Color color)
+	void	debugImplicitMeshColor(Color color)
 	{
 		debug
 		{
@@ -195,7 +224,7 @@ public:
 			onDebugImplicitMeshColorChanged.emit(color);
 		}
 	}
-	@property Color	debugImplicitMeshColor()
+	Color	debugImplicitMeshColor()
 	{
 		debug
 		{

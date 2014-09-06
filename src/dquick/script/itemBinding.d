@@ -9,10 +9,10 @@ public import std.conv;
 public import derelict.lua.lua;
 public import std.c.string;
 
-import dquick.item.declarativeItem;
 import dquick.script.nativePropertyBinding;
 import dquick.script.virtualPropertyBinding;
 import dquick.script.delegatePropertyBinding;
+import dquick.script.dmlEngine;
 public import dquick.script.utils;
 public import dquick.script.dmlEngineCore;
 
@@ -36,19 +36,29 @@ static string	ITEM_BINDING()
 static string	BASE_ITEM_BINDING()
 {
 	return q"(
-		dquick.script.dmlEngineCore.DMLEngineCore	mDMLEngine;
+		static if (__traits(hasMember, typeof(this), "mDMLEngine") == false)
+			dquick.script.dmlEngineCore.DMLEngineCore	mDMLEngine;
+
 		override dquick.script.dmlEngineCore.DMLEngineCore	dmlEngine() {return mDMLEngine;};
 		override void	dmlEngine(dquick.script.dmlEngineCore.DMLEngineCore dmlEngine)
 		{
 			assert(mDMLEngine is null || mDMLEngine is dmlEngine);
 			if (mDMLEngine != dmlEngine)
 			{
+				if (id == "")
+					__traits(getMember, this, "idProperty").value(format("%s_%x", typeid(this), cast(void*)this));
 				mDMLEngine = dmlEngine;
+				static if (__traits(hasMember, this, "item") == true)
+				{
+					DMLEngine	dmlEngine2 = cast(DMLEngine)mDMLEngine;
+					assert(dmlEngine2, "An ItemBinding can only works with a DMLEngine");
+					dmlEngine2.registerItem!T(item, this);
+				}
 				createItemBindingLuaEnv();
 			}
 		}
 
-		void	createItemBindingLuaEnv()
+		override void	createItemBindingLuaEnv()
 		{
 			// Create new _ENV table with lookup function to handle this and parent
 			string	lua = q"(
@@ -116,10 +126,12 @@ static string	BASE_ITEM_BINDING()
 			lua_pop(dmlEngine.luaState, 1);
 		}
 
-		bool	mCreating;
-		bool	creating() {return mCreating;}
+		static if (__traits(hasMember, typeof(this), "mCreating") == false)
+			bool	mCreating;
+		override bool	creating() {return mCreating;}
 
-		dquick.script.virtualPropertyBinding.VirtualPropertyBinding[string]	virtualProperties;
+		static if (__traits(hasMember, typeof(this), "virtualProperties") == false)
+			public dquick.script.virtualPropertyBinding.VirtualPropertyBinding[string]	virtualProperties;
 
 		override void	executeBindings()
 		{
@@ -298,7 +310,8 @@ static string	BASE_ITEM_BINDING()
 
 				static if (__traits(hasMember, this, "addChild") == true)
 				{
-					foreach (overload; __traits(getOverloads, this, "addChild")) 
+					// Search in the ItemBinding
+					foreach (overload; __traits(getOverloads, typeof(this), "addChild")) 
 					{
 						alias ParameterTypeTuple!(overload) MyParameterTypeTuple;
 						static if (MyParameterTypeTuple.length == 1)
@@ -308,6 +321,26 @@ static string	BASE_ITEM_BINDING()
 							{
 								__traits(getMember, this, "addChild")(castedItemBinding);
 								goto AfterError;
+							}
+						}
+					}
+					// Search in the item
+					static if (__traits(hasMember, this, "item") == true)
+					{
+						static if (__traits(hasMember, item, "addChild") == true)
+						{
+							foreach (overload; __traits(getOverloads, typeof(item), "addChild")) 
+							{
+								alias ParameterTypeTuple!(overload) MyParameterTypeTuple;
+								static if (MyParameterTypeTuple.length == 1)
+								{
+									MyParameterTypeTuple[0]	castedItemBinding = cast(MyParameterTypeTuple[0])(child);
+									if (castedItemBinding !is null)
+									{
+										__traits(getMember, item, "addChild")(castedItemBinding);
+										goto AfterError;
+									}
+								}
 							}
 						}
 					}
@@ -344,7 +377,8 @@ static string	BASE_ITEM_BINDING()
 			dquick.script.utils.valueToLua!(typeof(this))(L, this);
 		}
 
-		int	mItemBindingLuaEnvDummyClosureReference;
+		static if (__traits(hasMember, typeof(this), "mItemBindingLuaEnvDummyClosureReference") == false)
+			int	mItemBindingLuaEnvDummyClosureReference;
 		override int	itemBindingLuaEnvDummyClosureReference()
 		{
 			return mItemBindingLuaEnvDummyClosureReference;
@@ -380,7 +414,8 @@ static string	genProperties(T)()
 														____%sItemBinding = null;
 													__%s.emit(____%sItemBinding);
 												}																
-											}",
+											}
+											",
 											getSignalNameFromPropertyName(member), fullyQualifiedName2!(MyPropertyType),
 											member, member, member,
 											member,
@@ -392,7 +427,8 @@ static string	genProperties(T)()
 						result ~= format("	dquick.script.itemBinding.ItemBinding!(%s)					____%sItemBinding;\n", fullyQualifiedName2!(MyPropertyType), member); // ItemBinding
 						result ~= format("	dquick.script.itemBinding.ItemBinding!(%s)					__%sItemBinding() {
 												return ____%sItemBinding;
-											}",
+											}
+											",
 											fullyQualifiedName2!(MyPropertyType), member,
 											member); // ItemBinding Getter
 						result ~= format("	void															__%sItemBinding(dquick.script.itemBinding.ItemBinding!(%s) value) {
@@ -412,7 +448,8 @@ static string	genProperties(T)()
 													}
 													__%s.emit(value);
 												}
-											}",
+											}
+											",
 											member, fullyQualifiedName2!(MyPropertyType),
 											member,
 											member,
@@ -424,7 +461,7 @@ static string	genProperties(T)()
 											member,
 											getSignalNameFromPropertyName(member~"ItemBinding"));	// ItemBinding Setter
 						//static if (__traits(hasMember, T, getSignalNameFromPropertyName(member))) // Has a signal
-							result ~= format("	mixin Signal!(dquick.script.itemBinding.ItemBinding!(%s))	__%s;", fullyQualifiedName2!(MyPropertyType), getSignalNameFromPropertyName(member~"ItemBinding"));
+							result ~= format("	mixin Signal!(dquick.script.itemBinding.ItemBinding!(%s))	__%s;\n", fullyQualifiedName2!(MyPropertyType), getSignalNameFromPropertyName(member~"ItemBinding"));
 
 						result ~= format("	dquick.script.nativePropertyBinding.NativePropertyBinding!(dquick.script.itemBinding.ItemBinding!(%s), dquick.script.itemBinding.ItemBinding!T, \"__%sItemBinding\")	%s;\n", fullyQualifiedName2!(MyPropertyType), member, member~"Property");
 					}
@@ -560,6 +597,7 @@ class ItemBinding(T) : ItemBindingBase!(T) // Proxy that auto bind T
 		}
 	}
 
+	// Item is instancied in the dmlEngine
 	this()
 	{
 		T item = new T;
